@@ -13,7 +13,7 @@
 static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44, 0x18};
 static uint8_t BUFFER[FLUSH_BUFFER_SIZE];
 
-void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, const bool async, const JSYBaudRate baudRate, HardwareSerial* serial) {
+void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, const JSYBaudRate baudRate, HardwareSerial* serial, const bool async, uint32_t pause, uint8_t core, uint32_t stackSize) {
   if (_enabled)
     return;
 
@@ -33,15 +33,15 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, con
     return;
   }
 
-  _baudRate = baudRate;
   _async = async;
+  _pause = pause;
   _serial = serial;
 
   Logger.info(TAG, "Enable JSY...");
   Logger.debug(TAG, "- JSY RX Pin: %u", _pinRX);
   Logger.debug(TAG, "- JSY TX Pin: %u", _pinTX);
   Logger.debug(TAG, "- Async: %s", _async ? "true" : "false");
-  Logger.debug(TAG, "- Baud Rate: %u bps", (uint32_t)_baudRate);
+  Logger.debug(TAG, "- Baud Rate: %u bps", (uint32_t)baudRate);
 
   const JSYBaudRate baudRates[] = {JSYBaudRate::BAUD_4800, JSYBaudRate::BAUD_9600, JSYBaudRate::BAUD_19200, JSYBaudRate::BAUD_38400};
   bool ok = false;
@@ -51,13 +51,13 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, con
       yield();
     if (_read(4)) {
       Logger.debug(TAG, "- Detected baud Rate: %u bps", (uint32_t)baudRates[i]);
-      if (baudRates[i] == _baudRate) {
+      if (baudRates[i] == baudRate) {
         ok = true;
         break;
       }
-      _setBaudRate(_baudRate);
+      _setBaudRate(baudRate);
       _serial->end();
-      _serial->begin((uint32_t)_baudRate, SERIAL_8N1, _pinTX, _pinRX);
+      _serial->begin((uint32_t)baudRate, SERIAL_8N1, _pinTX, _pinRX);
       while (!_serial)
         yield();
       if (!_read(4)) {
@@ -77,7 +77,7 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, con
     return;
   }
 
-  if (_async && xTaskCreateUniversal(_jsyTask, "jsyTask", MYCILA_JSY_ASYNC_STACK_SIZE, this, 1, nullptr, MYCILA_JSY_ASYNC_CORE) != pdPASS) {
+  if (_async && xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, 1, nullptr, core) != pdPASS) {
     Logger.error(TAG, "Unable to create JSY async task");
     return;
   }
@@ -256,7 +256,7 @@ void Mycila::JSYClass::_jsyTask(void* params) {
     jsy->_read();
     if (jsy->_enabled)
       // https://esp32developer.com/programming-in-c-c/tasks/tasks-vs-co-routines
-      delay(max(portTICK_PERIOD_MS, static_cast<uint32_t>(MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS)));
+      delay(max(portTICK_PERIOD_MS, jsy->_pause));
   }
   vTaskDelete(NULL);
 }

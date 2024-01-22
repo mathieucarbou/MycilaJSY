@@ -6,7 +6,7 @@
 
 Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy metering module
 
-- Sync mode and async mode
+- Sync mode and async mode (non-blocking)
 - Core, stack size and interval can be configured
 - Energy reset
 - Custom bauds rate
@@ -32,4 +32,30 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
 
 ## Usage
 
-See examples and API
+### Blocking mode
+
+```c++
+void setup() {
+  Mycila::JSY.begin(17, 16);
+}
+
+void loop() {
+  Mycila::JSY.read();
+
+  // access values
+
+  delay(1000);
+}
+```
+
+### Non-Blocking mode (async)
+
+```c++
+void setup() {
+  Mycila::JSY.begin(17, 16, true);
+}
+
+void loop() {
+  // access values
+}
+```

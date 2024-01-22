@@ -7,8 +7,8 @@
 #include <ArduinoJson.h>
 #include <esp32-hal-gpio.h>
 
-#define MYCILA_JSY_VERSION "1.0.0"
-#define MYCILA_JSY_VERSION_MAJOR 1
+#define MYCILA_JSY_VERSION "2.0.0"
+#define MYCILA_JSY_VERSION_MAJOR 2
 #define MYCILA_JSY_VERSION_MINOR 0
 #define MYCILA_JSY_VERSION_REVISION 0
 
@@ -35,7 +35,14 @@ namespace Mycila {
   class JSYClass {
     public:
       // jsyRXPin: pin connected to the RX of the JSY, jsyTXPin: pin connected to the TX of the JSY
-      void begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, const bool async = false, const JSYBaudRate baudRate = JSYBaudRate::BAUD_38400, HardwareSerial* serial = &Serial2);
+      void begin(const uint8_t jsyRXPin,
+                 const uint8_t jsyTXPin,
+                 const JSYBaudRate baudRate = JSYBaudRate::BAUD_38400,
+                 HardwareSerial* serial = &Serial2,
+                 const bool async = false,
+                 uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS,
+                 uint8_t core = MYCILA_JSY_ASYNC_CORE,
+                 uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE);
 
       void end();
 
@@ -47,9 +54,6 @@ namespace Mycila {
       gpio_num_t getRXPin() const { return _pinRX; }
       gpio_num_t getTXPin() const { return _pinTX; }
       bool isEnabled() const { return _enabled; }
-      bool isAsync() const { return _async; }
-      JSYBaudRate getBaudRate() const { return _baudRate; }
-      HardwareSerial* getSerial() const { return _serial; }
 
       void toJson(const JsonObject& root) const;
 
@@ -75,7 +79,7 @@ namespace Mycila {
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
       HardwareSerial* _serial = &Serial2;
-      JSYBaudRate _baudRate = JSYBaudRate::BAUD_38400;
+      uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS;
       volatile bool _async = false;
       volatile bool _enabled = false;
       volatile bool _reading = false;
