@@ -89,7 +89,7 @@ namespace Mycila {
       bool _read();
       bool _read(uint8_t maxCount);
       bool _setBaudRate(JSYBaudRate baudRate);
-      size_t _readSerial();
+      size_t _drop();
       static void _jsyTask(void* pvParameters);
   };
 

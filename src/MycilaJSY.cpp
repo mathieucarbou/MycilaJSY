@@ -8,10 +8,10 @@
 #include <algorithm>
 
 #define TAG "JSY"
-#define FLUSH_BUFFER_SIZE 256
+
+#define SUCCESSFUL_JSY_READ_COUNT 61
 
 static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44, 0x18};
-static uint8_t BUFFER[FLUSH_BUFFER_SIZE];
 
 void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, const JSYBaudRate baudRate, HardwareSerial* serial, const bool async, uint32_t pause, uint8_t core, uint32_t stackSize) {
   if (_enabled)
@@ -99,7 +99,7 @@ void Mycila::JSYClass::endAndResetEnergy() {
   const uint8_t data[] = {0x01, 0x10, 0x00, 0x0C, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0xF3, 0xFA};
   _serial->write(data, 13);
   _serial->flush();
-  _readSerial();
+  _drop();
 
   // Note: do not end() _serial: ESP needs to restart right after sending the reset command
   Logger.debug(TAG, "Energy Reset done");
@@ -147,30 +147,35 @@ bool __attribute__((hot)) Mycila::JSYClass::_read() {
 
   _serial->write(JSY_READ_MSG, 8);
   _serial->flush();
-  size_t count = _readSerial();
 
-  if (count != 61 || BUFFER[0] != 0x01) {
+  uint8_t buffer[SUCCESSFUL_JSY_READ_COUNT];
+  size_t count = 0;
+  while (count < SUCCESSFUL_JSY_READ_COUNT && _serial->available())
+    buffer[count++] = _serial->read();
+  count += _drop();
+
+  if (count != SUCCESSFUL_JSY_READ_COUNT || buffer[0] != 0x01) {
     _reading = false;
     return false;
   }
 
-  voltage1 = ((BUFFER[3] << 24) + (BUFFER[4] << 16) + (BUFFER[5] << 8) + BUFFER[6]) * 0.0001;
-  current1 = ((BUFFER[7] << 24) + (BUFFER[8] << 16) + (BUFFER[9] << 8) + BUFFER[10]) * 0.0001;
-  power1 = ((BUFFER[11] << 24) + (BUFFER[12] << 16) + (BUFFER[13] << 8) + BUFFER[14]) * (BUFFER[27] == 1 ? -0.0001 : 0.0001);
-  energy1 = ((BUFFER[15] << 24) + (BUFFER[16] << 16) + (BUFFER[17] << 8) + BUFFER[18]) * 0.0001;
-  powerFactor1 = ((BUFFER[19] << 24) + (BUFFER[20] << 16) + (BUFFER[21] << 8) + BUFFER[22]) * 0.001;
-  energyReturned1 = ((BUFFER[23] << 24) + (BUFFER[24] << 16) + (BUFFER[25] << 8) + BUFFER[26]) * 0.0001;
-  // BUFFER[27] is the sign of power1
-  // BUFFER[28] is the sign of power2
-  // BUFFER[29] unused
-  // BUFFER[30] unused
-  frequency = round(((BUFFER[31] << 24) + (BUFFER[32] << 16) + (BUFFER[33] << 8) + BUFFER[34]) * 0.01);
-  voltage2 = ((BUFFER[35] << 24) + (BUFFER[36] << 16) + (BUFFER[37] << 8) + BUFFER[38]) * 0.0001;
-  current2 = ((BUFFER[39] << 24) + (BUFFER[40] << 16) + (BUFFER[41] << 8) + BUFFER[42]) * 0.0001;
-  power2 = ((BUFFER[43] << 24) + (BUFFER[44] << 16) + (BUFFER[45] << 8) + BUFFER[46]) * (BUFFER[28] == 1 ? -0.0001 : 0.0001);
-  energy2 = ((BUFFER[47] << 24) + (BUFFER[48] << 16) + (BUFFER[49] << 8) + BUFFER[50]) * 0.0001;
-  powerFactor2 = ((BUFFER[51] << 24) + (BUFFER[52] << 16) + (BUFFER[53] << 8) + BUFFER[54]) * 0.001;
-  energyReturned2 = ((BUFFER[55] << 24) + (BUFFER[56] << 16) + (BUFFER[57] << 8) + BUFFER[58]) * 0.0001;
+  voltage1 = ((buffer[3] << 24) + (buffer[4] << 16) + (buffer[5] << 8) + buffer[6]) * 0.0001;
+  current1 = ((buffer[7] << 24) + (buffer[8] << 16) + (buffer[9] << 8) + buffer[10]) * 0.0001;
+  power1 = ((buffer[11] << 24) + (buffer[12] << 16) + (buffer[13] << 8) + buffer[14]) * (buffer[27] == 1 ? -0.0001 : 0.0001);
+  energy1 = ((buffer[15] << 24) + (buffer[16] << 16) + (buffer[17] << 8) + buffer[18]) * 0.0001;
+  powerFactor1 = ((buffer[19] << 24) + (buffer[20] << 16) + (buffer[21] << 8) + buffer[22]) * 0.001;
+  energyReturned1 = ((buffer[23] << 24) + (buffer[24] << 16) + (buffer[25] << 8) + buffer[26]) * 0.0001;
+  // buffer[27] is the sign of power1
+  // buffer[28] is the sign of power2
+  // buffer[29] unused
+  // buffer[30] unused
+  frequency = round(((buffer[31] << 24) + (buffer[32] << 16) + (buffer[33] << 8) + buffer[34]) * 0.01);
+  voltage2 = ((buffer[35] << 24) + (buffer[36] << 16) + (buffer[37] << 8) + buffer[38]) * 0.0001;
+  current2 = ((buffer[39] << 24) + (buffer[40] << 16) + (buffer[41] << 8) + buffer[42]) * 0.0001;
+  power2 = ((buffer[43] << 24) + (buffer[44] << 16) + (buffer[45] << 8) + buffer[46]) * (buffer[28] == 1 ? -0.0001 : 0.0001);
+  energy2 = ((buffer[47] << 24) + (buffer[48] << 16) + (buffer[49] << 8) + buffer[50]) * 0.0001;
+  powerFactor2 = ((buffer[51] << 24) + (buffer[52] << 16) + (buffer[53] << 8) + buffer[54]) * 0.001;
+  energyReturned2 = ((buffer[55] << 24) + (buffer[56] << 16) + (buffer[57] << 8) + buffer[58]) * 0.0001;
 
   _reading = false;
   return true;
@@ -208,18 +213,18 @@ bool Mycila::JSYClass::_setBaudRate(JSYBaudRate baudRate) {
 
   _serial->write(data, 11);
   _serial->flush();
-  _readSerial();
+  _drop();
 
   Logger.debug(TAG, "JSY baud rate updated.");
 
   return true;
 }
 
-size_t Mycila::JSYClass::_readSerial() {
+size_t Mycila::JSYClass::_drop() {
   size_t count = 0;
-  while (const size_t n = _serial->available()) {
-    const size_t pos = count % FLUSH_BUFFER_SIZE;
-    count += _serial->readBytes(BUFFER + pos, min(n, FLUSH_BUFFER_SIZE - pos));
+  while (_serial->available()) {
+    _serial->read();
+    count++;
   }
   return count;
 }
