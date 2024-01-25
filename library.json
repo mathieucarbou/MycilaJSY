@@ -22,13 +22,13 @@
     {
       "owner": "bblanchon",
       "name": "ArduinoJson",
-      "version": "^7.0.2",
+      "version": "*",
       "platforms": "espressif32"
     },
     {
       "owner": "mathieucarbou",
       "name": "MycilaLogger",
-      "version": "^2.0.2",
+      "version": "*",
       "platforms": "espressif32"
     }
   ],
