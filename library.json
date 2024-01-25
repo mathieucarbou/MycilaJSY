@@ -31,5 +31,15 @@
       "version": "^2.0.0",
       "platforms": "espressif32"
     }
-  ]
+  ],
+  "export": {
+    "include": [
+      "examples",
+      "src",
+      "library.json",
+      "library.properties",
+      "LICENSE",
+      "README.md"
+    ]
+  }
 }
