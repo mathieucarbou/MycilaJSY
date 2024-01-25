@@ -71,7 +71,7 @@ jobs:
         run: arduino-cli lib install ArduinoJson@7.0.2
 
       - name: Install MycilaLogger
-        run: arduino-cli lib install MycilaLogger@2.0.0
+        run: arduino-cli lib install MycilaLogger
 
       - name: Build JSYRead
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/JSYRead/JSYRead.ino"

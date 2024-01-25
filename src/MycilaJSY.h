@@ -7,10 +7,10 @@
 #include <ArduinoJson.h>
 #include <esp32-hal-gpio.h>
 
-#define MYCILA_JSY_VERSION "2.1.0"
+#define MYCILA_JSY_VERSION "2.1.1"
 #define MYCILA_JSY_VERSION_MAJOR 2
 #define MYCILA_JSY_VERSION_MINOR 1
-#define MYCILA_JSY_VERSION_REVISION 0
+#define MYCILA_JSY_VERSION_REVISION 1
 
 #ifndef MYCILA_JSY_ASYNC_CORE
 #define MYCILA_JSY_ASYNC_CORE 0
