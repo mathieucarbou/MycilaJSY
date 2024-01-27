@@ -79,6 +79,15 @@ jobs:
       - name: Build JSYReadAsync
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/JSYReadAsync/JSYReadAsync.ino"
 
+      - name: Build EnergyReset
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/EnergyReset/EnergyReset.ino"
+
+      - name: Build EnergyResetAsync
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/EnergyResetAsync/EnergyResetAsync.ino"
+
+      - name: Build SetSpeed
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SetSpeed/SetSpeed.ino"
+
   platformio:
     name: PlatformIO
     needs: cpplint
@@ -120,3 +129,12 @@ jobs:
 
       - name: Build JSYReadAsync
         run: platformio ci "examples/JSYReadAsync/JSYReadAsync.ino" -l '.' -b ${{ matrix.board }}
+
+      - name: Build EnergyReset
+        run: platformio ci "examples/EnergyReset/EnergyReset.ino" -l '.' -b ${{ matrix.board }}
+
+      - name: Build EnergyResetAsync
+        run: platformio ci "examples/EnergyResetAsync/EnergyResetAsync.ino" -l '.' -b ${{ matrix.board }}
+
+      - name: Build SetSpeed
+        run: platformio ci "examples/SetSpeed/SetSpeed.ino" -l '.' -b ${{ matrix.board }}

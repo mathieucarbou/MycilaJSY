@@ -13,7 +13,7 @@
 
 static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44, 0x18};
 
-void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, const JSYBaudRate baudRate, HardwareSerial* serial, const bool async, uint32_t pause, uint8_t core, uint32_t stackSize) {
+void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, HardwareSerial* serial, const bool async, uint32_t pause, uint8_t core, uint32_t stackSize) {
   if (_enabled)
     return;
 
@@ -33,48 +33,33 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, con
     return;
   }
 
+  _serial->begin((uint32_t)JSYBaudRate::BAUD_38400, SERIAL_8N1, _pinTX, _pinRX);
+
   _async = async;
   _pause = pause;
   _serial = serial;
+  _baudRate = _detectBauds();
 
   Logger.info(TAG, "Enable JSY...");
   Logger.debug(TAG, "- JSY RX Pin: %u", _pinRX);
   Logger.debug(TAG, "- JSY TX Pin: %u", _pinTX);
   Logger.debug(TAG, "- Async: %s", _async ? "true" : "false");
-  Logger.debug(TAG, "- Baud Rate: %u bps", (uint32_t)baudRate);
+  Logger.debug(TAG, "- Detected speed: %u bauds", (uint32_t)_baudRate);
 
-  const JSYBaudRate baudRates[] = {JSYBaudRate::BAUD_4800, JSYBaudRate::BAUD_9600, JSYBaudRate::BAUD_19200, JSYBaudRate::BAUD_38400};
-  bool ok = false;
-  for (int i = 0; i < 4; i++) {
-    _serial->begin((uint32_t)baudRates[i], SERIAL_8N1, _pinTX, _pinRX);
-    while (!_serial)
-      yield();
-    if (_read(4)) {
-      Logger.debug(TAG, "- Detected baud Rate: %u bps", (uint32_t)baudRates[i]);
-      if (baudRates[i] == baudRate) {
-        ok = true;
-        break;
-      }
-      _setBaudRate(baudRate);
-      _serial->end();
-      _serial->begin((uint32_t)baudRate, SERIAL_8N1, _pinTX, _pinRX);
-      while (!_serial)
-        yield();
-      if (!_read(4)) {
-        Logger.error(TAG, "Unable to read JSY data after baud rate change");
-        break;
-      }
-      ok = true;
-      break;
-    } else {
-      _serial->end();
+  if (_baudRate == JSYBaudRate::UNKNOWN) {
+    Logger.warn(TAG, "Unable to read JSY at any supported speed. Trying to fix...");
+    _serial->begin(4800, SERIAL_8N1, _pinTX, _pinRX);
+    _requestedBaudRate = JSYBaudRate::BAUD_38400;
+    if (_updateBaudRate()) {
+      _baudRate = _detectBauds();
+      Logger.debug(TAG, "- Detected speed: %u bauds", (uint32_t)_baudRate);
     }
-  }
 
-  if (!ok) {
-    Logger.error(TAG, "Unable to read JSY data with any baud rate");
-    _serial->end();
-    return;
+    if (_baudRate == JSYBaudRate::UNKNOWN) {
+      Logger.error(TAG, "Unable to read JSY at any supported speed. Disabling JSY.");
+      _serial->end();
+      return;
+    }
   }
 
   if (_async && xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, 1, nullptr, core) != pdPASS) {
@@ -86,31 +71,84 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, con
 }
 
 void Mycila::JSYClass::end() {
-  if (_disable()) {
+  if (_enabled) {
+    Logger.info(TAG, "Disable JSY...");
+    _enabled = false;
+    _baudRate = JSYBaudRate::UNKNOWN;
+    while (_state != JSYState::IDLE)
+      delay(60);
+    current1 = 0;
+    current2 = 0;
+    energy1 = 0;
+    energy2 = 0;
+    energyReturned1 = 0;
+    energyReturned2 = 0;
+    frequency = 0;
+    power1 = 0;
+    power2 = 0;
+    powerFactor1 = 0;
+    powerFactor2 = 0;
+    voltage1 = 0;
+    voltage2 = 0;
     _serial->end();
   }
-}
-
-void Mycila::JSYClass::endAndResetEnergy() {
-  _disable();
-
-  Logger.warn(TAG, "Energy Reset...");
-
-  const uint8_t data[] = {0x01, 0x10, 0x00, 0x0C, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0xF3, 0xFA};
-  _serial->write(data, 13);
-  _serial->flush();
-  _drop();
-
-  // Note: do not end() _serial: ESP needs to restart right after sending the reset command
-  Logger.debug(TAG, "Energy Reset done");
 }
 
 bool Mycila::JSYClass::read() {
   if (!_enabled)
     return false;
+
   if (_async)
     return false;
+
   return _read();
+}
+
+bool Mycila::JSYClass::resetEnergy() {
+  if (!_enabled)
+    return false;
+
+  Logger.info(TAG, "Trying to clear JSY Energy data...");
+
+  if (_async) {
+    _request = JSYState::RESET;
+    return true;
+  }
+
+  bool success = _reset();
+
+  if (success)
+    Logger.info(TAG, "Request sent to JSY!");
+  else
+    Logger.warn(TAG, "Unable to clear energy data: JSY busy");
+
+  return success;
+}
+
+bool Mycila::JSYClass::updateBaudRate(const JSYBaudRate baudRate) {
+  if (!_enabled)
+    return false;
+
+  if (baudRate == JSYBaudRate::UNKNOWN)
+    return false;
+
+  Logger.info(TAG, "Trying to update JSY baud rate to %u...", (uint32_t)baudRate);
+
+  _requestedBaudRate = baudRate;
+
+  if (_async) {
+    _request = JSYState::BAUDS;
+    return true;
+  }
+
+  bool success = _updateBaudRate();
+
+  if (success)
+    Logger.info(TAG, "Request sent to JSY!");
+  else
+    Logger.warn(TAG, "Unable to update baud rate: JSY busy");
+
+  return success;
 }
 
 void Mycila::JSYClass::toJson(const JsonObject& root) const {
@@ -140,22 +178,26 @@ bool Mycila::JSYClass::_read(uint8_t maxCount) {
 }
 
 bool __attribute__((hot)) Mycila::JSYClass::_read() {
-  if (_reading)
+  if (_state != JSYState::IDLE)
     return false;
 
-  _reading = true;
+  _state = JSYState::READ;
 
   _serial->write(JSY_READ_MSG, 8);
   _serial->flush();
 
   uint8_t buffer[SUCCESSFUL_JSY_READ_COUNT];
   size_t count = 0;
-  while (count < SUCCESSFUL_JSY_READ_COUNT && _serial->available())
+  // Serial.printf("Read: ");
+  while (count < SUCCESSFUL_JSY_READ_COUNT && _serial->available()) {
     buffer[count++] = _serial->read();
+    // Serial.printf("%02X", buffer[count - 1]);
+  }
+  // Serial.printf(" (%d)\n", count);
   count += _drop();
 
   if (count != SUCCESSFUL_JSY_READ_COUNT || buffer[0] != 0x01) {
-    _reading = false;
+    _state = JSYState::IDLE;
     return false;
   }
 
@@ -177,15 +219,41 @@ bool __attribute__((hot)) Mycila::JSYClass::_read() {
   powerFactor2 = ((buffer[51] << 24) + (buffer[52] << 16) + (buffer[53] << 8) + buffer[54]) * 0.001;
   energyReturned2 = ((buffer[55] << 24) + (buffer[56] << 16) + (buffer[57] << 8) + buffer[58]) * 0.0001;
 
-  _reading = false;
+  _state = JSYState::IDLE;
   return true;
 }
 
-bool Mycila::JSYClass::_setBaudRate(JSYBaudRate baudRate) {
-  Logger.debug(TAG, "Set JSY baud rate to %u bps...", (uint32_t)baudRate);
+bool Mycila::JSYClass::_reset() {
+  if (_state != JSYState::IDLE)
+    return false;
+
+  _state = JSYState::RESET;
+
+  const uint8_t data[] = {0x01, 0x10, 0x00, 0x0C, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0xF3, 0xFA};
+
+  for (size_t i = 0; i < 30; i++) {
+    _serial->write(data, 13);
+    _serial->flush();
+    _drop();
+    delay(60);
+  }
+
+  _state = JSYState::IDLE;
+  return true;
+}
+
+bool Mycila::JSYClass::_updateBaudRate() {
+  if (_requestedBaudRate == JSYBaudRate::UNKNOWN)
+    return false;
+
+  if (_state != JSYState::IDLE)
+    return false;
+
+  _state = JSYState::BAUDS;
 
   uint8_t data[] = {0x00, 0x10, 0x00, 0x04, 0x00, 0x01, 0x02, 0x01, 0x00, 0x00, 0x00};
-  switch (baudRate) {
+
+  switch (_requestedBaudRate) {
     case JSYBaudRate::BAUD_4800:
       data[8] = 0x05;
       data[9] = 0x6B;
@@ -211,46 +279,44 @@ bool Mycila::JSYClass::_setBaudRate(JSYBaudRate baudRate) {
       break;
   }
 
-  _serial->write(data, 11);
-  _serial->flush();
-  _drop();
+  for (size_t i = 0; i < 30; i++) {
+    _serial->write(data, 11);
+    _serial->flush();
+    _drop();
+    delay(60);
+  }
 
-  Logger.debug(TAG, "JSY baud rate updated.");
+  _requestedBaudRate = JSYBaudRate::UNKNOWN;
 
+  _state = JSYState::IDLE;
   return true;
 }
 
 size_t Mycila::JSYClass::_drop() {
   size_t count = 0;
+  // Serial.printf("Drop: ");
   while (_serial->available()) {
+    // Serial.printf("%02X", _serial->read());
     _serial->read();
     count++;
   }
+  // Serial.printf(" (%d)\n", count);
   return count;
 }
 
-bool Mycila::JSYClass::_disable() {
-  if (_enabled) {
-    Logger.info(TAG, "Disable JSY...");
-    _enabled = false;
-    while (_reading)
-      delay(100);
-    current1 = 0;
-    current2 = 0;
-    energy1 = 0;
-    energy2 = 0;
-    energyReturned1 = 0;
-    energyReturned2 = 0;
-    frequency = 0;
-    power1 = 0;
-    power2 = 0;
-    powerFactor1 = 0;
-    powerFactor2 = 0;
-    voltage1 = 0;
-    voltage2 = 0;
-    return true;
+Mycila::JSYBaudRate Mycila::JSYClass::_detectBauds() {
+  const JSYBaudRate baudRates[] = {JSYBaudRate::BAUD_38400, JSYBaudRate::BAUD_19200, JSYBaudRate::BAUD_9600, JSYBaudRate::BAUD_4800};
+  for (int i = 0; i < 4; i++) {
+    Logger.debug(TAG, "Trying to read JSY at %u bauds...", (uint32_t)baudRates[i]);
+    _serial->updateBaudRate((uint32_t)baudRates[i]);
+    while (!_serial)
+      continue;
+    _serial->flush();
+    _drop();
+    if (_read(5))
+      return baudRates[i];
   }
-  return false;
+  return JSYBaudRate::UNKNOWN;
 }
 
 void Mycila::JSYClass::_jsyTask(void* params) {
@@ -258,7 +324,18 @@ void Mycila::JSYClass::_jsyTask(void* params) {
   // Serial.println(xPortGetCoreID());
   JSYClass* jsy = reinterpret_cast<JSYClass*>(params);
   while (jsy->_enabled) {
-    jsy->_read();
+    switch (jsy->_request) {
+      case JSYState::RESET:
+        jsy->_reset();
+        break;
+      case JSYState::BAUDS:
+        jsy->_updateBaudRate();
+        break;
+      default:
+        jsy->_read();
+        break;
+    }
+    jsy->_request = JSYState::IDLE;
     if (jsy->_enabled)
       // https://esp32developer.com/programming-in-c-c/tasks/tasks-vs-co-routines
       delay(max(portTICK_PERIOD_MS, jsy->_pause));
