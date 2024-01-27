@@ -12,12 +12,11 @@ void setup() {
 }
 
 void loop() {
-  Mycila::JSY.read();
-
-  JsonDocument doc;
-  Mycila::JSY.toJson(doc.to<JsonObject>());
-  serializeJson(doc, Serial);
-  Serial.println();
-
+  if (Mycila::JSY.read()) {
+    JsonDocument doc;
+    Mycila::JSY.toJson(doc.to<JsonObject>());
+    serializeJson(doc, Serial);
+    Serial.println();
+  }
   delay(1000);
 }

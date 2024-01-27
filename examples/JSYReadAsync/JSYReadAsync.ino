@@ -9,10 +9,11 @@ void setup() {
 }
 
 void loop() {
-  JsonDocument doc;
-  Mycila::JSY.toJson(doc.to<JsonObject>());
-  serializeJson(doc, Serial);
-  Serial.println();
-
+  if (Mycila::JSY.isEnabled()) {
+    JsonDocument doc;
+    Mycila::JSY.toJson(doc.to<JsonObject>());
+    serializeJson(doc, Serial);
+    Serial.println();
+  }
   delay(5000);
 }
