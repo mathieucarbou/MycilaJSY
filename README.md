@@ -59,3 +59,17 @@ void loop() {
   // access values
 }
 ```
+
+### Energy reset
+
+```c++
+Mycila::JSY.resetEnergy();
+```
+
+### Update Baud rate (change speed)
+
+```c++
+if (Mycila::JSY.isEnabled() && Mycila::JSY.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400 && Mycila::JSY.updateBaudRate(Mycila::JSYBaudRate::BAUD_38400)) {
+  ESP.restart();
+}
+```

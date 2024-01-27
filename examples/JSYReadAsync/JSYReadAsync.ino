@@ -1,11 +1,15 @@
 #include <MycilaJSY.h>
+#include <MycilaLogger.h>
 
 void setup() {
   Serial.begin(115200);
   while (!Serial)
     continue;
 
-  Mycila::JSY.begin(17, 16, Mycila::JSYBaudRate::BAUD_38400, &Serial2, true, 60, 0);
+  Mycila::Logger.forwardTo(&Serial);
+
+  // read JSY on pins 17 (JSY RX) and 16 (JSY TX)
+  Mycila::JSY.begin(17, 16, &Serial2, true, 60, 0);
 }
 
 void loop() {
@@ -15,5 +19,5 @@ void loop() {
     serializeJson(doc, Serial);
     Serial.println();
   }
-  delay(5000);
+  delay(1000);
 }

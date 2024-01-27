@@ -26,18 +26,26 @@
 
 namespace Mycila {
   enum class JSYBaudRate {
+    UNKNOWN = 0,
     BAUD_4800 = 4800,
     BAUD_9600 = 9600,
     BAUD_19200 = 19200,
     BAUD_38400 = 38400,
   };
 
+  enum class JSYState {
+    IDLE = 0,
+    READ = 1,
+    RESET = 2,
+    BAUDS = 3,
+  };
+
   class JSYClass {
     public:
       // jsyRXPin: pin connected to the RX of the JSY, jsyTXPin: pin connected to the TX of the JSY
+      // The baud rate is automatically detected
       void begin(const uint8_t jsyRXPin,
                  const uint8_t jsyTXPin,
-                 const JSYBaudRate baudRate = JSYBaudRate::BAUD_38400,
                  HardwareSerial* serial = &Serial2,
                  const bool async = false,
                  uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS,
@@ -46,19 +54,21 @@ namespace Mycila {
 
       void end();
 
-      // ends the JSY reading and resets
-      // note that after this call, I need to restart the ESP so that the reset can be achieved.
-      // TODO: check if we can instead do a voltage cycle (LOW - HIGH) on the pins and restart Serial2
-      void endAndResetEnergy();
+      // IMPORTANT: DO NOT CALL read() in async mode: it will have no effect and will return false.
+      bool read();
 
-      gpio_num_t getRXPin() const { return _pinRX; }
-      gpio_num_t getTXPin() const { return _pinTX; }
-      bool isEnabled() const { return _enabled; }
+      // Resets energy counters. Returns true if the reset was successful, or will be done asynchronously.
+      bool resetEnergy();
+
+      // Try to change the baud rate of the JSY. Returns true if the baud rate was changed, or will be done asynchronously.
+      bool updateBaudRate(const JSYBaudRate baudRate);
 
       void toJson(const JsonObject& root) const;
 
-      // IMPORTANT: DO NOT CALL read() in async mode: it will have no effect and will return false
-      bool read();
+      gpio_num_t getRXPin() const { return _pinRX; }
+      gpio_num_t getTXPin() const { return _pinTX; }
+      JSYBaudRate getBaudRate() const { return _baudRate; }
+      bool isEnabled() const { return _enabled; }
 
     public:
       volatile float current1 = 0;        // A
@@ -78,18 +88,22 @@ namespace Mycila {
     private:
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
+      JSYBaudRate _baudRate = JSYBaudRate::UNKNOWN;
       HardwareSerial* _serial = &Serial2;
       uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS;
       volatile bool _async = false;
       volatile bool _enabled = false;
-      volatile bool _reading = false;
+      volatile JSYState _state = JSYState::IDLE;
+      volatile JSYState _request = JSYState::IDLE;
+      volatile JSYBaudRate _requestedBaudRate = JSYBaudRate::UNKNOWN;
 
     private:
-      bool _disable();
-      bool _read();
       bool _read(uint8_t maxCount);
-      bool _setBaudRate(JSYBaudRate baudRate);
+      bool _read();
+      bool _reset();
+      bool _updateBaudRate();
       size_t _drop();
+      JSYBaudRate _detectBauds();
       static void _jsyTask(void* pvParameters);
   };
 

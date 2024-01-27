@@ -14,10 +14,14 @@ void setup() {
 
 void loop() {
   if (Mycila::JSY.read()) {
+    
     JsonDocument doc;
     Mycila::JSY.toJson(doc.to<JsonObject>());
     serializeJson(doc, Serial);
     Serial.println();
+    
+    if (Mycila::JSY.energy1 > 0 || Mycila::JSY.energy2 > 0 || Mycila::JSY.energyReturned1 > 0 || Mycila::JSY.energyReturned2 > 0)
+      Mycila::JSY.resetEnergy();
   }
   delay(1000);
 }
