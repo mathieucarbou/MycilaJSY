@@ -298,8 +298,16 @@ bool Mycila::JSYClass::_updateBaudRate() {
   _drop();
   const bool success = _readRetry(JSY_DETECTION_READ_COUNT);
 
-  if (success)
+  if (success) {
+    // keep new baud rate
     _baudRate = _requestedBaudRate;
+
+  } else {
+    // rollback
+    _serial->begin((uint32_t)_baudRate, SERIAL_8N1, _pinTX, _pinRX);
+    _serial->flush();
+    _drop();
+  }
 
   _requestedBaudRate = JSYBaudRate::UNKNOWN;
   return success;
