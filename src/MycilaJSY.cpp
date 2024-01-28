@@ -114,21 +114,14 @@ bool Mycila::JSYClass::resetEnergy() {
   if (!_enabled)
     return false;
 
-  Logger.info(TAG, "Trying to clear JSY Energy data...");
+  Logger.info(TAG, "Reset JSY Energy data...");
 
   if (_async) {
     _request = JSYState::RESET;
     return true;
   }
 
-  bool success = _reset();
-
-  if (success)
-    Logger.info(TAG, "Request sent to JSY!");
-  else
-    Logger.warn(TAG, "Unable to clear energy data: JSY busy");
-
-  return success;
+  return _reset();
 }
 
 bool Mycila::JSYClass::updateBaudRate(const JSYBaudRate baudRate) {
@@ -138,7 +131,7 @@ bool Mycila::JSYClass::updateBaudRate(const JSYBaudRate baudRate) {
   if (baudRate == JSYBaudRate::UNKNOWN)
     return false;
 
-  Logger.info(TAG, "Trying to update JSY baud rate to %u...", (uint32_t)baudRate);
+  Logger.info(TAG, "Update JSY baud rate to %u...", (uint32_t)baudRate);
 
   _requestedBaudRate = baudRate;
 
@@ -147,14 +140,7 @@ bool Mycila::JSYClass::updateBaudRate(const JSYBaudRate baudRate) {
     return true;
   }
 
-  bool success = _updateBaudRate();
-
-  if (success)
-    Logger.info(TAG, "Request sent to JSY!");
-  else
-    Logger.warn(TAG, "Unable to update baud rate: JSY busy");
-
-  return success;
+  return _updateBaudRate();
 }
 
 void Mycila::JSYClass::toJson(const JsonObject& root) const {
