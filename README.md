@@ -8,9 +8,9 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
 
 - Sync mode and async mode (non-blocking)
 - Core, stack size and interval can be configured
-- Energy reset
 - Automatically detect baud rate
-- Switch bauds rate to any supported speed live at runtime without reset
+- Energy reset live at runtime
+- Switch bauds rate to any supported speed live at runtime
 - Configurable Serial (Serial2 by default)
 - Metrics:
 
@@ -73,3 +73,11 @@ if (Mycila::JSY.isEnabled() && Mycila::JSY.getBaudRate() != Mycila::JSYBaudRate:
   ESP.restart();
 }
 ```
+
+## Reference material
+
+- [JSY-MK-194T 1.pdf](JSY-MK-194T%201.pdf) (version 1)
+- [JSY-MK-194T 2.pdf](JSY-MK-194T%202.pdf) (version 2)
+- [JSY-MK-194T 3.pdf](JSY-MK-194T%203.pdf) (version 3)
+- [JSY-MK-194T.exe](JSY-MK-194T.exe) (Utility to configure the JSY with a USB-TTL adapter)
+- [ModbusMechanic](https://github.com/SciFiDryer/ModbusMechanic) (can connect and configure JSY with a USB-TTL adapter)
