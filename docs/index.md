@@ -69,8 +69,13 @@ Mycila::JSY.resetEnergy();
 ### Update Baud rate (change speed)
 
 ```c++
-if (Mycila::JSY.isEnabled() && Mycila::JSY.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400 && Mycila::JSY.updateBaudRate(Mycila::JSYBaudRate::BAUD_38400)) {
-  ESP.restart();
+if (Mycila::JSY.isEnabled() && Mycila::JSY.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
+  if (Mycila::JSY.updateBaudRate(Mycila::JSYBaudRate::BAUD_38400)) {
+    // speed changed and switched to new speed
+  } else {
+    // speed changed failed, keeping current speed
+  }
+  
 }
 ```
 
