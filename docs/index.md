@@ -9,8 +9,8 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
 - Sync mode and async mode (non-blocking)
 - Core, stack size and interval can be configured
 - Energy reset
-- Custom bauds rate
-- Automatically detect and switch bauds rate
+- Automatically detect baud rate
+- Switch bauds rate to any supported speed live at runtime without reset
 - Configurable Serial (Serial2 by default)
 - Metrics:
 

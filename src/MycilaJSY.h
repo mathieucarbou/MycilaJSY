@@ -88,17 +88,17 @@ namespace Mycila {
     private:
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
-      JSYBaudRate _baudRate = JSYBaudRate::UNKNOWN;
       HardwareSerial* _serial = &Serial2;
       uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS;
       volatile bool _async = false;
       volatile bool _enabled = false;
+      volatile JSYBaudRate _baudRate = JSYBaudRate::UNKNOWN;
       volatile JSYState _state = JSYState::IDLE;
       volatile JSYState _request = JSYState::IDLE;
       volatile JSYBaudRate _requestedBaudRate = JSYBaudRate::UNKNOWN;
 
     private:
-      bool _read(uint8_t maxCount);
+      bool _readRetry(uint8_t maxCount);
       bool _read();
       bool _reset();
       bool _updateBaudRate();
