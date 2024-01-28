@@ -1,6 +1,8 @@
 #include <MycilaJSY.h>
 #include <MycilaLogger.h>
 
+static const Mycila::JSYBaudRate target  = Mycila::JSYBaudRate::BAUD_38400;
+
 void setup() {
   Serial.begin(115200);
   while (!Serial)
@@ -14,10 +16,10 @@ void setup() {
   if (Mycila::JSY.isEnabled()) {
     Mycila::Logger.info("APP", "JSY is enabled at %d bauds", Mycila::JSY.getBaudRate());
     
-    if (Mycila::JSY.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
+    if (Mycila::JSY.getBaudRate() != target) {
       Mycila::Logger.warn("APP", "JSY baud rate wrong");
       
-      if (Mycila::JSY.updateBaudRate(Mycila::JSYBaudRate::BAUD_38400)) {
+      if (Mycila::JSY.updateBaudRate(target)) {
         Mycila::Logger.info("APP", "JSY baud rate updated");
         ESP.restart();
       

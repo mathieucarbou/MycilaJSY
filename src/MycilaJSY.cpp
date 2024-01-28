@@ -10,6 +10,10 @@
 #define TAG "JSY"
 
 #define SUCCESSFUL_JSY_READ_COUNT 61
+#define JSY_MIN_PAUSE 30
+#define JSY_DETECTION_READ_COUNT 10
+#define JSY_RESET_LOOP_COUNT 30
+#define JSY_UPDATE_BAUDS_LOOP_COUNT 40
 
 static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44, 0x18};
 
@@ -76,7 +80,7 @@ void Mycila::JSYClass::end() {
     _enabled = false;
     _baudRate = JSYBaudRate::UNKNOWN;
     while (_state != JSYState::IDLE)
-      delay(60);
+      delay(JSY_MIN_PAUSE);
     current1 = 0;
     current2 = 0;
     energy1 = 0;
@@ -172,7 +176,7 @@ bool Mycila::JSYClass::_read(uint8_t maxCount) {
   while (maxCount > 0 && !_read()) {
     if (--maxCount == 0)
       return false;
-    delay(60);
+    delay(JSY_MIN_PAUSE);
   }
   return true;
 }
@@ -231,11 +235,11 @@ bool Mycila::JSYClass::_reset() {
 
   const uint8_t data[] = {0x01, 0x10, 0x00, 0x0C, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0xF3, 0xFA};
 
-  for (size_t i = 0; i < 30; i++) {
+  for (size_t i = 0; i < JSY_RESET_LOOP_COUNT; i++) {
     _serial->write(data, 13);
     _serial->flush();
     _drop();
-    delay(60);
+    delay(JSY_MIN_PAUSE);
   }
 
   _state = JSYState::IDLE;
@@ -279,11 +283,11 @@ bool Mycila::JSYClass::_updateBaudRate() {
       break;
   }
 
-  for (size_t i = 0; i < 30; i++) {
+  for (size_t i = 0; i < JSY_UPDATE_BAUDS_LOOP_COUNT; i++) {
     _serial->write(data, 11);
     _serial->flush();
     _drop();
-    delay(60);
+    delay(JSY_MIN_PAUSE);
   }
 
   _requestedBaudRate = JSYBaudRate::UNKNOWN;
@@ -313,7 +317,7 @@ Mycila::JSYBaudRate Mycila::JSYClass::_detectBauds() {
       continue;
     _serial->flush();
     _drop();
-    if (_read(5))
+    if (_read(JSY_DETECTION_READ_COUNT))
       return baudRates[i];
   }
   return JSYBaudRate::UNKNOWN;
