@@ -20,12 +20,6 @@
   "headers": "MycilaJSY.h",
   "dependencies": [
     {
-      "owner": "bblanchon",
-      "name": "ArduinoJson",
-      "version": "*",
-      "platforms": "espressif32"
-    },
-    {
       "owner": "mathieucarbou",
       "name": "MycilaLogger",
       "version": "*",

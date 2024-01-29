@@ -4,8 +4,11 @@
  */
 #pragma once
 
-#include <ArduinoJson.h>
 #include <esp32-hal-gpio.h>
+
+#ifdef MYCILA_JSY_JSON_SUPPORT
+#include <ArduinoJson.h>
+#endif
 
 #define MYCILA_JSY_VERSION "3.0.2"
 #define MYCILA_JSY_VERSION_MAJOR 3
@@ -63,7 +66,9 @@ namespace Mycila {
       // Try to change the baud rate of the JSY. Returns true if the baud rate was changed, or will be done asynchronously.
       bool updateBaudRate(const JSYBaudRate baudRate);
 
+#ifdef MYCILA_JSY_JSON_SUPPORT
       void toJson(const JsonObject& root) const;
+#endif
 
       gpio_num_t getRXPin() const { return _pinRX; }
       gpio_num_t getTXPin() const { return _pinTX; }

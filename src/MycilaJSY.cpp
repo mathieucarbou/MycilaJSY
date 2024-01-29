@@ -143,6 +143,7 @@ bool Mycila::JSYClass::updateBaudRate(const JSYBaudRate baudRate) {
   return _updateBaudRate();
 }
 
+#ifdef MYCILA_JSY_JSON_SUPPORT
 void Mycila::JSYClass::toJson(const JsonObject& root) const {
   root["current1"] = current1;
   root["current2"] = current2;
@@ -159,6 +160,7 @@ void Mycila::JSYClass::toJson(const JsonObject& root) const {
   root["voltage1"] = voltage1;
   root["voltage2"] = voltage2;
 }
+#endif
 
 bool Mycila::JSYClass::_readRetry(uint8_t maxCount) {
   while (maxCount > 0 && !_read()) {
