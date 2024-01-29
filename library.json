@@ -18,14 +18,6 @@
     "espressif32"
   ],
   "headers": "MycilaJSY.h",
-  "dependencies": [
-    {
-      "owner": "mathieucarbou",
-      "name": "MycilaLogger",
-      "version": "*",
-      "platforms": "espressif32"
-    }
-  ],
   "export": {
     "include": [
       "examples",

@@ -3,7 +3,6 @@
  * Copyright (C) 2023-2024 Mathieu Carbou and others
  */
 #include "MycilaJSY.h"
-#include "MycilaLogger.h"
 
 #include <algorithm>
 
@@ -24,7 +23,7 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, Har
   if (GPIO_IS_VALID_OUTPUT_GPIO(jsyRXPin)) {
     _pinRX = (gpio_num_t)jsyRXPin;
   } else {
-    Logger.error(TAG, "Disable JSY: Invalid JSY RX pin: %u", _pinRX);
+    ESP_LOGE(TAG, "Disable JSY: Invalid JSY RX pin: %u", _pinRX);
     _pinRX = GPIO_NUM_NC;
     return;
   }
@@ -32,7 +31,7 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, Har
   if (GPIO_IS_VALID_GPIO(jsyTXPin)) {
     _pinTX = (gpio_num_t)jsyTXPin;
   } else {
-    Logger.error(TAG, "Disable JSY: Invalid JSY TX pin: %u", _pinTX);
+    ESP_LOGE(TAG, "Disable JSY: Invalid JSY TX pin: %u", _pinTX);
     _pinTX = GPIO_NUM_NC;
     return;
   }
@@ -45,15 +44,15 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, Har
   _pause = pause;
   _serial = serial;
 
-  Logger.info(TAG, "Enable JSY...");
-  Logger.debug(TAG, "- JSY RX Pin: %u", _pinRX);
-  Logger.debug(TAG, "- JSY TX Pin: %u", _pinTX);
-  Logger.debug(TAG, "- Async: %s", _async ? "true" : "false");
+  ESP_LOGI(TAG, "Enable JSY...");
+  ESP_LOGD(TAG, "- JSY RX Pin: %u", _pinRX);
+  ESP_LOGD(TAG, "- JSY TX Pin: %u", _pinTX);
+  ESP_LOGD(TAG, "- Async: %s", _async ? "true" : "false");
 
   _baudRate = _detectBauds();
 
   if (_baudRate == JSYBaudRate::UNKNOWN) {
-    Logger.warn(TAG, "Unable to read JSY at any supported speed. Trying to fix...");
+    ESP_LOGW(TAG, "Unable to read JSY at any supported speed. Trying to fix...");
     _serial->begin(4800, SERIAL_8N1, _pinTX, _pinRX);
     _requestedBaudRate = JSYBaudRate::BAUD_38400;
     _updateBaudRate();
@@ -61,24 +60,21 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, Har
   }
 
   if (_baudRate == JSYBaudRate::UNKNOWN) {
-    Logger.error(TAG, "Unable to read JSY at any supported speed. Disabling JSY.");
+    ESP_LOGE(TAG, "Unable to read JSY at any supported speed. Disabling JSY.");
     _serial->end();
     return;
   }
 
-  Logger.info(TAG, "Detected JSY speed: %u bauds", (uint32_t)_baudRate);
+  ESP_LOGI(TAG, "Detected JSY speed: %u bauds", (uint32_t)_baudRate);
 
-  if (_async && xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, 1, nullptr, core) != pdPASS) {
-    Logger.error(TAG, "Unable to create JSY async task");
-    return;
-  }
+  assert(!_async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, 1, nullptr, core) == pdPASS);
 
   _enabled = true;
 }
 
 void Mycila::JSYClass::end() {
   if (_enabled) {
-    Logger.info(TAG, "Disable JSY...");
+    ESP_LOGI(TAG, "Disable JSY...");
     _enabled = false;
     _baudRate = JSYBaudRate::UNKNOWN;
     while (_state != JSYState::IDLE)
@@ -114,7 +110,7 @@ bool Mycila::JSYClass::resetEnergy() {
   if (!_enabled)
     return false;
 
-  Logger.info(TAG, "Reset JSY Energy data...");
+  ESP_LOGI(TAG, "Reset JSY Energy data...");
 
   if (_async) {
     _request = JSYState::RESET;
@@ -131,7 +127,7 @@ bool Mycila::JSYClass::updateBaudRate(const JSYBaudRate baudRate) {
   if (baudRate == JSYBaudRate::UNKNOWN)
     return false;
 
-  Logger.info(TAG, "Update JSY baud rate to %u...", (uint32_t)baudRate);
+  ESP_LOGI(TAG, "Update JSY baud rate to %u...", (uint32_t)baudRate);
 
   _requestedBaudRate = baudRate;
 
@@ -316,7 +312,7 @@ size_t Mycila::JSYClass::_drop() {
 Mycila::JSYBaudRate Mycila::JSYClass::_detectBauds() {
   const JSYBaudRate baudRates[] = {JSYBaudRate::BAUD_38400, JSYBaudRate::BAUD_19200, JSYBaudRate::BAUD_9600, JSYBaudRate::BAUD_4800};
   for (int i = 0; i < 4; i++) {
-    Logger.debug(TAG, "Trying to read JSY at %u bauds...", (uint32_t)baudRates[i]);
+    ESP_LOGD(TAG, "Trying to read JSY at %u bauds...", (uint32_t)baudRates[i]);
     _serial->begin((uint32_t)baudRates[i], SERIAL_8N1, _pinTX, _pinRX);
     _serial->flush();
     _drop();

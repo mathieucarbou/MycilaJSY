@@ -4,6 +4,7 @@
  */
 #pragma once
 
+#include <HardwareSerial.h>
 #include <esp32-hal-gpio.h>
 
 #ifdef MYCILA_JSY_JSON_SUPPORT

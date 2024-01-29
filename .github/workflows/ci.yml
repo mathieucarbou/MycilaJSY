@@ -70,9 +70,6 @@ jobs:
       - name: Install ArduinoJson
         run: arduino-cli lib install ArduinoJson
 
-      - name: Install MycilaLogger
-        run: arduino-cli lib install MycilaLogger
-
       - name: Build JSYRead
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/JSYRead/JSYRead.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
 

@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <HardwareSerial.h>
 
 // Pin: RX (ESP32) -> TX (JSY)

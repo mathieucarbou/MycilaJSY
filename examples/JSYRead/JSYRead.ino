@@ -1,12 +1,11 @@
+#include <Arduino.h>
+#include <ArduinoJson.h>
 #include <MycilaJSY.h>
-#include <MycilaLogger.h>
 
 void setup() {
   Serial.begin(115200);
   while (!Serial)
     continue;
-
-  Mycila::Logger.forwardTo(&Serial);
 
   // read JSY on pins 17 (JSY RX) and 16 (JSY TX)
   Mycila::JSY.begin(17, 16);
