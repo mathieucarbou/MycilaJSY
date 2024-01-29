@@ -140,7 +140,7 @@ jobs:
         run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/EnergyReset/EnergyReset.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }}
 
       - name: Build EnergyResetAsync
-        run: vplatformio ci "examples/EnergyResetAsync/EnergyResetAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/EnergyResetAsync/EnergyResetAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }}
 
       - name: Build SetSpeed
         run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/SetSpeed/SetSpeed.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }}
