@@ -83,7 +83,7 @@ namespace Mycila {
       volatile float energy2 = 0;         // kWh
       volatile float energyReturned1 = 0; // kWh
       volatile float energyReturned2 = 0; // kWh
-      volatile uint8_t frequency = 0;     // Hz
+      volatile float frequency = 0;       // Hz
       volatile float power1 = 0;          // W
       volatile float power2 = 0;          // W
       volatile float powerFactor1 = 0;
