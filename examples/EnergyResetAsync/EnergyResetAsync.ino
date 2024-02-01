@@ -8,7 +8,7 @@ void setup() {
     continue;
 
   // read JSY on pins 17 (JSY RX) and 16 (JSY TX)
-  Mycila::JSY.begin(17, 16, &Serial2, true, 60, 0);
+  Mycila::JSY.begin(17, 16, &MYCILA_JSY_SERIAL, true, 60, 0);
 }
 
 void loop() {

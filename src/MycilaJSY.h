@@ -16,6 +16,10 @@
 #define MYCILA_JSY_VERSION_MINOR 2
 #define MYCILA_JSY_VERSION_REVISION 1
 
+#ifndef MYCILA_JSY_SERIAL
+#define MYCILA_JSY_SERIAL Serial2
+#endif
+
 #ifndef MYCILA_JSY_ASYNC_CORE
 #define MYCILA_JSY_ASYNC_CORE 0
 #endif
@@ -50,7 +54,7 @@ namespace Mycila {
       // The baud rate is automatically detected
       void begin(const uint8_t jsyRXPin,
                  const uint8_t jsyTXPin,
-                 HardwareSerial* serial = &Serial2,
+                 HardwareSerial* serial = &MYCILA_JSY_SERIAL,
                  const bool async = false,
                  uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS,
                  uint8_t core = MYCILA_JSY_ASYNC_CORE,
@@ -94,7 +98,7 @@ namespace Mycila {
     private:
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
-      HardwareSerial* _serial = &Serial2;
+      HardwareSerial* _serial = &MYCILA_JSY_SERIAL;
       uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS;
       volatile bool _async = false;
       volatile bool _enabled = false;

@@ -52,7 +52,7 @@ void loop() {
 
 ```c++
 void setup() {
-  Mycila::JSY.begin(17, 16, Mycila::JSYBaudRate::BAUD_38400, &Serial2, true, 60, 0);
+  Mycila::JSY.begin(17, 16, Mycila::JSYBaudRate::BAUD_38400, &MYCILA_JSY_SERIAL, true, 60, 0);
 }
 
 void loop() {
