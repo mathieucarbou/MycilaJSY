@@ -36,7 +36,7 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, Har
     return;
   }
 
-  _serial->begin((uint32_t)JSYBaudRate::BAUD_38400, SERIAL_8N1, _pinTX, _pinRX);
+  _serial->begin((uint32_t)JSYBaudRate::BAUD_38400, SERIAL_8N1, _pinTX, _pinRX, false, 1000);
   while (!_serial)
     delay(max(portTICK_PERIOD_MS, _pause));
 
@@ -53,7 +53,7 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, Har
 
   if (_baudRate == JSYBaudRate::UNKNOWN) {
     ESP_LOGW(TAG, "Unable to read JSY at any supported speed. Trying to fix...");
-    _serial->begin(4800, SERIAL_8N1, _pinTX, _pinRX);
+    _serial->begin(4800, SERIAL_8N1, _pinTX, _pinRX, false, 1000);
     _requestedBaudRate = JSYBaudRate::BAUD_38400;
     _updateBaudRate();
     _baudRate = _detectBauds();
@@ -277,7 +277,7 @@ bool Mycila::JSYClass::_updateBaudRate() {
   }
 
   _state = JSYState::IDLE;
-  _serial->begin((uint32_t)_requestedBaudRate, SERIAL_8N1, _pinTX, _pinRX);
+  _serial->begin((uint32_t)_requestedBaudRate, SERIAL_8N1, _pinTX, _pinRX, false, 1000);
   _serial->flush();
   _drop();
   const bool success = _readRetry(JSY_DETECTION_READ_COUNT);
@@ -288,7 +288,7 @@ bool Mycila::JSYClass::_updateBaudRate() {
 
   } else {
     // rollback
-    _serial->begin((uint32_t)_baudRate, SERIAL_8N1, _pinTX, _pinRX);
+    _serial->begin((uint32_t)_baudRate, SERIAL_8N1, _pinTX, _pinRX, false, 1000);
     _serial->flush();
     _drop();
   }
@@ -313,7 +313,7 @@ Mycila::JSYBaudRate Mycila::JSYClass::_detectBauds() {
   const JSYBaudRate baudRates[] = {JSYBaudRate::BAUD_38400, JSYBaudRate::BAUD_19200, JSYBaudRate::BAUD_9600, JSYBaudRate::BAUD_4800};
   for (int i = 0; i < 4; i++) {
     ESP_LOGD(TAG, "Trying to read JSY at %u bauds...", (uint32_t)baudRates[i]);
-    _serial->begin((uint32_t)baudRates[i], SERIAL_8N1, _pinTX, _pinRX);
+    _serial->begin((uint32_t)baudRates[i], SERIAL_8N1, _pinTX, _pinRX, false, 1000);
     _serial->flush();
     _drop();
     if (_readRetry(JSY_DETECTION_READ_COUNT))
