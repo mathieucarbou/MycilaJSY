@@ -286,7 +286,7 @@ bool Mycila::JSYClass::_updateBaudRate() {
     // keep new baud rate
     _baudRate = _requestedBaudRate;
 
-  } else {
+  } else if (_baudRate != JSYBaudRate::UNKNOWN) {
     // rollback
     _serial->begin((uint32_t)_baudRate, SERIAL_8N1, _pinTX, _pinRX, false, 1000);
     _serial->flush();
