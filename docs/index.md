@@ -35,12 +35,14 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
 ### Blocking mode
 
 ```c++
+Mycila::JSY jsy;
+
 void setup() {
-  Mycila::JSY.begin(17, 16);
+  jsy.begin(17, 16);
 }
 
 void loop() {
-  Mycila::JSY.read();
+  jsy.read();
 
   // access values
 
@@ -51,8 +53,10 @@ void loop() {
 ### Non-Blocking mode (async)
 
 ```c++
+Mycila::JSY jsy;
+
 void setup() {
-  Mycila::JSY.begin(17, 16, Mycila::JSYBaudRate::BAUD_38400, &MYCILA_JSY_SERIAL, true, 60, 0);
+  jsy.begin(17, 16, Mycila::JSYBaudRate::BAUD_38400, &MYCILA_JSY_SERIAL, true, 60, 0);
 }
 
 void loop() {
@@ -63,14 +67,14 @@ void loop() {
 ### Energy reset
 
 ```c++
-Mycila::JSY.resetEnergy();
+jsy.resetEnergy();
 ```
 
 ### Update Baud rate (change speed)
 
 ```c++
-if (Mycila::JSY.isEnabled() && Mycila::JSY.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
-  if (Mycila::JSY.updateBaudRate(Mycila::JSYBaudRate::BAUD_38400)) {
+if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
+  if (jsy.updateBaudRate(Mycila::JSYBaudRate::BAUD_38400)) {
     // speed changed and switched to new speed
   } else {
     // speed changed failed, keeping current speed

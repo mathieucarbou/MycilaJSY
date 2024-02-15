@@ -2,19 +2,21 @@
 #include <ArduinoJson.h>
 #include <MycilaJSY.h>
 
+Mycila::JSY jsy;
+
 void setup() {
   Serial.begin(115200);
   while (!Serial)
     continue;
 
   // read JSY on pins 17 (JSY RX) and 16 (JSY TX)
-  Mycila::JSY.begin(17, 16, &MYCILA_JSY_SERIAL, true, 60, 0);
+  jsy.begin(17, 16, &MYCILA_JSY_SERIAL, true, 60, 0);
 }
 
 void loop() {
-  if (Mycila::JSY.isEnabled()) {
+  if (jsy.isEnabled()) {
     JsonDocument doc;
-    Mycila::JSY.toJson(doc.to<JsonObject>());
+    jsy.toJson(doc.to<JsonObject>());
     serializeJson(doc, Serial);
     Serial.println();
   }

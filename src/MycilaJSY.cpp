@@ -16,7 +16,7 @@
 
 static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44, 0x18};
 
-void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, HardwareSerial* serial, const bool async, uint32_t pause, uint8_t core, uint32_t stackSize) {
+void Mycila::JSY::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, HardwareSerial* serial, const bool async, uint32_t pause, uint8_t core, uint32_t stackSize) {
   if (_enabled)
     return;
 
@@ -72,7 +72,7 @@ void Mycila::JSYClass::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, Har
   _enabled = true;
 }
 
-void Mycila::JSYClass::end() {
+void Mycila::JSY::end() {
   if (_enabled) {
     ESP_LOGI(TAG, "Disable JSY...");
     _enabled = false;
@@ -96,7 +96,7 @@ void Mycila::JSYClass::end() {
   }
 }
 
-bool Mycila::JSYClass::read() {
+bool Mycila::JSY::read() {
   if (!_enabled)
     return false;
 
@@ -106,7 +106,7 @@ bool Mycila::JSYClass::read() {
   return _read();
 }
 
-bool Mycila::JSYClass::resetEnergy() {
+bool Mycila::JSY::resetEnergy() {
   if (!_enabled)
     return false;
 
@@ -120,7 +120,7 @@ bool Mycila::JSYClass::resetEnergy() {
   return _reset();
 }
 
-bool Mycila::JSYClass::updateBaudRate(const JSYBaudRate baudRate) {
+bool Mycila::JSY::updateBaudRate(const JSYBaudRate baudRate) {
   if (!_enabled)
     return false;
 
@@ -140,7 +140,7 @@ bool Mycila::JSYClass::updateBaudRate(const JSYBaudRate baudRate) {
 }
 
 #ifdef MYCILA_JSY_JSON_SUPPORT
-void Mycila::JSYClass::toJson(const JsonObject& root) const {
+void Mycila::JSY::toJson(const JsonObject& root) const {
   root["current1"] = current1;
   root["current2"] = current2;
   root["enabled"] = _enabled;
@@ -158,7 +158,7 @@ void Mycila::JSYClass::toJson(const JsonObject& root) const {
 }
 #endif
 
-bool Mycila::JSYClass::_readRetry(uint8_t maxCount) {
+bool Mycila::JSY::_readRetry(uint8_t maxCount) {
   while (maxCount > 0 && !_read()) {
     if (--maxCount == 0)
       return false;
@@ -167,7 +167,7 @@ bool Mycila::JSYClass::_readRetry(uint8_t maxCount) {
   return true;
 }
 
-bool __attribute__((hot)) Mycila::JSYClass::_read() {
+bool __attribute__((hot)) Mycila::JSY::_read() {
   if (_state != JSYState::IDLE)
     return false;
 
@@ -213,7 +213,7 @@ bool __attribute__((hot)) Mycila::JSYClass::_read() {
   return true;
 }
 
-bool Mycila::JSYClass::_reset() {
+bool Mycila::JSY::_reset() {
   if (_state != JSYState::IDLE)
     return false;
 
@@ -232,7 +232,7 @@ bool Mycila::JSYClass::_reset() {
   return true;
 }
 
-bool Mycila::JSYClass::_updateBaudRate() {
+bool Mycila::JSY::_updateBaudRate() {
   if (_requestedBaudRate == JSYBaudRate::UNKNOWN)
     return false;
 
@@ -297,7 +297,7 @@ bool Mycila::JSYClass::_updateBaudRate() {
   return success;
 }
 
-size_t Mycila::JSYClass::_drop() {
+size_t Mycila::JSY::_drop() {
   size_t count = 0;
   // Serial.printf("Drop: ");
   while (_serial->available()) {
@@ -309,7 +309,7 @@ size_t Mycila::JSYClass::_drop() {
   return count;
 }
 
-Mycila::JSYBaudRate Mycila::JSYClass::_detectBauds() {
+Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {
   const JSYBaudRate baudRates[] = {JSYBaudRate::BAUD_38400, JSYBaudRate::BAUD_19200, JSYBaudRate::BAUD_9600, JSYBaudRate::BAUD_4800};
   for (int i = 0; i < 4; i++) {
     ESP_LOGD(TAG, "Trying to read JSY at %u bauds...", (uint32_t)baudRates[i]);
@@ -322,10 +322,10 @@ Mycila::JSYBaudRate Mycila::JSYClass::_detectBauds() {
   return JSYBaudRate::UNKNOWN;
 }
 
-void Mycila::JSYClass::_jsyTask(void* params) {
+void Mycila::JSY::_jsyTask(void* params) {
   // Serial.println("JSY async task started");
   // Serial.println(xPortGetCoreID());
-  JSYClass* jsy = reinterpret_cast<JSYClass*>(params);
+  JSY* jsy = reinterpret_cast<JSY*>(params);
   while (jsy->_enabled) {
     switch (jsy->_request) {
       case JSYState::RESET:
@@ -345,7 +345,3 @@ void Mycila::JSYClass::_jsyTask(void* params) {
   }
   vTaskDelete(NULL);
 }
-
-namespace Mycila {
-  JSYClass JSY;
-} // namespace Mycila

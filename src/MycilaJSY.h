@@ -48,8 +48,10 @@ namespace Mycila {
     BAUDS = 3,
   };
 
-  class JSYClass {
+  class JSY {
     public:
+      ~JSY() { end(); }
+
       // jsyRXPin: pin connected to the RX of the JSY, jsyTXPin: pin connected to the TX of the JSY
       // The baud rate is automatically detected
       void begin(const uint8_t jsyRXPin,
@@ -116,6 +118,4 @@ namespace Mycila {
       JSYBaudRate _detectBauds();
       static void _jsyTask(void* pvParameters);
   };
-
-  extern JSYClass JSY;
 } // namespace Mycila
