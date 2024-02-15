@@ -20,7 +20,7 @@ void loop() {
     serializeJson(doc, Serial);
     Serial.println();
 
-    if (jsy.energy1 > 0 || jsy.energy2 > 0 || jsy.energyReturned1 > 0 || jsy.energyReturned2 > 0)
+    if (jsy.getEnergy1() > 0 || jsy.getEnergy2() > 0 || jsy.getEnergyReturned1() > 0 || jsy.getEnergyReturned2() > 0)
       jsy.resetEnergy();
   }
   delay(1000);

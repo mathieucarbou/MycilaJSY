@@ -82,7 +82,21 @@ namespace Mycila {
       JSYBaudRate getBaudRate() const { return _baudRate; }
       bool isEnabled() const { return _enabled; }
 
-    public:
+      float getCurrent1() const { return current1; }
+      float getCurrent2() const { return current2; }
+      float getEnergy1() const { return energy1; }
+      float getEnergy2() const { return energy2; }
+      float getEnergyReturned1() const { return energyReturned1; }
+      float getEnergyReturned2() const { return energyReturned2; }
+      float getFrequency() const { return frequency; }
+      float getPower1() const { return power1; }
+      float getPower2() const { return power2; }
+      float getPowerFactor1() const { return powerFactor1; }
+      float getPowerFactor2() const { return powerFactor2; }
+      float getVoltage1() const { return voltage1; }
+      float getVoltage2() const { return voltage2; }
+
+    private:
       volatile float current1 = 0;        // A
       volatile float current2 = 0;        // A
       volatile float energy1 = 0;         // kWh
