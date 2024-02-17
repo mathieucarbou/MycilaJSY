@@ -16,7 +16,7 @@
 
 static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44, 0x18};
 
-void Mycila::JSY::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, HardwareSerial* serial, const bool async, uint32_t pause, uint8_t core, uint32_t stackSize) {
+void Mycila::JSY::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, HardwareSerial* serial, uint32_t pause, const bool async, uint8_t core, uint32_t stackSize) {
   if (_enabled)
     return;
 
@@ -38,7 +38,7 @@ void Mycila::JSY::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, Hardware
 
   _serial->begin((uint32_t)JSYBaudRate::BAUD_38400, SERIAL_8N1, _pinTX, _pinRX, false, 1000);
   while (!_serial)
-    delay(max(portTICK_PERIOD_MS, _pause));
+    delay(portTICK_PERIOD_MS);
 
   _async = async;
   _pause = pause;
@@ -94,6 +94,26 @@ void Mycila::JSY::end() {
     voltage2 = 0;
     _serial->end();
   }
+}
+
+void Mycila::JSY::loop() {
+  if (!_enabled)
+    return;
+  switch (_request) {
+    case JSYState::RESET:
+      _reset();
+      break;
+    case JSYState::BAUDS:
+      _updateBaudRate();
+      break;
+    default:
+      if (millis() - _lastRead >= _pause) {
+        _read();
+        _lastRead = millis();
+      }
+      break;
+  }
+  _request = JSYState::IDLE;
 }
 
 bool Mycila::JSY::read() {
@@ -155,6 +175,7 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
   root["power2"] = power2;
   root["voltage1"] = voltage1;
   root["voltage2"] = voltage2;
+  root["time"] = _lastReadSuccess;
 }
 #endif
 
@@ -210,6 +231,7 @@ bool __attribute__((hot)) Mycila::JSY::_read() {
   energyReturned2 = ((buffer[55] << 24) + (buffer[56] << 16) + (buffer[57] << 8) + buffer[58]) * 0.0001;
 
   _state = JSYState::IDLE;
+  _lastReadSuccess = millis();
   return true;
 }
 
@@ -327,21 +349,8 @@ void Mycila::JSY::_jsyTask(void* params) {
   // Serial.println(xPortGetCoreID());
   JSY* jsy = reinterpret_cast<JSY*>(params);
   while (jsy->_enabled) {
-    switch (jsy->_request) {
-      case JSYState::RESET:
-        jsy->_reset();
-        break;
-      case JSYState::BAUDS:
-        jsy->_updateBaudRate();
-        break;
-      default:
-        jsy->_read();
-        break;
-    }
-    jsy->_request = JSYState::IDLE;
-    if (jsy->_enabled)
-      // https://esp32developer.com/programming-in-c-c/tasks/tasks-vs-co-routines
-      delay(max(portTICK_PERIOD_MS, jsy->_pause));
+    jsy->loop();
+    delay(portTICK_PERIOD_MS);
   }
   vTaskDelete(NULL);
 }

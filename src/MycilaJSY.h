@@ -57,12 +57,15 @@ namespace Mycila {
       void begin(const uint8_t jsyRXPin,
                  const uint8_t jsyTXPin,
                  HardwareSerial* serial = &MYCILA_JSY_SERIAL,
-                 const bool async = false,
                  uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS,
+                 const bool async = false,
                  uint8_t core = MYCILA_JSY_ASYNC_CORE,
                  uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE);
 
       void end();
+
+      // IMPORTANT: DO NOT CALL loop() in async mode
+      void loop();
 
       // IMPORTANT: DO NOT CALL read() in async mode: it will have no effect and will return false.
       bool read();
@@ -96,6 +99,9 @@ namespace Mycila {
       float getVoltage1() const { return voltage1; }
       float getVoltage2() const { return voltage2; }
 
+      // get the uptime in milliseconds of the last successful read
+      uint32_t getTime() const { return _lastReadSuccess; }
+
     private:
       volatile float current1 = 0;        // A
       volatile float current2 = 0;        // A
@@ -116,6 +122,8 @@ namespace Mycila {
       gpio_num_t _pinTX = GPIO_NUM_NC;
       HardwareSerial* _serial = &MYCILA_JSY_SERIAL;
       uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS;
+      uint32_t _lastRead = 0;
+      uint32_t _lastReadSuccess = 0;
       volatile bool _async = false;
       volatile bool _enabled = false;
       volatile JSYBaudRate _baudRate = JSYBaudRate::UNKNOWN;
