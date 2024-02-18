@@ -15,22 +15,30 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
 - Metrics:
 
 ```c++
+    // tore or first clamp
     volatile float current1 = 0; // A
-    volatile float current2 = 0; // A
     volatile float energy1 = 0; // kWh
-    volatile float energy2 = 0; // kWh
     volatile float energyReturned1 = 0; // kWh
-    volatile float energyReturned2 = 0; // kWh
-    volatile uint8_t frequency = 0; // Hz
     volatile float power1 = 0; // W
-    volatile float power2 = 0; // W
     volatile float powerFactor1 = 0;
-    volatile float powerFactor2 = 0;
     volatile float voltage1 = 0; // V
+
+    // clamp (or second clamp)
+    volatile float current2 = 0; // A
+    volatile float energy2 = 0; // kWh
+    volatile float energyReturned2 = 0; // kWh
+    volatile float power2 = 0; // W
+    volatile float powerFactor2 = 0;
     volatile float voltage2 = 0; // V
+
+    volatile uint8_t frequency = 0; // Hz
 ```
 
 ## Usage
+
+Have a look at all the examples in the [examples](examples) folder.
+
+There is a getter for each metric.
 
 ### Blocking mode
 
