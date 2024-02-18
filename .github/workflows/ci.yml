@@ -70,11 +70,11 @@ jobs:
       - name: Install ArduinoJson
         run: arduino-cli lib install ArduinoJson
 
-      - name: Build JSYRead
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/JSYRead/JSYRead.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+      - name: Build Read
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/Read/Read.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
 
-      - name: Build JSYReadAsync
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/JSYReadAsync/JSYReadAsync.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+      - name: Build ReadAsync
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/ReadAsync/ReadAsync.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
 
       - name: Build EnergyReset
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/EnergyReset/EnergyReset.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
@@ -127,11 +127,11 @@ jobs:
       - name: Install platform "${{ matrix.platform }}"
         run: platformio platform install ${{ matrix.platform }}
 
-      - name: Build JSYRead
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/JSYRead/JSYRead.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }}
+      - name: Build Read
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/Read/Read.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }}
 
-      - name: Build JSYReadAsync
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/JSYReadAsync/JSYReadAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }}
+      - name: Build ReadAsync
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/ReadAsync/ReadAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }}
 
       - name: Build EnergyReset
         run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/EnergyReset/EnergyReset.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }}
