@@ -64,7 +64,7 @@ void loop() {
 Mycila::JSY jsy;
 
 void setup() {
-  jsy.begin(17, 16, Mycila::JSYBaudRate::BAUD_38400, &MYCILA_JSY_SERIAL, true, 60, 0);
+  jsy.begin(17, 16, Mycila::JSYBaudRate::BAUD_38400, &MYCILA_JSY_SERIAL, 60, true, 0);
 }
 
 void loop() {
