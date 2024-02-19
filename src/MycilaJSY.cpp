@@ -4,8 +4,6 @@
  */
 #include "MycilaJSY.h"
 
-#include <algorithm>
-
 #define TAG "JSY"
 
 #define SUCCESSFUL_JSY_READ_COUNT 61
