@@ -10,7 +10,7 @@ void setup() {
     continue;
 
   // read JSY on pins 17 (JSY RX) and 16 (JSY TX)
-  jsy.begin(17, 16);
+  jsy.begin(&Serial2, 17, 16);
 }
 
 void loop() {

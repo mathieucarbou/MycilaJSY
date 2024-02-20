@@ -5,7 +5,6 @@
 #pragma once
 
 #include <HardwareSerial.h>
-#include <esp32-hal-gpio.h>
 
 #ifdef MYCILA_JSY_JSON_SUPPORT
 #include <ArduinoJson.h>
@@ -15,10 +14,6 @@
 #define MYCILA_JSY_VERSION_MAJOR 4
 #define MYCILA_JSY_VERSION_MINOR 1
 #define MYCILA_JSY_VERSION_REVISION 1
-
-#ifndef MYCILA_JSY_SERIAL
-#define MYCILA_JSY_SERIAL Serial2
-#endif
 
 #ifndef MYCILA_JSY_ASYNC_CORE
 #define MYCILA_JSY_ASYNC_CORE 0
@@ -54,9 +49,9 @@ namespace Mycila {
 
       // jsyRXPin: pin connected to the RX of the JSY, jsyTXPin: pin connected to the TX of the JSY
       // The baud rate is automatically detected
-      void begin(const uint8_t jsyRXPin,
+      void begin(HardwareSerial* serial,
+                 const uint8_t jsyRXPin,
                  const uint8_t jsyTXPin,
-                 HardwareSerial* serial = &MYCILA_JSY_SERIAL,
                  const bool async = false,
                  uint8_t core = MYCILA_JSY_ASYNC_CORE,
                  uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE);
@@ -119,7 +114,7 @@ namespace Mycila {
     private:
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
-      HardwareSerial* _serial = &MYCILA_JSY_SERIAL;
+      HardwareSerial* _serial = nullptr;
       uint32_t _lastReadSuccess = 0;
       volatile bool _async = false;
       volatile bool _enabled = false;

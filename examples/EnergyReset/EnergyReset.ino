@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <HardwareSerial.h>
 #include <MycilaJSY.h>
 
 Mycila::JSY jsy;
@@ -10,17 +11,17 @@ void setup() {
     continue;
 
   // read JSY on pins 17 (JSY RX) and 16 (JSY TX)
-  jsy.begin(17, 16);
+  jsy.begin(&Serial2, 17, 16);
 }
 
 void loop() {
   if (jsy.read()) {
-    
+
     JsonDocument doc;
     jsy.toJson(doc.to<JsonObject>());
     serializeJson(doc, Serial);
     Serial.println();
-    
+
     if (jsy.getEnergy1() > 0 || jsy.getEnergy2() > 0 || jsy.getEnergyReturned1() > 0 || jsy.getEnergyReturned2() > 0)
       jsy.resetEnergy();
   }

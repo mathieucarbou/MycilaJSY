@@ -14,9 +14,14 @@
 
 static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44, 0x18};
 
-void Mycila::JSY::begin(const uint8_t jsyRXPin, const uint8_t jsyTXPin, HardwareSerial* serial, const bool async, uint8_t core, uint32_t stackSize) {
+void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t jsyRXPin, const uint8_t jsyTXPin, const bool async, uint8_t core, uint32_t stackSize) {
   if (_enabled)
     return;
+
+  if (serial == nullptr) {
+    ESP_LOGE(TAG, "Disable JSY: Invalid serial");
+    return;
+  }
 
   if (GPIO_IS_VALID_OUTPUT_GPIO(jsyRXPin)) {
     _pinRX = (gpio_num_t)jsyRXPin;

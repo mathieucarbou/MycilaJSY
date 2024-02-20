@@ -46,7 +46,7 @@ There is a getter for each metric.
 Mycila::JSY jsy;
 
 void setup() {
-  jsy.begin(17, 16);
+  jsy.begin(&Serial2, 17, 16);
 }
 
 void loop() {
@@ -64,7 +64,7 @@ void loop() {
 Mycila::JSY jsy;
 
 void setup() {
-  jsy.begin(17, 16, Mycila::JSYBaudRate::BAUD_38400, &MYCILA_JSY_SERIAL, 60, true, 0);
+  jsy.begin(&Serial2, 17, 16, true, 0);
 }
 
 void loop() {
