@@ -67,8 +67,10 @@ void Mycila::JSY::end() {
     ESP_LOGI(TAG, "Disable JSY...");
     _enabled = false;
     _baudRate = JSYBaudRate::UNKNOWN;
-    while (_state != JSYState::IDLE)
-      yield();
+    while (_state != JSYState::IDLE) {
+      // JSY takes at least 160ms to finish a read
+      delay(50);
+    }
     current1 = 0;
     current2 = 0;
     energy1 = 0;
@@ -180,7 +182,8 @@ void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
 bool Mycila::JSY::_timedout() {
   const uint32_t now = millis();
   while (!_serial->available() && millis() - now < MYCILA_JSY_READ_TIMEOUT_MS) {
-    yield();
+    // JSY takes at least 160ms to answer
+    delay(20);
   }
   if (!_serial->available()) {
     ESP_LOGD(TAG, "Read timeout");
