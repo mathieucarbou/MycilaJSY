@@ -76,7 +76,7 @@ void Mycila::JSY::end() {
     _enabled = false;
     _baudRate = JSYBaudRate::UNKNOWN;
     while (_state != JSYState::IDLE)
-      delay(portTICK_PERIOD_MS);
+      delay(JSY_MIN_PAUSE);
     current1 = 0;
     current2 = 0;
     energy1 = 0;
@@ -181,7 +181,7 @@ bool Mycila::JSY::_readRetry(uint8_t maxCount) {
   while (maxCount > 0 && !_read()) {
     if (--maxCount == 0)
       return false;
-    delay(portTICK_PERIOD_MS);
+    delay(JSY_MIN_PAUSE);
   }
   return true;
 }
