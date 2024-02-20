@@ -28,8 +28,8 @@
 #define MYCILA_JSY_ASYNC_STACK_SIZE 256 * 5
 #endif
 
-#ifndef MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS
-#define MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS 60
+#ifndef MYCILA_JSY_READ_TIMEOUT_MS
+#define MYCILA_JSY_READ_TIMEOUT_MS 200
 #endif
 
 namespace Mycila {
@@ -57,7 +57,6 @@ namespace Mycila {
       void begin(const uint8_t jsyRXPin,
                  const uint8_t jsyTXPin,
                  HardwareSerial* serial = &MYCILA_JSY_SERIAL,
-                 uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS,
                  const bool async = false,
                  uint8_t core = MYCILA_JSY_ASYNC_CORE,
                  uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE);
@@ -121,8 +120,6 @@ namespace Mycila {
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
       HardwareSerial* _serial = &MYCILA_JSY_SERIAL;
-      uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_INTERVAL_MS;
-      uint32_t _lastRead = 0;
       uint32_t _lastReadSuccess = 0;
       volatile bool _async = false;
       volatile bool _enabled = false;
@@ -132,7 +129,8 @@ namespace Mycila {
       volatile JSYBaudRate _requestedBaudRate = JSYBaudRate::UNKNOWN;
 
     private:
-      bool _readRetry(uint8_t maxCount);
+      void _openSerial(JSYBaudRate baudRate);
+      bool _timedout();
       bool _read();
       bool _reset();
       bool _updateBaudRate();

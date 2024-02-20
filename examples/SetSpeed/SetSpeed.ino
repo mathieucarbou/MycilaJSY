@@ -10,7 +10,7 @@ void setup() {
     continue;
 
   // read JSY on pins 17 (JSY RX) and 16 (JSY TX)
-  jsy.begin(17, 18);
+  jsy.begin(17, 16);
 
   if (jsy.isEnabled()) {
     Mycila::JSYBaudRate target = jsy.getBaudRate() == Mycila::JSYBaudRate::BAUD_38400 ? Mycila::JSYBaudRate::BAUD_4800 : Mycila::JSYBaudRate::BAUD_38400;
