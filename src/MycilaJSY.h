@@ -6,6 +6,8 @@
 
 #include <HardwareSerial.h>
 
+#include <mutex>
+
 #ifdef MYCILA_JSY_JSON_SUPPORT
 #include <ArduinoJson.h>
 #endif
@@ -20,7 +22,7 @@
 #endif
 
 #ifndef MYCILA_JSY_ASYNC_STACK_SIZE
-#define MYCILA_JSY_ASYNC_STACK_SIZE 256 * 5
+#define MYCILA_JSY_ASYNC_STACK_SIZE 256 * 6
 #endif
 
 #ifndef MYCILA_JSY_READ_TIMEOUT_MS
@@ -34,13 +36,6 @@ namespace Mycila {
     BAUD_9600 = 9600,
     BAUD_19200 = 19200,
     BAUD_38400 = 38400,
-  };
-
-  enum class JSYState {
-    IDLE = 0,
-    READ = 1,
-    RESET = 2,
-    BAUDS = 3,
   };
 
   class JSY {
@@ -58,9 +53,6 @@ namespace Mycila {
 
       void end();
 
-      // IMPORTANT: DO NOT CALL loop() in async mode
-      void loop();
-
       // IMPORTANT: DO NOT CALL read() in async mode: it will have no effect and will return false.
       bool read();
 
@@ -68,7 +60,7 @@ namespace Mycila {
       bool resetEnergy();
 
       // Try to change the baud rate of the JSY. Returns true if the baud rate was changed, or will be done asynchronously.
-      bool updateBaudRate(const JSYBaudRate baudRate);
+      bool setBaudRate(const JSYBaudRate baudRate);
 
 #ifdef MYCILA_JSY_JSON_SUPPORT
       void toJson(const JsonObject& root) const;
@@ -116,20 +108,16 @@ namespace Mycila {
       gpio_num_t _pinTX = GPIO_NUM_NC;
       HardwareSerial* _serial = nullptr;
       uint32_t _lastReadSuccess = 0;
-      volatile bool _async = false;
+      TaskHandle_t _taskHandle;
       volatile bool _enabled = false;
       volatile JSYBaudRate _baudRate = JSYBaudRate::UNKNOWN;
-      volatile JSYState _state = JSYState::IDLE;
-      volatile JSYState _request = JSYState::IDLE;
-      volatile JSYBaudRate _requestedBaudRate = JSYBaudRate::UNKNOWN;
+      std::mutex _mutex;
 
     private:
       void _openSerial(JSYBaudRate baudRate);
-      bool _timedout();
-      bool _read();
-      bool _reset();
-      bool _updateBaudRate();
+      size_t _timedRead(uint8_t* buffer, size_t length);
       size_t _drop();
+      bool _canRead();
       JSYBaudRate _detectBauds();
       static void _jsyTask(void* pvParameters);
   };

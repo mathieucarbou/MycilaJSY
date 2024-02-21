@@ -13,10 +13,13 @@ void setup() {
   jsy.begin(&Serial2, 17, 16);
 
   if (jsy.isEnabled()) {
-    Mycila::JSYBaudRate target = jsy.getBaudRate() == Mycila::JSYBaudRate::BAUD_38400 ? Mycila::JSYBaudRate::BAUD_4800 : Mycila::JSYBaudRate::BAUD_38400;
+    Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_4800;
 
-    if (jsy.updateBaudRate(target)) {
+    if (jsy.setBaudRate(target)) {
       Serial.println("JSY baud rate updated");
+
+      jsy.end();
+      jsy.begin(&Serial2, 17, 16);
 
     } else {
       Serial.println("JSY baud rate update failed");

@@ -13,12 +13,22 @@ void setup() {
   jsy.begin(&Serial2, 17, 16, true, 0);
 }
 
+Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_4800;
+
 void loop() {
-  if (jsy.isEnabled()) {
-    JsonDocument doc;
-    jsy.toJson(doc.to<JsonObject>());
-    serializeJson(doc, Serial);
-    Serial.println();
+  if (!jsy.isEnabled()) {
+    delay(1000);
+    return;
   }
+
   delay(1000);
+
+  JsonDocument doc;
+  jsy.toJson(doc.to<JsonObject>());
+  serializeJson(doc, Serial);
+  Serial.println();
+
+  if (jsy.getBaudRate() != target) {
+    jsy.setBaudRate(target);
+  }
 }
