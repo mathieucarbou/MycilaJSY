@@ -82,7 +82,7 @@ jsy.resetEnergy();
 
 ```c++
 if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
-  if (jsy.updateBaudRate(Mycila::JSYBaudRate::BAUD_38400)) {
+  if (jsy.setBaudRate(Mycila::JSYBaudRate::BAUD_38400)) {
     // speed changed and switched to new speed
   } else {
     // speed changed failed, keeping current speed
