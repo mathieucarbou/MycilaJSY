@@ -11,11 +11,14 @@ void setup() {
     continue;
 
   // read JSY on pins 17 (JSY RX) and 16 (JSY TX)
-  jsy.begin(&Serial2, 17, 16, 60, true, 0);
+  jsy.begin(&Serial2, 17, 16, true);
 }
 
 void loop() {
+  delay(1000);
+
   if (jsy.isEnabled()) {
+
     JsonDocument doc;
     jsy.toJson(doc.to<JsonObject>());
     serializeJson(doc, Serial);
@@ -24,5 +27,4 @@ void loop() {
     if (jsy.getEnergy1() > 0 || jsy.getEnergy2() > 0 || jsy.getEnergyReturned1() > 0 || jsy.getEnergyReturned2() > 0)
       jsy.resetEnergy();
   }
-  delay(1000);
 }
