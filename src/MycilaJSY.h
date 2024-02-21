@@ -112,7 +112,7 @@ namespace Mycila {
       TaskHandle_t _taskHandle;
       volatile bool _enabled = false;
       volatile JSYBaudRate _baudRate = JSYBaudRate::UNKNOWN;
-      std::mutex _mutex;
+      std::timed_mutex _mutex;
 
     private:
       void _openSerial(JSYBaudRate baudRate);

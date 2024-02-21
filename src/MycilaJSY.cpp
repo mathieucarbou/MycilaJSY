@@ -88,13 +88,18 @@ bool Mycila::JSY::read() {
   if (!_enabled)
     return false;
 
-  std::lock_guard<std::mutex> lck(_mutex);
+  if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
+    ESP_LOGW(TAG, "Cannot ready: Serial is busy!");
+    return false;
+  }
 
   _serial->write(JSY_READ_MSG, 8);
   _serial->flush();
 
   uint8_t buffer[JSY_READ_RESPONSE_SIZE];
   const size_t count = _timedRead(buffer, JSY_READ_RESPONSE_SIZE);
+
+  _mutex.unlock();
 
   if (!count) {
     return false;
@@ -133,15 +138,20 @@ bool Mycila::JSY::resetEnergy() {
 
   ESP_LOGI(TAG, "Reset Energy data...");
 
-  std::lock_guard<std::mutex> lck(_mutex);
-
   const uint8_t data[] = {0x01, 0x10, 0x00, 0x0C, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0xF3, 0xFA};
+
+  if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
+    ESP_LOGW(TAG, "Cannot reset: Serial is busy!");
+    return false;
+  }
 
   _serial->write(data, 13);
   _serial->flush();
 
   uint8_t buffer[JSY_RESET_RESPONSE_SIZE];
   const size_t count = _timedRead(buffer, JSY_RESET_RESPONSE_SIZE);
+
+  _mutex.unlock();
 
   if (!count) {
     return false;
@@ -166,8 +176,6 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
     return true;
 
   ESP_LOGI(TAG, "Update baud rate to %u...", (uint32_t)baudRate);
-
-  std::lock_guard<std::mutex> lck(_mutex);
 
   uint8_t data[] = {0x00, 0x10, 0x00, 0x04, 0x00, 0x01, 0x02, 0x01, 0x00, 0x00, 0x00};
 
@@ -197,6 +205,11 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
       break;
   }
 
+  if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
+    ESP_LOGW(TAG, "Cannot set baud rate: Serial is busy!");
+    return false;
+  }
+
   _serial->write(data, 11);
   _serial->flush();
 
@@ -218,6 +231,8 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
   for (int i = 0; i < 5 && !success; i++) {
     success = _canRead();
   }
+
+  _mutex.unlock();
 
   if (success) {
     _baudRate = baudRate;
