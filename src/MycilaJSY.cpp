@@ -38,8 +38,8 @@ void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t jsyRXPin, const ui
   }
 
   ESP_LOGI(TAG, "Enable JSY...");
-  ESP_LOGD(TAG, "- JSY RX Pin: %u", _pinRX);
-  ESP_LOGD(TAG, "- JSY TX Pin: %u", _pinTX);
+  ESP_LOGD(TAG, "- JSY RX Pin (Serial TX): %u", _pinRX);
+  ESP_LOGD(TAG, "- JSY TX Pin (Serial RX): %u", _pinTX);
   ESP_LOGD(TAG, "- Async: %s", async ? "true" : "false");
 
   _serial = serial;

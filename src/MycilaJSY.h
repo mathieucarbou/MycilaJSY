@@ -42,7 +42,8 @@ namespace Mycila {
     public:
       ~JSY() { end(); }
 
-      // jsyRXPin: pin connected to the RX of the JSY, jsyTXPin: pin connected to the TX of the JSY
+      // - jsyRXPin: pin connected to the RX of the JSY
+      // - jsyTXPin: pin connected to the TX of the JSY
       // The baud rate is automatically detected
       void begin(HardwareSerial* serial,
                  const uint8_t jsyRXPin,
