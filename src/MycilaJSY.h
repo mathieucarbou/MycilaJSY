@@ -57,10 +57,10 @@ namespace Mycila {
       // No need to call read in async mode
       bool read();
 
-      // Resets energy counters. Returns true if the reset was successful, or will be done asynchronously.
+      // Resets energy counters. Returns true if the reset was successful.
       bool resetEnergy();
 
-      // Try to change the baud rate of the JSY. Returns true if the baud rate was changed, or will be done asynchronously.
+      // Try to change the baud rate of the JSY. Returns true if the baud rate was changed.
       bool setBaudRate(const JSYBaudRate baudRate);
 
 #ifdef MYCILA_JSY_JSON_SUPPORT
