@@ -53,7 +53,7 @@ void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t jsyRXPin, const ui
 
   ESP_LOGI(TAG, "Detected speed: %u bauds", (uint32_t)_baudRate);
 
-  assert(!async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, 1, &_taskHandle, core) == pdPASS);
+  assert(!async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, MYCILA_JSY_ASYNC_PRIORITY, &_taskHandle, core) == pdPASS);
 
   _enabled = true;
 }
