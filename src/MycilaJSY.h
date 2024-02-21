@@ -83,12 +83,16 @@ namespace Mycila {
       float getEnergyReturned1() const { return _energyReturned1; }
       float getEnergyReturned2() const { return _energyReturned2; }
       float getFrequency() const { return _frequency; }
+      // active power, not apparent power
       float getPower1() const { return _power1; }
       float getPower2() const { return _power2; }
       float getPowerFactor1() const { return _powerFactor1; }
       float getPowerFactor2() const { return _powerFactor2; }
       float getVoltage1() const { return _voltage1; }
       float getVoltage2() const { return _voltage2; }
+      // apparent power in VA
+      float getApparentPower1() const { return _power1 / _powerFactor1; }
+      float getApparentPower2() const { return _power2 / _powerFactor2; }
 
       // get the uptime in milliseconds of the last successful read
       uint32_t getTime() const { return _lastReadSuccess; }
