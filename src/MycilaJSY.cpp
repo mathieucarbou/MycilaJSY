@@ -69,10 +69,6 @@ void Mycila::JSY::end() {
     }
     _current1 = 0;
     _current2 = 0;
-    _energy1 = 0;
-    _energy2 = 0;
-    _energyReturned1 = 0;
-    _energyReturned2 = 0;
     _frequency = 0;
     _power1 = 0;
     _power2 = 0;
@@ -80,7 +76,6 @@ void Mycila::JSY::end() {
     _powerFactor2 = 0;
     _voltage1 = 0;
     _voltage2 = 0;
-    _lastReadSuccess = 0;
     _serial->end();
   }
 }
