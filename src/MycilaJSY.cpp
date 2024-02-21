@@ -89,7 +89,7 @@ bool Mycila::JSY::read() {
     return false;
 
   if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
-    ESP_LOGW(TAG, "Cannot ready: Serial is busy!");
+    ESP_LOGW(TAG, "Cannot read: Serial is busy!");
     return false;
   }
 
