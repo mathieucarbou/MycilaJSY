@@ -53,7 +53,7 @@ namespace Mycila {
 
       void end();
 
-      // IMPORTANT: DO NOT CALL read() in async mode: it will have no effect and will return false.
+      // No need to call read in async mode
       bool read();
 
       // Resets energy counters. Returns true if the reset was successful, or will be done asynchronously.
