@@ -131,9 +131,9 @@ bool Mycila::JSY::resetEnergy() {
   if (!_enabled)
     return false;
 
-  std::lock_guard<std::mutex> lck(_mutex);
-
   ESP_LOGI(TAG, "Reset Energy data...");
+
+  std::lock_guard<std::mutex> lck(_mutex);
 
   const uint8_t data[] = {0x01, 0x10, 0x00, 0x0C, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0xF3, 0xFA};
 
@@ -165,9 +165,9 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
   if (_baudRate == baudRate)
     return true;
 
-  std::lock_guard<std::mutex> lck(_mutex);
-
   ESP_LOGI(TAG, "Update baud rate to %u...", (uint32_t)baudRate);
+
+  std::lock_guard<std::mutex> lck(_mutex);
 
   uint8_t data[] = {0x00, 0x10, 0x00, 0x04, 0x00, 0x01, 0x02, 0x01, 0x00, 0x00, 0x00};
 
