@@ -67,19 +67,20 @@ void Mycila::JSY::end() {
       // JSY takes at least 40-160 ms to finish a read
       delay(50);
     }
-    current1 = 0;
-    current2 = 0;
-    energy1 = 0;
-    energy2 = 0;
-    energyReturned1 = 0;
-    energyReturned2 = 0;
-    frequency = 0;
-    power1 = 0;
-    power2 = 0;
-    powerFactor1 = 0;
-    powerFactor2 = 0;
-    voltage1 = 0;
-    voltage2 = 0;
+    _current1 = 0;
+    _current2 = 0;
+    _energy1 = 0;
+    _energy2 = 0;
+    _energyReturned1 = 0;
+    _energyReturned2 = 0;
+    _frequency = 0;
+    _power1 = 0;
+    _power2 = 0;
+    _powerFactor1 = 0;
+    _powerFactor2 = 0;
+    _voltage1 = 0;
+    _voltage2 = 0;
+    _lastReadSuccess = 0;
     _serial->end();
   }
 }
@@ -110,23 +111,23 @@ bool Mycila::JSY::read() {
     return false;
   }
 
-  voltage1 = ((buffer[3] << 24) + (buffer[4] << 16) + (buffer[5] << 8) + buffer[6]) * 0.0001;
-  current1 = ((buffer[7] << 24) + (buffer[8] << 16) + (buffer[9] << 8) + buffer[10]) * 0.0001;
-  power1 = ((buffer[11] << 24) + (buffer[12] << 16) + (buffer[13] << 8) + buffer[14]) * (buffer[27] == 1 ? -0.0001 : 0.0001);
-  energy1 = ((buffer[15] << 24) + (buffer[16] << 16) + (buffer[17] << 8) + buffer[18]) * 0.0001;
-  powerFactor1 = ((buffer[19] << 24) + (buffer[20] << 16) + (buffer[21] << 8) + buffer[22]) * 0.001;
-  energyReturned1 = ((buffer[23] << 24) + (buffer[24] << 16) + (buffer[25] << 8) + buffer[26]) * 0.0001;
+  _voltage1 = ((buffer[3] << 24) + (buffer[4] << 16) + (buffer[5] << 8) + buffer[6]) * 0.0001;
+  _current1 = ((buffer[7] << 24) + (buffer[8] << 16) + (buffer[9] << 8) + buffer[10]) * 0.0001;
+  _power1 = ((buffer[11] << 24) + (buffer[12] << 16) + (buffer[13] << 8) + buffer[14]) * (buffer[27] == 1 ? -0.0001 : 0.0001);
+  _energy1 = ((buffer[15] << 24) + (buffer[16] << 16) + (buffer[17] << 8) + buffer[18]) * 0.0001;
+  _powerFactor1 = ((buffer[19] << 24) + (buffer[20] << 16) + (buffer[21] << 8) + buffer[22]) * 0.001;
+  _energyReturned1 = ((buffer[23] << 24) + (buffer[24] << 16) + (buffer[25] << 8) + buffer[26]) * 0.0001;
   // buffer[27] is the sign of power1
   // buffer[28] is the sign of power2
   // buffer[29] unused
   // buffer[30] unused
-  frequency = ((buffer[31] << 24) + (buffer[32] << 16) + (buffer[33] << 8) + buffer[34]) * 0.01;
-  voltage2 = ((buffer[35] << 24) + (buffer[36] << 16) + (buffer[37] << 8) + buffer[38]) * 0.0001;
-  current2 = ((buffer[39] << 24) + (buffer[40] << 16) + (buffer[41] << 8) + buffer[42]) * 0.0001;
-  power2 = ((buffer[43] << 24) + (buffer[44] << 16) + (buffer[45] << 8) + buffer[46]) * (buffer[28] == 1 ? -0.0001 : 0.0001);
-  energy2 = ((buffer[47] << 24) + (buffer[48] << 16) + (buffer[49] << 8) + buffer[50]) * 0.0001;
-  powerFactor2 = ((buffer[51] << 24) + (buffer[52] << 16) + (buffer[53] << 8) + buffer[54]) * 0.001;
-  energyReturned2 = ((buffer[55] << 24) + (buffer[56] << 16) + (buffer[57] << 8) + buffer[58]) * 0.0001;
+  _frequency = ((buffer[31] << 24) + (buffer[32] << 16) + (buffer[33] << 8) + buffer[34]) * 0.01;
+  _voltage2 = ((buffer[35] << 24) + (buffer[36] << 16) + (buffer[37] << 8) + buffer[38]) * 0.0001;
+  _current2 = ((buffer[39] << 24) + (buffer[40] << 16) + (buffer[41] << 8) + buffer[42]) * 0.0001;
+  _power2 = ((buffer[43] << 24) + (buffer[44] << 16) + (buffer[45] << 8) + buffer[46]) * (buffer[28] == 1 ? -0.0001 : 0.0001);
+  _energy2 = ((buffer[47] << 24) + (buffer[48] << 16) + (buffer[49] << 8) + buffer[50]) * 0.0001;
+  _powerFactor2 = ((buffer[51] << 24) + (buffer[52] << 16) + (buffer[53] << 8) + buffer[54]) * 0.001;
+  _energyReturned2 = ((buffer[55] << 24) + (buffer[56] << 16) + (buffer[57] << 8) + buffer[58]) * 0.0001;
 
   _lastReadSuccess = millis();
   return true;
@@ -246,20 +247,20 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
 
 #ifdef MYCILA_JSY_JSON_SUPPORT
 void Mycila::JSY::toJson(const JsonObject& root) const {
-  root["current1"] = current1;
-  root["current2"] = current2;
+  root["current1"] = _current1;
+  root["current2"] = _current2;
   root["enabled"] = _enabled;
-  root["energy_returned1"] = energyReturned1;
-  root["energy_returned2"] = energyReturned2;
-  root["energy1"] = energy1;
-  root["energy2"] = energy2;
-  root["frequency"] = frequency;
-  root["power_factor1"] = powerFactor1;
-  root["power_factor2"] = powerFactor2;
-  root["power1"] = power1;
-  root["power2"] = power2;
-  root["voltage1"] = voltage1;
-  root["voltage2"] = voltage2;
+  root["energy_returned1"] = _energyReturned1;
+  root["energy_returned2"] = _energyReturned2;
+  root["energy1"] = _energy1;
+  root["energy2"] = _energy2;
+  root["frequency"] = _frequency;
+  root["power_factor1"] = _powerFactor1;
+  root["power_factor2"] = _powerFactor2;
+  root["power1"] = _power1;
+  root["power2"] = _power2;
+  root["voltage1"] = _voltage1;
+  root["voltage2"] = _voltage2;
   root["time"] = _lastReadSuccess;
 }
 #endif

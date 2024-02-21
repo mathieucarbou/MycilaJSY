@@ -76,37 +76,37 @@ namespace Mycila {
       JSYBaudRate getBaudRate() const { return _baudRate; }
       bool isEnabled() const { return _enabled; }
 
-      float getCurrent1() const { return current1; }
-      float getCurrent2() const { return current2; }
-      float getEnergy1() const { return energy1; }
-      float getEnergy2() const { return energy2; }
-      float getEnergyReturned1() const { return energyReturned1; }
-      float getEnergyReturned2() const { return energyReturned2; }
-      float getFrequency() const { return frequency; }
-      float getPower1() const { return power1; }
-      float getPower2() const { return power2; }
-      float getPowerFactor1() const { return powerFactor1; }
-      float getPowerFactor2() const { return powerFactor2; }
-      float getVoltage1() const { return voltage1; }
-      float getVoltage2() const { return voltage2; }
+      float getCurrent1() const { return _current1; }
+      float getCurrent2() const { return _current2; }
+      float getEnergy1() const { return _energy1; }
+      float getEnergy2() const { return _energy2; }
+      float getEnergyReturned1() const { return _energyReturned1; }
+      float getEnergyReturned2() const { return _energyReturned2; }
+      float getFrequency() const { return _frequency; }
+      float getPower1() const { return _power1; }
+      float getPower2() const { return _power2; }
+      float getPowerFactor1() const { return _powerFactor1; }
+      float getPowerFactor2() const { return _powerFactor2; }
+      float getVoltage1() const { return _voltage1; }
+      float getVoltage2() const { return _voltage2; }
 
       // get the uptime in milliseconds of the last successful read
       uint32_t getTime() const { return _lastReadSuccess; }
 
     private:
-      volatile float current1 = 0;        // A
-      volatile float current2 = 0;        // A
-      volatile float energy1 = 0;         // kWh
-      volatile float energy2 = 0;         // kWh
-      volatile float energyReturned1 = 0; // kWh
-      volatile float energyReturned2 = 0; // kWh
-      volatile float frequency = 0;       // Hz
-      volatile float power1 = 0;          // W
-      volatile float power2 = 0;          // W
-      volatile float powerFactor1 = 0;
-      volatile float powerFactor2 = 0;
-      volatile float voltage1 = 0; // V
-      volatile float voltage2 = 0; // V
+      volatile float _current1 = 0;        // A
+      volatile float _current2 = 0;        // A
+      volatile float _energy1 = 0;         // kWh
+      volatile float _energy2 = 0;         // kWh
+      volatile float _energyReturned1 = 0; // kWh
+      volatile float _energyReturned2 = 0; // kWh
+      volatile float _frequency = 0;       // Hz
+      volatile float _power1 = 0;          // W
+      volatile float _power2 = 0;          // W
+      volatile float _powerFactor1 = 0;
+      volatile float _powerFactor2 = 0;
+      volatile float _voltage1 = 0; // V
+      volatile float _voltage2 = 0; // V
 
     private:
       gpio_num_t _pinRX = GPIO_NUM_NC;
