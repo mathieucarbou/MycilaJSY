@@ -98,10 +98,30 @@ bool Mycila::JSY::read() {
   _mutex.unlock();
 
   if (!count) {
+    // reset live values in case of read timeout
+    _current1 = 0;
+    _current2 = 0;
+    _frequency = 0;
+    _power1 = 0;
+    _power2 = 0;
+    _powerFactor1 = 0;
+    _powerFactor2 = 0;
+    _voltage1 = 0;
+    _voltage2 = 0;
     return false;
   }
 
   if (count != JSY_READ_RESPONSE_SIZE || buffer[0] != 0x01) {
+    // reset live values in case of read failure
+    _current1 = 0;
+    _current2 = 0;
+    _frequency = 0;
+    _power1 = 0;
+    _power2 = 0;
+    _powerFactor1 = 0;
+    _powerFactor2 = 0;
+    _voltage1 = 0;
+    _voltage2 = 0;
     ESP_LOGD(TAG, "Read failed: %d", count);
     return false;
   }
