@@ -337,8 +337,10 @@ Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {
 void Mycila::JSY::_jsyTask(void* params) {
   JSY* jsy = reinterpret_cast<JSY*>(params);
   while (jsy->_enabled) {
-    jsy->read();
-    yield();
+    if (jsy->read())
+      yield();
+    else
+      delay(MYCILA_JSY_READ_TIMEOUT_MS);
   }
   jsy->_taskHandle = NULL;
   vTaskDelete(NULL);
