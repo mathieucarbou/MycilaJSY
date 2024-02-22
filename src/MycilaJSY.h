@@ -97,6 +97,9 @@ namespace Mycila {
       // get the uptime in milliseconds of the last successful read
       uint32_t getTime() const { return _lastReadSuccess; }
 
+      // check if the device is connected to the , meaning if last read was successful
+      bool isConnected() const { return _frequency > 0; }
+
     private:
       volatile float _current1 = 0;        // A
       volatile float _current2 = 0;        // A
