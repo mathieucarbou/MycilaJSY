@@ -93,8 +93,8 @@ if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
 
 ## Reference material
 
-- [JSY-MK-194T 1.pdf](JSY-MK-194T%201.pdf) (version 1)
-- [JSY-MK-194T 2.pdf](JSY-MK-194T%202.pdf) (version 2)
-- [JSY-MK-194T 3.pdf](JSY-MK-194T%203.pdf) (version 3)
-- [JSY-MK-194T.exe](JSY-MK-194T.exe) (Utility to configure the JSY with a USB-TTL adapter)
+- [JSY-MK-194T 1.pdf](https://oss.carbou.me/MycilaJSY/JSY-MK-194T%201.pdf) (version 1)
+- [JSY-MK-194T 2.pdf](https://oss.carbou.me/MycilaJSY/JSY-MK-194T%202.pdf) (version 2)
+- [JSY-MK-194T 3.pdf](https://oss.carbou.me/MycilaJSY/JSY-MK-194T%203.pdf) (version 3)
+- [JSY-MK-194T.exe](https://oss.carbou.me/MycilaJSY/JSY-MK-194T.exe) (Utility to configure the JSY with a USB-TTL adapter)
 - [ModbusMechanic](https://github.com/SciFiDryer/ModbusMechanic) (can connect and configure JSY with a USB-TTL adapter)
