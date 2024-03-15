@@ -12,6 +12,16 @@
 
 static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44, 0x18};
 
+#ifndef GPIO_IS_VALID_OUTPUT_GPIO
+#define GPIO_IS_VALID_OUTPUT_GPIO(gpio_num) ((gpio_num >= 0) && \
+                                             (((1ULL << (gpio_num)) & SOC_GPIO_VALID_OUTPUT_GPIO_MASK) != 0))
+#endif
+
+#ifndef GPIO_IS_VALID_GPIO
+#define GPIO_IS_VALID_GPIO(gpio_num) ((gpio_num >= 0) && \
+                                      (((1ULL << (gpio_num)) & SOC_GPIO_VALID_GPIO_MASK) != 0))
+#endif
+
 void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t jsyRXPin, const uint8_t jsyTXPin, const bool async, uint8_t core, uint32_t stackSize) {
   if (_enabled)
     return;
