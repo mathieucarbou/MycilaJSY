@@ -9,11 +9,11 @@ void setup() {
   while (!Serial)
     continue;
 
-  // read JSY on pins 17 (JSY RX) and 16 (JSY TX)
-  jsy.begin(&Serial2, 17, 16, true, 0);
+  // read JSY on pins 17 (JSY RX / Serial TX) and 16 (JSY TX / Serial RX)
+  jsy.begin(&Serial2, 16, 17, true, 1, 2048);
 }
 
-Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_4800;
+Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_38400;
 
 void loop() {
   if (!jsy.isEnabled()) {

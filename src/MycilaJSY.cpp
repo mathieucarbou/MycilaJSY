@@ -22,7 +22,7 @@ static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44,
                                       (((1ULL << (gpio_num)) & SOC_GPIO_VALID_GPIO_MASK) != 0))
 #endif
 
-void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t jsyRXPin, const uint8_t jsyTXPin, const bool async, uint8_t core, uint32_t stackSize) {
+void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t rxPin, const uint8_t txPin, const bool async, uint8_t core, uint32_t stackSize, uint32_t pause) {
   if (_enabled)
     return;
 
@@ -31,27 +31,28 @@ void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t jsyRXPin, const ui
     return;
   }
 
-  if (GPIO_IS_VALID_OUTPUT_GPIO(jsyRXPin)) {
-    _pinRX = (gpio_num_t)jsyRXPin;
+  if (GPIO_IS_VALID_GPIO(rxPin)) {
+    _pinRX = (gpio_num_t)rxPin;
   } else {
-    ESP_LOGE(TAG, "Disable JSY: Invalid JSY RX pin: %u", _pinRX);
+    ESP_LOGE(TAG, "Disable JSY: Invalid Serial RX (JSY TX pin): %u", rxPin);
     _pinRX = GPIO_NUM_NC;
     return;
   }
 
-  if (GPIO_IS_VALID_GPIO(jsyTXPin)) {
-    _pinTX = (gpio_num_t)jsyTXPin;
+  if (GPIO_IS_VALID_OUTPUT_GPIO(txPin)) {
+    _pinTX = (gpio_num_t)txPin;
   } else {
-    ESP_LOGE(TAG, "Disable JSY: Invalid JSY TX pin: %u", _pinTX);
+    ESP_LOGE(TAG, "Disable JSY: Invalid Serial TX (JSY RX pin): %u", txPin);
     _pinTX = GPIO_NUM_NC;
     return;
   }
 
   ESP_LOGI(TAG, "Enable JSY...");
-  ESP_LOGD(TAG, "- JSY RX Pin (Serial TX): %u", _pinRX);
-  ESP_LOGD(TAG, "- JSY TX Pin (Serial RX): %u", _pinTX);
+  ESP_LOGD(TAG, "- Serial RX (JSY TX Pin): %u", _pinRX);
+  ESP_LOGD(TAG, "- Serial TX (JSY RX Pin): %u", _pinTX);
   ESP_LOGD(TAG, "- Async: %s", async ? "true" : "false");
 
+  _pause = pause;
   _serial = serial;
   _baudRate = _detectBauds();
 
@@ -292,7 +293,7 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
 
 void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
   ESP_LOGD(TAG, "Open serial at %u bauds", (uint32_t)baudRate);
-  _serial->begin((uint32_t)baudRate, SERIAL_8N1, _pinTX, _pinRX);
+  _serial->begin((uint32_t)baudRate, SERIAL_8N1, _pinRX, _pinTX);
   _serial->setTimeout(MYCILA_JSY_READ_TIMEOUT_MS);
   while (!_serial)
     yield();
@@ -347,10 +348,16 @@ Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {
 void Mycila::JSY::_jsyTask(void* params) {
   JSY* jsy = reinterpret_cast<JSY*>(params);
   while (jsy->_enabled) {
-    if (jsy->read())
-      yield();
-    else
+    if (jsy->read()) {
+      if(jsy->_pause > 0) {
+        delay(jsy->_pause);
+      } else {
+        yield();
+      }
+    }
+    else {
       delay(MYCILA_JSY_READ_TIMEOUT_MS);
+    }
   }
   jsy->_taskHandle = NULL;
   vTaskDelete(NULL);
