@@ -349,13 +349,12 @@ void Mycila::JSY::_jsyTask(void* params) {
   JSY* jsy = reinterpret_cast<JSY*>(params);
   while (jsy->_enabled) {
     if (jsy->read()) {
-      if(jsy->_pause > 0) {
+      if (jsy->_pause > 0) {
         delay(jsy->_pause);
       } else {
         yield();
       }
-    }
-    else {
+    } else {
       delay(MYCILA_JSY_READ_TIMEOUT_MS);
     }
   }
