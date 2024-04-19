@@ -104,7 +104,7 @@ jobs:
             opts:
           - platform: espressif32
             board: esp32dev
-            opts: "--project-option 'platform_packages=platformio/framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#3.0.0-alpha3, platform_packages=platformio/framework-arduinoespressif32-libs @ https://github.com/espressif/esp32-arduino-libs.git#idf-release/v5.1'"
+            opts: "--project-option 'platform_packages=platformio/framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#3.0.0-rc1, platform_packages=platformio/framework-arduinoespressif32-libs @ https://github.com/espressif/esp32-arduino-libs.git#idf-release/v5.1'"
 
     steps:
       - name: Checkout
