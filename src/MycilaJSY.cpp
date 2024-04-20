@@ -34,7 +34,7 @@ void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t rxPin, const uint8
   if (GPIO_IS_VALID_GPIO(rxPin)) {
     _pinRX = (gpio_num_t)rxPin;
   } else {
-    ESP_LOGE(TAG, "Disable JSY: Invalid Serial RX (JSY TX pin): %u", rxPin);
+    ESP_LOGE(TAG, "Disable JSY: Invalid Serial RX (JSY TX pin): %" PRIu8, rxPin);
     _pinRX = GPIO_NUM_NC;
     return;
   }
@@ -42,7 +42,7 @@ void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t rxPin, const uint8
   if (GPIO_IS_VALID_OUTPUT_GPIO(txPin)) {
     _pinTX = (gpio_num_t)txPin;
   } else {
-    ESP_LOGE(TAG, "Disable JSY: Invalid Serial TX (JSY RX pin): %u", txPin);
+    ESP_LOGE(TAG, "Disable JSY: Invalid Serial TX (JSY RX pin): %" PRIu8, txPin);
     _pinTX = GPIO_NUM_NC;
     return;
   }
@@ -62,7 +62,7 @@ void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t rxPin, const uint8
     return;
   }
 
-  ESP_LOGI(TAG, "Detected speed: %u bauds", (uint32_t)_baudRate);
+  ESP_LOGI(TAG, "Detected speed: %" PRIu32 " bauds", (uint32_t)_baudRate);
 
   assert(!async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, MYCILA_JSY_ASYNC_PRIORITY, &_taskHandle, core) == pdPASS);
 

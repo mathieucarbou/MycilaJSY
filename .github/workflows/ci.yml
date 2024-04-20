@@ -50,9 +50,10 @@ jobs:
         include:
           - core: esp32:esp32
             board: esp32:esp32:esp32
-            eeprom: true
-            softwareserial: false
-            index_url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+            index_url: https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          - core: esp32:esp32
+            board: esp32:esp32:esp32
+            index_url: https://espressif.github.io/arduino-esp32/package_esp32_dev_index.json
 
     steps:
       - name: Checkout
@@ -92,42 +93,60 @@ jobs:
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SimpleSetSpeed/SimpleSetSpeed.ino"
 
   platformio:
-    name: PlatformIO
+    name: pio ${{ matrix.name }}
     needs: cpplint
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: espressif32
+          - name: esp32dev|espressif32
             board: esp32dev
+            platform: espressif32
             opts:
-          - platform: espressif32
+          - name: esp32dev|espressif32@6.6.0
             board: esp32dev
+            platform: espressif32@6.6.0
+            opts:
+          - name: esp32dev|arduino@3.0.0-rc1
+            board: esp32dev
+            platform: espressif32
             opts: "--project-option 'platform_packages=platformio/framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#3.0.0-rc1, platform_packages=platformio/framework-arduinoespressif32-libs @ https://github.com/espressif/esp32-arduino-libs.git#idf-release/v5.1'"
+          - name: esp32dev|arduino@master
+            board: esp32dev
+            platform: espressif32
+            opts: "--project-option 'platform_packages=platformio/framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#master, platform_packages=platformio/framework-arduinoespressif32-libs @ https://github.com/espressif/esp32-arduino-libs.git#idf-release/v5.1'"
+          - name: esp32-s3-devkitc-1|espressif32
+            board: esp32-s3-devkitc-1
+            platform: espressif32
+            opts:
+          - name: esp32-s3-devkitc-1|espressif32@6.6.0
+            board: esp32-s3-devkitc-1
+            platform: espressif32@6.6.0
+            opts:
+          - name: esp32-s3-devkitc-1|arduino@3.0.0-rc1
+            board: esp32-s3-devkitc-1
+            platform: espressif32
+            opts: "--project-option 'platform_packages=platformio/framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#3.0.0-rc1, platform_packages=platformio/framework-arduinoespressif32-libs @ https://github.com/espressif/esp32-arduino-libs.git#idf-release/v5.1'"
+          - name: esp32-s3-devkitc-1|arduino@master
+            board: esp32-s3-devkitc-1
+            platform: espressif32
+            opts: "--project-option 'platform_packages=platformio/framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32.git#master, platform_packages=platformio/framework-arduinoespressif32-libs @ https://github.com/espressif/esp32-arduino-libs.git#idf-release/v5.1'"
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Set up cache
         uses: actions/cache@v4
         with:
           path: |
             ~/.platformio
             ~/.cache/pip
-          key: ${{ runner.os }}-platformio
-
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v5
+          key: ${{ matrix.name }}
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
-
-      - name: Install PlatformIO
-        run: pip install platformio
-
-      - name: Install platform "${{ matrix.platform }}"
-        run: platformio platform install ${{ matrix.platform }}
+          python-version: "3.x"
+      - run: pip install platformio
+      - run: platformio platform install ${{ matrix.platform }}
 
       - name: Build Read
         run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/Read/Read.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
