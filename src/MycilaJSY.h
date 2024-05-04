@@ -46,6 +46,8 @@ namespace Mycila {
     BAUD_38400 = 38400,
   };
 
+  typedef std::function<void()> JSYReadCallback;
+
   class JSY {
     public:
       ~JSY() { end(); }
@@ -106,6 +108,8 @@ namespace Mycila {
       // check if the device is connected to the , meaning if last read was successful
       bool isConnected() const { return _frequency > 0; }
 
+      void setReadCallback(JSYReadCallback callback) { _readCallback = callback; }
+
     private:
       volatile float _current1 = 0;        // A
       volatile float _current2 = 0;        // A
@@ -131,6 +135,7 @@ namespace Mycila {
       volatile bool _enabled = false;
       volatile JSYBaudRate _baudRate = JSYBaudRate::UNKNOWN;
       std::timed_mutex _mutex;
+      JSYReadCallback _readCallback = nullptr;
 
     private:
       void _openSerial(JSYBaudRate baudRate);

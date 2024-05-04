@@ -156,6 +156,11 @@ bool Mycila::JSY::read() {
   _energyReturned2 = ((buffer[55] << 24) + (buffer[56] << 16) + (buffer[57] << 8) + buffer[58]) * 0.0001;
 
   _lastReadSuccess = millis();
+
+  if (_readCallback) {
+    _readCallback();
+  }
+
   return true;
 }
 
