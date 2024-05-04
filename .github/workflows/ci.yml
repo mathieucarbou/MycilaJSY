@@ -92,6 +92,12 @@ jobs:
       - name: Build SimpleSetSpeed
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SimpleSetSpeed/SimpleSetSpeed.ino"
 
+      - name: Build PerfTest1
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/PerfTest1/PerfTest1.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+
+      - name: Build PerfTest2
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/PerfTest2/PerfTest2.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+
   platformio:
     name: pio ${{ matrix.name }}
     needs: cpplint
@@ -168,3 +174,9 @@ jobs:
 
       - name: Build SimpleSetSpeed
         run: platformio ci "examples/SimpleSetSpeed/SimpleSetSpeed.ino" -l '.' -b ${{ matrix.board }} ${{ matrix.opts }}
+
+      - name: Build PerfTest1
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/PerfTest1/PerfTest1.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+
+      - name: Build PerfTest2
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/PerfTest2/PerfTest2.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
