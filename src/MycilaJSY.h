@@ -66,13 +66,17 @@ namespace Mycila {
 
       void end();
 
+      // Read the JSY values. Returns true if the read was successful.
+      // This function is blocking until the data is read or the timeout is reached.
       // No need to call read in async mode
       bool read();
 
       // Resets energy counters. Returns true if the reset was successful.
+      // This function is blocking until the reset is confirmed or the timeout is reached.
       bool resetEnergy();
 
       // Try to change the baud rate of the JSY. Returns true if the baud rate was changed.
+      // This function is blocking until the change is confirmed or the timeout is reached.
       bool setBaudRate(const JSYBaudRate baudRate);
 
 #ifdef MYCILA_JSY_JSON_SUPPORT
@@ -105,9 +109,10 @@ namespace Mycila {
       // get the uptime in milliseconds of the last successful read
       uint32_t getTime() const { return _lastReadSuccess; }
 
-      // check if the device is connected to the , meaning if last read was successful
+      // check if the device is connected to the grid, meaning if last read was successful
       bool isConnected() const { return _frequency > 0; }
 
+      // set a callback to be called after each successful read
       void setReadCallback(JSYReadCallback callback) { _readCallback = callback; }
 
     private:

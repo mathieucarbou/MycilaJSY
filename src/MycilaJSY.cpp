@@ -310,6 +310,11 @@ void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
 
 size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
   // const uint32_t now = millis();
+  // readBytes is used because is is faster on ESP IDF since it directly calls the uart_read_bytes function.
+  // Most of implementations are using a while loop and wait to get the expected amount of data with available(),
+  // and are manually handling timeout instead of doing a low level call.
+  // This is not efficient and can lead to a few milliseconds lost because they have to introducing delays in the loop.
+  // Here, we ensure to read the data as fast as possible when everything works, and when no data is available, we have a timeout.
   const size_t count = _serial->readBytes(buffer, length) + _drop();
   if (count == 0) {
     ESP_LOGD(TAG, "Read timeout");
