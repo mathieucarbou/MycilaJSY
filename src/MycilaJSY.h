@@ -29,8 +29,9 @@
 #define MYCILA_JSY_ASYNC_STACK_SIZE 2048
 #endif
 
-#ifndef MYCILA_JSY_ASYNC_READ_PAUSE
-#define MYCILA_JSY_ASYNC_READ_PAUSE 0
+// time in milliseconds to wait between each read in async mode
+#ifndef MYCILA_JSY_ASYNC_READ_PAUSE_MS
+#define MYCILA_JSY_ASYNC_READ_PAUSE_MS 0
 #endif
 
 #ifndef MYCILA_JSY_READ_TIMEOUT_MS
@@ -57,12 +58,12 @@ namespace Mycila {
       // - pause: time in milliseconds to wait between each read in async mode
       // The baud rate is automatically detected
       void begin(HardwareSerial* serial,
-                 const uint8_t rxPin,
-                 const uint8_t txPin,
+                 const int8_t rxPin,
+                 const int8_t txPin,
                  const bool async = false,
                  uint8_t core = MYCILA_JSY_ASYNC_CORE,
                  uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
-                 uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE);
+                 uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS);
 
       void end();
 
@@ -134,7 +135,7 @@ namespace Mycila {
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
       HardwareSerial* _serial = nullptr;
-      uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE;
+      uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS;
       uint32_t _lastReadSuccess = 0;
       TaskHandle_t _taskHandle;
       volatile bool _enabled = false;

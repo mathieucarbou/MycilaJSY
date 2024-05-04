@@ -22,7 +22,7 @@ static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44,
                                       (((1ULL << (gpio_num)) & SOC_GPIO_VALID_GPIO_MASK) != 0))
 #endif
 
-void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t rxPin, const uint8_t txPin, const bool async, uint8_t core, uint32_t stackSize, uint32_t pause) {
+void Mycila::JSY::begin(HardwareSerial* serial, const int8_t rxPin, const int8_t txPin, const bool async, uint8_t core, uint32_t stackSize, uint32_t pause) {
   if (_enabled)
     return;
 
@@ -34,7 +34,7 @@ void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t rxPin, const uint8
   if (GPIO_IS_VALID_GPIO(rxPin)) {
     _pinRX = (gpio_num_t)rxPin;
   } else {
-    ESP_LOGE(TAG, "Disable JSY: Invalid Serial RX (JSY TX pin): %" PRIu8, rxPin);
+    ESP_LOGE(TAG, "Disable JSY: Invalid Serial RX (JSY TX pin): %" PRId8, rxPin);
     _pinRX = GPIO_NUM_NC;
     return;
   }
@@ -42,7 +42,7 @@ void Mycila::JSY::begin(HardwareSerial* serial, const uint8_t rxPin, const uint8
   if (GPIO_IS_VALID_OUTPUT_GPIO(txPin)) {
     _pinTX = (gpio_num_t)txPin;
   } else {
-    ESP_LOGE(TAG, "Disable JSY: Invalid Serial TX (JSY RX pin): %" PRIu8, txPin);
+    ESP_LOGE(TAG, "Disable JSY: Invalid Serial TX (JSY RX pin): %" PRId8, txPin);
     _pinTX = GPIO_NUM_NC;
     return;
   }
@@ -364,6 +364,8 @@ void Mycila::JSY::_jsyTask(void* params) {
       } else {
         yield();
       }
+    } else if (jsy->_pause > 0) {
+      delay(jsy->_pause);
     } else {
       delay(MYCILA_JSY_READ_TIMEOUT_MS);
     }
