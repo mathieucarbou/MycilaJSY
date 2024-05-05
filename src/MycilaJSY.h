@@ -47,7 +47,18 @@ namespace Mycila {
     BAUD_38400 = 38400,
   };
 
-  typedef std::function<void()> JSYReadCallback;
+  enum class JSYEventType {
+    // JSY has successfully read the data
+    EVT_READ = 0,
+    // JSY has successfully read the data and the values have changed
+    EVT_CHANGE,
+    // wrong data received when reading values
+    EVT_READ_ERROR,
+    // timeout reached when reading values
+    EVT_READ_TIMEOUT
+  };
+
+  typedef std::function<void(const JSYEventType eventType)> JSYCallback;
 
   class JSY {
     public:
@@ -113,8 +124,7 @@ namespace Mycila {
       // check if the device is connected to the grid, meaning if last read was successful
       bool isConnected() const { return _frequency > 0; }
 
-      // set a callback to be called after each successful read
-      void setReadCallback(JSYReadCallback callback) { _readCallback = callback; }
+      void setCallback(JSYCallback callback) { _callback = callback; }
 
     private:
       volatile float _current1 = 0;        // A
@@ -141,7 +151,7 @@ namespace Mycila {
       volatile bool _enabled = false;
       volatile JSYBaudRate _baudRate = JSYBaudRate::UNKNOWN;
       std::timed_mutex _mutex;
-      JSYReadCallback _readCallback = nullptr;
+      JSYCallback _callback = nullptr;
 
     private:
       void _openSerial(JSYBaudRate baudRate);

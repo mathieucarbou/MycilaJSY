@@ -119,6 +119,9 @@ bool Mycila::JSY::read() {
     _powerFactor2 = 0;
     _voltage1 = 0;
     _voltage2 = 0;
+    if (_callback) {
+      _callback(JSYEventType::EVT_READ_TIMEOUT);
+    }
     return false;
   }
 
@@ -134,31 +137,67 @@ bool Mycila::JSY::read() {
     _voltage1 = 0;
     _voltage2 = 0;
     ESP_LOGD(TAG, "Read failed: %d", count);
+    if (_callback) {
+      _callback(JSYEventType::EVT_READ_ERROR);
+    }
     return false;
   }
 
-  _voltage1 = ((buffer[3] << 24) + (buffer[4] << 16) + (buffer[5] << 8) + buffer[6]) * 0.0001;
-  _current1 = ((buffer[7] << 24) + (buffer[8] << 16) + (buffer[9] << 8) + buffer[10]) * 0.0001;
-  _power1 = ((buffer[11] << 24) + (buffer[12] << 16) + (buffer[13] << 8) + buffer[14]) * (buffer[27] == 1 ? -0.0001 : 0.0001);
-  _energy1 = ((buffer[15] << 24) + (buffer[16] << 16) + (buffer[17] << 8) + buffer[18]) * 0.0001;
-  _powerFactor1 = ((buffer[19] << 24) + (buffer[20] << 16) + (buffer[21] << 8) + buffer[22]) * 0.001;
-  _energyReturned1 = ((buffer[23] << 24) + (buffer[24] << 16) + (buffer[25] << 8) + buffer[26]) * 0.0001;
+  float voltage1 = ((buffer[3] << 24) + (buffer[4] << 16) + (buffer[5] << 8) + buffer[6]) * 0.0001;
+  float current1 = ((buffer[7] << 24) + (buffer[8] << 16) + (buffer[9] << 8) + buffer[10]) * 0.0001;
+  float power1 = ((buffer[11] << 24) + (buffer[12] << 16) + (buffer[13] << 8) + buffer[14]) * (buffer[27] == 1 ? -0.0001 : 0.0001);
+  float energy1 = ((buffer[15] << 24) + (buffer[16] << 16) + (buffer[17] << 8) + buffer[18]) * 0.0001;
+  float powerFactor1 = ((buffer[19] << 24) + (buffer[20] << 16) + (buffer[21] << 8) + buffer[22]) * 0.001;
+  float energyReturned1 = ((buffer[23] << 24) + (buffer[24] << 16) + (buffer[25] << 8) + buffer[26]) * 0.0001;
   // buffer[27] is the sign of power1
   // buffer[28] is the sign of power2
   // buffer[29] unused
   // buffer[30] unused
-  _frequency = ((buffer[31] << 24) + (buffer[32] << 16) + (buffer[33] << 8) + buffer[34]) * 0.01;
-  _voltage2 = ((buffer[35] << 24) + (buffer[36] << 16) + (buffer[37] << 8) + buffer[38]) * 0.0001;
-  _current2 = ((buffer[39] << 24) + (buffer[40] << 16) + (buffer[41] << 8) + buffer[42]) * 0.0001;
-  _power2 = ((buffer[43] << 24) + (buffer[44] << 16) + (buffer[45] << 8) + buffer[46]) * (buffer[28] == 1 ? -0.0001 : 0.0001);
-  _energy2 = ((buffer[47] << 24) + (buffer[48] << 16) + (buffer[49] << 8) + buffer[50]) * 0.0001;
-  _powerFactor2 = ((buffer[51] << 24) + (buffer[52] << 16) + (buffer[53] << 8) + buffer[54]) * 0.001;
-  _energyReturned2 = ((buffer[55] << 24) + (buffer[56] << 16) + (buffer[57] << 8) + buffer[58]) * 0.0001;
+  float frequency = ((buffer[31] << 24) + (buffer[32] << 16) + (buffer[33] << 8) + buffer[34]) * 0.01;
+  float voltage2 = ((buffer[35] << 24) + (buffer[36] << 16) + (buffer[37] << 8) + buffer[38]) * 0.0001;
+  float current2 = ((buffer[39] << 24) + (buffer[40] << 16) + (buffer[41] << 8) + buffer[42]) * 0.0001;
+  float power2 = ((buffer[43] << 24) + (buffer[44] << 16) + (buffer[45] << 8) + buffer[46]) * (buffer[28] == 1 ? -0.0001 : 0.0001);
+  float energy2 = ((buffer[47] << 24) + (buffer[48] << 16) + (buffer[49] << 8) + buffer[50]) * 0.0001;
+  float powerFactor2 = ((buffer[51] << 24) + (buffer[52] << 16) + (buffer[53] << 8) + buffer[54]) * 0.001;
+  float energyReturned2 = ((buffer[55] << 24) + (buffer[56] << 16) + (buffer[57] << 8) + buffer[58]) * 0.0001;
+
+  bool changed = voltage1 != _voltage1 ||
+                 current1 != _current1 ||
+                 power1 != _power1 ||
+                 energy1 != _energy1 ||
+                 powerFactor1 != _powerFactor1 ||
+                 energyReturned1 != _energyReturned1 ||
+                 frequency != _frequency ||
+                 voltage2 != _voltage2 ||
+                 current2 != _current2 ||
+                 power2 != _power2 ||
+                 energy2 != _energy2 ||
+                 powerFactor2 != _powerFactor2 ||
+                 energyReturned2 != _energyReturned2;
+
+  if (changed) {
+    _voltage1 = voltage1;
+    _current1 = current1;
+    _power1 = power1;
+    _energy1 = energy1;
+    _powerFactor1 = powerFactor1;
+    _energyReturned1 = energyReturned1;
+    _frequency = frequency;
+    _voltage2 = voltage2;
+    _current2 = current2;
+    _power2 = power2;
+    _energy2 = energy2;
+    _powerFactor2 = powerFactor2;
+    _energyReturned2 = energyReturned2;
+  }
 
   _lastReadSuccess = millis();
 
-  if (_readCallback) {
-    _readCallback();
+  if (_callback) {
+    _callback(JSYEventType::EVT_READ);
+    if (changed) {
+      _callback(JSYEventType::EVT_CHANGE);
+    }
   }
 
   return true;
