@@ -98,6 +98,12 @@ jobs:
       - name: Build PerfTest2
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/PerfTest2/PerfTest2.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
 
+      - name: Build Callback
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/Callback/Callback.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+
+      - name: Build CallbackAsync
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/CallbackAsync/CallbackAsync.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+
   platformio:
     name: pio ${{ matrix.name }}
     needs: cpplint
@@ -180,3 +186,9 @@ jobs:
 
       - name: Build PerfTest2
         run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/PerfTest2/PerfTest2.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+
+      - name: Build Callback
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/Callback/Callback.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+
+      - name: Build CallbackAsync
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/CallbackAsync/CallbackAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
