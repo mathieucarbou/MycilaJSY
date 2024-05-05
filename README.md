@@ -273,6 +273,8 @@ jsy.read() at 38400 bauds:
 
 Here are below some test results for the JSY at different baud rates for 50 consecutive reads on a nominal load of about 650W, controlled with a random SSR relay (0-100%).
 
+You can run the `PerfTests` from the examples.
+
 **PerfTest1**
 
 ```
@@ -384,9 +386,6 @@ The "Ramp up time" is the time it takes for the JSY to stabilize (with a maximum
 
 The "Ramp down time" is the time it takes for the JSY to return to 0W after the relay was opened.
 
-You can run the `PerfTests` from the examples.
-The numbers might change a little (be more accurate for example for 19200 bauds) but the order of magnitude should stay the same.
-
 **What these results mean ?**
 
 - Speed up the JSY allows to **read data faster** and consequently block less the program if not using any dedicated task to read the JSY
@@ -408,7 +407,3 @@ The numbers might change a little (be more accurate for example for 19200 bauds)
 - [JSY-MK-194T 3.pdf](https://oss.carbou.me/MycilaJSY/JSY-MK-194T%203.pdf) (version 3)
 - [JSY-MK-194T.exe](https://oss.carbou.me/MycilaJSY/JSY-MK-194T.exe) (Utility to configure the JSY with a USB-TTL adapter)
 - [ModbusMechanic](https://github.com/SciFiDryer/ModbusMechanic) (can connect and configure JSY with a USB-TTL adapter)
-
-```
-
-```
