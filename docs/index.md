@@ -96,7 +96,7 @@ if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
 
 - `JSYCallback`: called when the JSY has read the data and when a change for any of the metric is detected by the JSY.
   This is useful to be notified exactly when required.
-  You must check teh event type
+  You must check the event type
 
 **Callback Example**
 
