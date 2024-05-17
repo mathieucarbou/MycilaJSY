@@ -25,7 +25,7 @@ void setup() {
   while (!Serial)
     continue;
 
-  jsy.begin(&Serial2, 16, 17);
+  jsy.begin(Serial2, 16, 17);
 
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);
@@ -45,7 +45,7 @@ void setup() {
   for (size_t i = 0; i < 4; i++) {
     jsy.setBaudRate(rates[i]);
     jsy.end();
-    jsy.begin(&Serial2, 16, 17);
+    jsy.begin(Serial2, 16, 17);
 
     Serial.printf("\njsy.read() at %d bauds:\n", static_cast<int>(rates[i]));
 

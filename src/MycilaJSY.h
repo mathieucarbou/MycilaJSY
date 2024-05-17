@@ -68,7 +68,7 @@ namespace Mycila {
       // - txPin: TX board pin connected to the RX of the JSY
       // - pause: time in milliseconds to wait between each read in async mode
       // The baud rate is automatically detected
-      void begin(HardwareSerial* serial,
+      void begin(HardwareSerial& serial, // NOLINT
                  const int8_t rxPin,
                  const int8_t txPin,
                  const bool async = false,

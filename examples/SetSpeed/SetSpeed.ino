@@ -10,7 +10,7 @@ void setup() {
     continue;
 
   // read JSY on pins 17 (JSY RX / Serial TX) and 16 (JSY TX / Serial RX)// read JSY on pins 17 (JSY RX) and 16 (JSY TX)
-  jsy.begin(&Serial2, 16, 17);
+  jsy.begin(Serial2, 16, 17);
 
   if (jsy.isEnabled()) {
     Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_4800;
@@ -19,7 +19,7 @@ void setup() {
       Serial.println("JSY baud rate updated");
 
       jsy.end();
-      jsy.begin(&Serial2, 16, 17);
+      jsy.begin(Serial2, 16, 17);
 
     } else {
       Serial.println("JSY baud rate update failed");

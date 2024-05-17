@@ -22,14 +22,9 @@ static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44,
                                       (((1ULL << (gpio_num)) & SOC_GPIO_VALID_GPIO_MASK) != 0))
 #endif
 
-void Mycila::JSY::begin(HardwareSerial* serial, const int8_t rxPin, const int8_t txPin, const bool async, uint8_t core, uint32_t stackSize, uint32_t pause) {
+void Mycila::JSY::begin(HardwareSerial& serial, const int8_t rxPin, const int8_t txPin, const bool async, uint8_t core, uint32_t stackSize, uint32_t pause) {
   if (_enabled)
     return;
-
-  if (serial == nullptr) {
-    ESP_LOGE(TAG, "Disable JSY: Invalid serial");
-    return;
-  }
 
   if (GPIO_IS_VALID_GPIO(rxPin)) {
     _pinRX = (gpio_num_t)rxPin;
@@ -53,7 +48,7 @@ void Mycila::JSY::begin(HardwareSerial* serial, const int8_t rxPin, const int8_t
   ESP_LOGD(TAG, "- Async: %s", async ? "true" : "false");
 
   _pause = pause;
-  _serial = serial;
+  _serial = &serial;
   _baudRate = _detectBauds();
 
   if (_baudRate == JSYBaudRate::UNKNOWN) {

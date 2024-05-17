@@ -10,7 +10,7 @@ void setup() {
     continue;
 
   // read JSY on pins 17 (JSY RX / Serial TX) and 16 (JSY TX / Serial RX)
-  jsy.begin(&Serial2, 16, 17, true);
+  jsy.begin(Serial2, 16, 17, true);
 }
 
 Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_38400;
