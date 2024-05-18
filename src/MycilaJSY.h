@@ -8,7 +8,7 @@
 
 #include <mutex>
 
-#ifdef MYCILA_JSY_JSON_SUPPORT
+#ifdef MYCILA_JSON_SUPPORT
 #include <ArduinoJson.h>
 #endif
 
@@ -91,7 +91,7 @@ namespace Mycila {
       // This function is blocking until the change is confirmed or the timeout is reached.
       bool setBaudRate(const JSYBaudRate baudRate);
 
-#ifdef MYCILA_JSY_JSON_SUPPORT
+#ifdef MYCILA_JSON_SUPPORT
       void toJson(const JsonObject& root) const;
 #endif
 

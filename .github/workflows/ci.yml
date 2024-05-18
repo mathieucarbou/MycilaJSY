@@ -72,19 +72,19 @@ jobs:
         run: arduino-cli lib install ArduinoJson
 
       - name: Build Read
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/Read/Read.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/Read/Read.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
       - name: Build ReadAsync
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/ReadAsync/ReadAsync.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/ReadAsync/ReadAsync.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
       - name: Build EnergyReset
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/EnergyReset/EnergyReset.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/EnergyReset/EnergyReset.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
       - name: Build EnergyResetAsync
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/EnergyResetAsync/EnergyResetAsync.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/EnergyResetAsync/EnergyResetAsync.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
       - name: Build SetSpeed
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SetSpeed/SetSpeed.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SetSpeed/SetSpeed.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
       - name: Build SimpleEnergyReset
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SimpleEnergyReset/SimpleEnergyReset.ino"
@@ -93,16 +93,16 @@ jobs:
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SimpleSetSpeed/SimpleSetSpeed.ino"
 
       - name: Build PerfTest1
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/PerfTest1/PerfTest1.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/PerfTest1/PerfTest1.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
       - name: Build PerfTest2
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/PerfTest2/PerfTest2.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/PerfTest2/PerfTest2.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
       - name: Build Callback
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/Callback/Callback.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/Callback/Callback.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
       - name: Build CallbackAsync
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/CallbackAsync/CallbackAsync.ino" --build-property build.extra_flags=-DMYCILA_JSY_JSON_SUPPORT
+        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/CallbackAsync/CallbackAsync.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
   platformio:
     name: pio ${{ matrix.name }}
@@ -161,19 +161,19 @@ jobs:
       - run: platformio platform install ${{ matrix.platform }}
 
       - name: Build Read
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/Read/Read.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/Read/Read.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build ReadAsync
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/ReadAsync/ReadAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/ReadAsync/ReadAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build EnergyReset
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/EnergyReset/EnergyReset.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/EnergyReset/EnergyReset.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build EnergyResetAsync
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/EnergyResetAsync/EnergyResetAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/EnergyResetAsync/EnergyResetAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build SetSpeed
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/SetSpeed/SetSpeed.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/SetSpeed/SetSpeed.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build SimpleEnergyReset
         run: platformio ci "examples/SimpleEnergyReset/SimpleEnergyReset.ino" -l '.' -b ${{ matrix.board }} ${{ matrix.opts }}
@@ -182,13 +182,13 @@ jobs:
         run: platformio ci "examples/SimpleSetSpeed/SimpleSetSpeed.ino" -l '.' -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build PerfTest1
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/PerfTest1/PerfTest1.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/PerfTest1/PerfTest1.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build PerfTest2
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/PerfTest2/PerfTest2.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/PerfTest2/PerfTest2.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build Callback
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/Callback/Callback.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/Callback/Callback.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build CallbackAsync
-        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSY_JSON_SUPPORT" platformio ci "examples/CallbackAsync/CallbackAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
+        run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/CallbackAsync/CallbackAsync.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}

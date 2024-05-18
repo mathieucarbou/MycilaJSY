@@ -4,6 +4,20 @@
  */
 #include "MycilaJSY.h"
 
+#ifdef MYCILA_LOGGER_SUPPORT
+#include <MycilaLogger.h>
+extern Mycila::Logger logger;
+#define LOGD(tag, format, ...) logger.debug(tag, format, ##__VA_ARGS__)
+#define LOGI(tag, format, ...) logger.info(tag, format, ##__VA_ARGS__)
+#define LOGW(tag, format, ...) logger.warn(tag, format, ##__VA_ARGS__)
+#define LOGE(tag, format, ...) logger.error(tag, format, ##__VA_ARGS__)
+#else
+#define LOGD(tag, format, ...) ESP_LOGD(tag, format, ##__VA_ARGS__)
+#define LOGI(tag, format, ...) ESP_LOGI(tag, format, ##__VA_ARGS__)
+#define LOGW(tag, format, ...) ESP_LOGW(tag, format, ##__VA_ARGS__)
+#define LOGE(tag, format, ...) ESP_LOGE(tag, format, ##__VA_ARGS__)
+#endif
+
 #define TAG "JSY"
 
 #define JSY_READ_RESPONSE_SIZE 61
@@ -29,7 +43,7 @@ void Mycila::JSY::begin(HardwareSerial& serial, const int8_t rxPin, const int8_t
   if (GPIO_IS_VALID_GPIO(rxPin)) {
     _pinRX = (gpio_num_t)rxPin;
   } else {
-    ESP_LOGE(TAG, "Disable JSY: Invalid Serial RX (JSY TX pin): %" PRId8, rxPin);
+    LOGE(TAG, "Disable JSY: Invalid Serial RX (JSY TX pin): %" PRId8, rxPin);
     _pinRX = GPIO_NUM_NC;
     return;
   }
@@ -37,27 +51,24 @@ void Mycila::JSY::begin(HardwareSerial& serial, const int8_t rxPin, const int8_t
   if (GPIO_IS_VALID_OUTPUT_GPIO(txPin)) {
     _pinTX = (gpio_num_t)txPin;
   } else {
-    ESP_LOGE(TAG, "Disable JSY: Invalid Serial TX (JSY RX pin): %" PRId8, txPin);
+    LOGE(TAG, "Disable JSY: Invalid Serial TX (JSY RX pin): %" PRId8, txPin);
     _pinTX = GPIO_NUM_NC;
     return;
   }
 
-  ESP_LOGI(TAG, "Enable JSY...");
-  ESP_LOGD(TAG, "- Serial RX (JSY TX Pin): %u", _pinRX);
-  ESP_LOGD(TAG, "- Serial TX (JSY RX Pin): %u", _pinTX);
-  ESP_LOGD(TAG, "- Async: %s", async ? "true" : "false");
+  LOGI(TAG, "Enable JSY on Serial RX (JSY TX Pin): %" PRId8 " and Serial TX (JSY RX Pin): %" PRId8, rxPin, txPin);
 
   _pause = pause;
   _serial = &serial;
   _baudRate = _detectBauds();
 
   if (_baudRate == JSYBaudRate::UNKNOWN) {
-    ESP_LOGE(TAG, "Unable to read at any supported speed. Disabling.");
+    LOGE(TAG, "Unable to read at any supported speed. Disabling.");
     _serial->end();
     return;
   }
 
-  ESP_LOGI(TAG, "Detected speed: %" PRIu32 " bauds", (uint32_t)_baudRate);
+  LOGI(TAG, "Detected speed: %" PRIu32 " bauds", (uint32_t)_baudRate);
 
   assert(!async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, MYCILA_JSY_ASYNC_PRIORITY, &_taskHandle, core) == pdPASS);
 
@@ -66,7 +77,7 @@ void Mycila::JSY::begin(HardwareSerial& serial, const int8_t rxPin, const int8_t
 
 void Mycila::JSY::end() {
   if (_enabled) {
-    ESP_LOGI(TAG, "Disable JSY...");
+    LOGI(TAG, "Disable JSY...");
     _enabled = false;
     _baudRate = JSYBaudRate::UNKNOWN;
     while (_taskHandle != NULL) {
@@ -91,7 +102,7 @@ bool Mycila::JSY::read() {
     return false;
 
   if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
-    ESP_LOGW(TAG, "Cannot read: Serial is busy!");
+    LOGW(TAG, "Cannot read: Serial is busy!");
     return false;
   }
 
@@ -131,7 +142,7 @@ bool Mycila::JSY::read() {
     _powerFactor2 = 0;
     _voltage1 = 0;
     _voltage2 = 0;
-    ESP_LOGD(TAG, "Read failed: %d", count);
+    LOGD(TAG, "Read failed: %d", count);
     if (_callback) {
       _callback(JSYEventType::EVT_READ_ERROR);
     }
@@ -202,12 +213,12 @@ bool Mycila::JSY::resetEnergy() {
   if (!_enabled)
     return false;
 
-  ESP_LOGI(TAG, "Reset Energy data...");
+  LOGI(TAG, "Reset Energy data...");
 
   const uint8_t data[] = {0x01, 0x10, 0x00, 0x0C, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0xF3, 0xFA};
 
   if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
-    ESP_LOGW(TAG, "Cannot reset: Serial is busy!");
+    LOGW(TAG, "Cannot reset: Serial is busy!");
     return false;
   }
 
@@ -224,7 +235,7 @@ bool Mycila::JSY::resetEnergy() {
   }
 
   if (count != 8) {
-    ESP_LOGD(TAG, "Reset failed!");
+    LOGW(TAG, "Reset failed!");
     return false;
   }
 
@@ -241,7 +252,7 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
   if (_baudRate == baudRate)
     return true;
 
-  ESP_LOGI(TAG, "Update baud rate to %u...", (uint32_t)baudRate);
+  LOGI(TAG, "Update baud rate to %u...", (uint32_t)baudRate);
 
   uint8_t data[] = {0x00, 0x10, 0x00, 0x04, 0x00, 0x01, 0x02, 0x01, 0x00, 0x00, 0x00};
 
@@ -272,7 +283,7 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
   }
 
   if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
-    ESP_LOGW(TAG, "Cannot set baud rate: Serial is busy!");
+    LOGW(TAG, "Cannot set baud rate: Serial is busy!");
     return false;
   }
 
@@ -287,7 +298,7 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
   }
 
   if (count != 8) {
-    ESP_LOGD(TAG, "Update baud rate to %u failed!");
+    LOGW(TAG, "Update baud rate to %u failed!");
     return false;
   }
 
@@ -310,7 +321,7 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
   return success;
 }
 
-#ifdef MYCILA_JSY_JSON_SUPPORT
+#ifdef MYCILA_JSON_SUPPORT
 void Mycila::JSY::toJson(const JsonObject& root) const {
   root["current1"] = _current1;
   root["current2"] = _current2;
@@ -331,7 +342,7 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
 #endif
 
 void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
-  ESP_LOGD(TAG, "Open serial at %u bauds", (uint32_t)baudRate);
+  LOGD(TAG, "Open serial at %u bauds", (uint32_t)baudRate);
   _serial->begin((uint32_t)baudRate, SERIAL_8N1, _pinRX, _pinTX);
   _serial->setTimeout(MYCILA_JSY_READ_TIMEOUT_MS);
   while (!_serial)
@@ -351,10 +362,10 @@ size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
   // Here, we ensure to read the data as fast as possible when everything works, and when no data is available, we have a timeout.
   const size_t count = _serial->readBytes(buffer, length) + _drop();
   if (count == 0) {
-    ESP_LOGD(TAG, "Read timeout");
+    LOGD(TAG, "Read timeout");
     return count;
   }
-  // ESP_LOGD(TAG, "Read available after %d ms", millis() - now);
+  // LOGD(TAG, "Read available after %d ms", millis() - now);
   return count;
 }
 
@@ -381,7 +392,7 @@ bool Mycila::JSY::_canRead() {
 Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {
   const JSYBaudRate baudRates[] = {JSYBaudRate::BAUD_38400, JSYBaudRate::BAUD_19200, JSYBaudRate::BAUD_9600, JSYBaudRate::BAUD_4800};
   for (int i = 0; i < 16; i++) {
-    ESP_LOGD(TAG, "Trying to read at %u bauds...", (uint32_t)baudRates[i % 4]);
+    LOGD(TAG, "Trying to read at %u bauds...", (uint32_t)baudRates[i % 4]);
     _openSerial(baudRates[i % 4]);
     if (_canRead())
       return baudRates[i % 4];
