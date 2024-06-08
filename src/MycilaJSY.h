@@ -9,33 +9,33 @@
 #include <mutex>
 
 #ifdef MYCILA_JSON_SUPPORT
-#include <ArduinoJson.h>
+  #include <ArduinoJson.h>
 #endif
 
-#define MYCILA_JSY_VERSION "9.0.0"
-#define MYCILA_JSY_VERSION_MAJOR 9
-#define MYCILA_JSY_VERSION_MINOR 0
+#define MYCILA_JSY_VERSION          "9.0.0"
+#define MYCILA_JSY_VERSION_MAJOR    9
+#define MYCILA_JSY_VERSION_MINOR    0
 #define MYCILA_JSY_VERSION_REVISION 0
 
 #ifndef MYCILA_JSY_ASYNC_CORE
-#define MYCILA_JSY_ASYNC_CORE 0
+  #define MYCILA_JSY_ASYNC_CORE 0
 #endif
 
 #ifndef MYCILA_JSY_ASYNC_PRIORITY
-#define MYCILA_JSY_ASYNC_PRIORITY 1
+  #define MYCILA_JSY_ASYNC_PRIORITY 1
 #endif
 
 #ifndef MYCILA_JSY_ASYNC_STACK_SIZE
-#define MYCILA_JSY_ASYNC_STACK_SIZE 2048
+  #define MYCILA_JSY_ASYNC_STACK_SIZE 2048
 #endif
 
 // time in milliseconds to wait between each read in async mode
 #ifndef MYCILA_JSY_ASYNC_READ_PAUSE_MS
-#define MYCILA_JSY_ASYNC_READ_PAUSE_MS 0
+  #define MYCILA_JSY_ASYNC_READ_PAUSE_MS 0
 #endif
 
 #ifndef MYCILA_JSY_READ_TIMEOUT_MS
-#define MYCILA_JSY_READ_TIMEOUT_MS 200
+  #define MYCILA_JSY_READ_TIMEOUT_MS 200
 #endif
 
 namespace Mycila {
@@ -115,8 +115,8 @@ namespace Mycila {
       float getVoltage1() const { return _voltage1; }
       float getVoltage2() const { return _voltage2; }
       // apparent power in VA
-      float getApparentPower1() const { return _power1 / _powerFactor1; }
-      float getApparentPower2() const { return _power2 / _powerFactor2; }
+      float getApparentPower1() const { return _powerFactor1 == 0 ? 0 : _power1 / _powerFactor1; }
+      float getApparentPower2() const { return _powerFactor2 == 0 ? 0 : _power2 / _powerFactor2; }
 
       // get the uptime in milliseconds of the last successful read
       uint32_t getTime() const { return _lastReadSuccess; }
