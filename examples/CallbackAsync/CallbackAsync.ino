@@ -15,7 +15,7 @@ void setup() {
 
   jsy.setCallback([](const Mycila::JSYEventType eventType) {
     if (eventType == Mycila::JSYEventType::EVT_CHANGE) {
-      Serial.printf(" - %" PRIu32 " EVT_CHANGE: %f V, %f A, %f W\n", millis(), jsy.getVoltage2(), jsy.getCurrent2(), jsy.getPower2());
+      Serial.printf(" - %" PRIu32 " EVT_CHANGE: %f V, %f A, %f W\n", (uint32_t)millis(), jsy.getVoltage2(), jsy.getCurrent2(), jsy.getPower2());
     }
   });
 
