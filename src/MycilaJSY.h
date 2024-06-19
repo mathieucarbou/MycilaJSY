@@ -116,6 +116,16 @@ namespace Mycila {
       float getResistance2() const { return _current2 == 0 ? 0 : _power2 / (_current2 * _current2); }
       float getVoltage1() const { return _voltage1; }
       float getVoltage2() const { return _voltage2; }
+      float getDimmedVoltage1() const { return _current1 == 0 ? 0 : _power1 / _current1; }
+      float getDimmedVoltage2() const { return _current2 == 0 ? 0 : _power2 / _current2; }
+      float getNominalPower1() const {
+        float r1 = getResistance1();
+        return r1 == 0 ? 0 : _voltage1 * _voltage1 / r1;
+      }
+      float getNominalPower2() const {
+        float r2 = getResistance2();
+        return r2 == 0 ? 0 : _voltage2 * _voltage2 / r2;
+      }
       // apparent power in VA
       float getApparentPower1() const { return _powerFactor1 == 0 ? 0 : _power1 / _powerFactor1; }
       float getApparentPower2() const { return _powerFactor2 == 0 ? 0 : _power2 / _powerFactor2; }
