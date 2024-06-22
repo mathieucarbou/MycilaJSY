@@ -58,6 +58,22 @@ namespace Mycila {
     EVT_READ_TIMEOUT
   };
 
+  typedef struct {
+      float current1 = 0;        // A
+      float current2 = 0;        // A
+      float energy1 = 0;         // kWh
+      float energy2 = 0;         // kWh
+      float energyReturned1 = 0; // kWh
+      float energyReturned2 = 0; // kWh
+      float frequency = 0;       // Hz
+      float power1 = 0;          // W
+      float power2 = 0;          // W
+      float powerFactor1 = 0;
+      float powerFactor2 = 0;
+      float voltage1 = 0; // V
+      float voltage2 = 0; // V
+  } JSYData;
+
   typedef std::function<void(const JSYEventType eventType)> JSYCallback;
 
   class JSY {
@@ -136,6 +152,22 @@ namespace Mycila {
 
       // get the uptime in milliseconds of the last successful read
       uint32_t getTime() const { return _lastReadSuccess; }
+
+      void getData(JSYData& data) const { // NOLINT
+        data.current1 = _current1;
+        data.current2 = _current2;
+        data.energy1 = _energy1;
+        data.energy2 = _energy2;
+        data.energyReturned1 = _energyReturned1;
+        data.energyReturned2 = _energyReturned2;
+        data.frequency = _frequency;
+        data.power1 = _power1;
+        data.power2 = _power2;
+        data.powerFactor1 = _powerFactor1;
+        data.powerFactor2 = _powerFactor2;
+        data.voltage1 = _voltage1;
+        data.voltage2 = _voltage2;
+      }
 
       // check if the device is connected to the grid, meaning if last read was successful
       bool isConnected() const { return _frequency > 0; }
