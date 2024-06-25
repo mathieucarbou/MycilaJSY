@@ -42,6 +42,7 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
   - [Update Baud rate (change speed)](#update-baud-rate-change-speed)
   - [Callbacks](#callbacks)
   - [Remote JSY](#remote-jsy)
+  - [JSON Support](#json-support)
 - [Performance tests](#performance-tests)
 - [Reference material](#reference-material)
 
@@ -293,6 +294,12 @@ Screenshot of the ESP32 running the JSY app called the `Sender`:
 There is also a `Listener` app as example that will display the received data. The Listener app looks like the Sender app but does not have any JSY connected to it.
 
 **The `Sender` app can be also used as standalone app connected to a JSY to see the power meter data in real-time.**
+
+## JSON Support
+
+You can activate JSON support by defining `-D MYCILA_JSON_SUPPORT` in your project and add the `ArduinoJson` library.
+
+```c++
 
 ## Performance tests
 
