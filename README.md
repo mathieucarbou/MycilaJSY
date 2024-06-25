@@ -295,6 +295,12 @@ There is also a `Listener` app as example that will display the received data. T
 
 **The `Sender` app can be also used as standalone app connected to a JSY to see the power meter data in real-time.**
 
+**Speed**
+
+The JSY Remote through UDP is nearly as fast as having the JSY wired to the ESP.
+All changes to the JSY are immediately sent through UDP to the listener at a rate of about **20 messages per second.**
+This is the rate at which the JSY usually updates its data.
+
 ## JSON Support
 
 You can activate JSON support by defining `-D MYCILA_JSON_SUPPORT` in your project and add the `ArduinoJson` library.

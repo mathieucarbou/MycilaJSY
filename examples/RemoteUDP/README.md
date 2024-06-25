@@ -9,6 +9,12 @@ Screenshot of the ESP32 running the JSY: the `Sender`
 
 The `Listener` is the same app but will display the data received through UDP.
 
+**Speed**
+
+The JSY Remote through UDP is nearly as fast as having the JSY wired to the ESP.
+All changes to the JSY are immediately sent through UDP to the listener at a rate of about **20 messages per second.**
+This is the rate at which the JSY usually updates its data.
+
 ## How to wire
 
 **Sender**

@@ -72,6 +72,7 @@
 #define MYCILA_UDP_MSG_TYPE_JSY_DATA 0x01
 #define MYCILA_UDP_PORT              53964
 #define MYCILA_UDP_SEND_INTERVAL_MS  200
+#define MYCILA_UDP_SEND_RATE_WINDOW  50
 #define TAG                          "JSY-UDP"
 
 #include <Arduino.h>
@@ -96,7 +97,6 @@ ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
 Mycila::JSY jsy;
 Mycila::Logger logger;
 Mycila::TaskManager coreTaskManager("core");
-Mycila::TaskManager ioTaskManager("io");
 Mycila::TaskManager jsyTaskManager("jsy");
 
 Statistic networkHostname = Statistic(&dashboard, "Network Hostname");
@@ -134,6 +134,8 @@ Card energyReturned2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Exported Energy
 
 Card frequency = Card(&dashboard, GENERIC_CARD, "Grid Frequency", "Hz");
 
+Card sendRateCard = Card(&dashboard, GENERIC_CARD, "Send Rate", "msg/s");
+
 Card restart = Card(&dashboard, BUTTON_CARD, "Restart");
 Card energyReset = Card(&dashboard, BUTTON_CARD, "Reset JSY");
 Card reset = Card(&dashboard, BUTTON_CARD, "Reset Device");
@@ -149,6 +151,12 @@ String ssid;
 
 const size_t sendBufferSize = sizeof(Mycila::JSYData) + 1;
 
+// circular buffer for rates
+float sendTimes[MYCILA_UDP_SEND_RATE_WINDOW];
+size_t sendTimesIndex = 0;
+size_t sendTimesCount = 0;
+volatile float sendRate = 0;
+
 const String toDHHMMSS(uint32_t seconds);
 String getEspId();
 
@@ -162,7 +170,6 @@ Mycila::Task networkManagerTask("ESPConnect", [](void* params) { ESPConnect.loop
 Mycila::Task profilerTask("Profiler", [](void* params) {
   Mycila::TaskMonitor.log();
   coreTaskManager.log();
-  ioTaskManager.log();
   jsyTaskManager.log();
 });
 
@@ -225,6 +232,8 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
 
   frequency.update(jsy.getFrequency());
 
+  sendRateCard.update(sendRate);
+
   // shift array
   for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
     power1HistoryY[i] = power1HistoryY[i + 1];
@@ -240,27 +249,6 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   power2History.updateY(power2HistoryY, MYCILA_GRAPH_POINTS);
 
   dashboard.sendUpdates();
-});
-
-Mycila::Task senderTask("Sender", [](void* params) {
-  Mycila::JSYData jsyData;
-  jsy.getData(jsyData);
-  uint8_t buffer[sendBufferSize];
-  buffer[0] = MYCILA_UDP_MSG_TYPE_JSY_DATA;
-  memcpy(buffer + 1, &jsyData, sizeof(Mycila::JSYData));
-  switch (ESPConnect.getMode()) {
-    case ESPConnectMode::AP:
-      udp.broadcastTo(buffer, sendBufferSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_AP);
-      break;
-    case ESPConnectMode::STA:
-      udp.broadcastTo(buffer, sendBufferSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_STA);
-      break;
-    case ESPConnectMode::ETH:
-      udp.broadcastTo(buffer, sendBufferSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_ETH);
-      break;
-    default:
-      break;
-  }
 });
 
 void setup() {
@@ -303,9 +291,6 @@ void setup() {
   profilerTask.setInterval(10 * Mycila::TaskDuration::SECONDS);
   profilerTask.setManager(coreTaskManager);
   restartTask.setManager(coreTaskManager);
-  senderTask.setEnabledWhen([]() { return jsy.isEnabled() && ESPConnect.isConnected(); });
-  senderTask.setInterval(MYCILA_UDP_SEND_INTERVAL_MS * Mycila::TaskDuration::MILLISECONDS);
-  senderTask.setManager(ioTaskManager);
 
   // profiling
   dashboardTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
@@ -313,7 +298,6 @@ void setup() {
   otaTask.setCallback(LOG_EXEC_TIME);
   profilerTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
   profilerTask.setCallback(LOG_EXEC_TIME);
-  senderTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
 
   // Task Monitor
   Mycila::TaskMonitor.begin();
@@ -322,7 +306,6 @@ void setup() {
   Mycila::TaskMonitor.addTask("async_udp");               // AsyncUDP
   Mycila::TaskMonitor.addTask("wifi");                    // WiFI
   Mycila::TaskMonitor.addTask(coreTaskManager.getName()); // App
-  Mycila::TaskMonitor.addTask(ioTaskManager.getName());   // App
   Mycila::TaskMonitor.addTask(jsyTaskManager.getName());  // App
 
   // WebSerial
@@ -378,6 +361,42 @@ void setup() {
   dashboardTask.forceRun();
 
   // jsy
+  jsy.setCallback([](const Mycila::JSYEventType eventType) {
+    if (eventType == Mycila::JSYEventType::EVT_READ && ESPConnect.isConnected()) {
+      Mycila::JSYData jsyData;
+      jsy.getData(jsyData);
+      uint8_t buffer[sendBufferSize];
+      buffer[0] = MYCILA_UDP_MSG_TYPE_JSY_DATA;
+      memcpy(buffer + 1, &jsyData, sizeof(Mycila::JSYData));
+      bool send = false;
+      switch (ESPConnect.getMode()) {
+        case ESPConnectMode::AP:
+          udp.broadcastTo(buffer, sendBufferSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_AP);
+          send = true;
+          break;
+        case ESPConnectMode::STA:
+          udp.broadcastTo(buffer, sendBufferSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_STA);
+          send = true;
+          break;
+        case ESPConnectMode::ETH:
+          udp.broadcastTo(buffer, sendBufferSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_ETH);
+          send = true;
+          break;
+        default:
+          break;
+      }
+      if (send) {
+        float last = millis() / 1000.0f;
+        sendTimes[sendTimesIndex] = last;
+        if (sendTimesCount < MYCILA_UDP_SEND_RATE_WINDOW)
+          sendTimesCount++;
+        sendTimesIndex = (sendTimesIndex + 1) % MYCILA_UDP_SEND_RATE_WINDOW;
+        float first = sendTimes[sendTimesIndex];
+        float diff = last - first;
+        sendRate = diff == 0 ? 0 : sendTimesCount / diff;
+      }
+    }
+  });
   jsy.begin(MYCILA_JSY_SERIAL, MYCILA_JSY_RX, MYCILA_JSY_TX);
   if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400)
     jsy.setBaudRate(Mycila::JSYBaudRate::BAUD_38400);
@@ -439,7 +458,6 @@ void setup() {
 
   // start tasks
   assert(coreTaskManager.asyncStart(1024 * 4, 1, 1, 100, true)); // NOLINT
-  assert(ioTaskManager.asyncStart(1024 * 4, 2, 1, 100, false));  // NOLINT
   assert(jsyTaskManager.asyncStart(1024 * 3, 5, 0, 100, true));  // NOLINT
 
   logger.info(TAG, "Started " MYCILA_APP_NAME "!");
