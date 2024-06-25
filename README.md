@@ -305,8 +305,6 @@ This is the rate at which the JSY usually updates its data.
 
 You can activate JSON support by defining `-D MYCILA_JSON_SUPPORT` in your project and add the `ArduinoJson` library.
 
-```c++
-
 ## Performance tests
 
 Here are below some test results for the JSY at different baud rates for 50 consecutive reads on a nominal load of about 650W, controlled with a random SSR relay (0-100%).
