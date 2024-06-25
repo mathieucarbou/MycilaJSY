@@ -41,8 +41,8 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
   - [Energy reset](#energy-reset)
   - [Update Baud rate (change speed)](#update-baud-rate-change-speed)
   - [Callbacks](#callbacks)
+  - [Remote JSY with UDP](#remote-jsy-with-udp)
 - [Performance tests](#performance-tests)
-- [Remote JSY with UDP](#remote-jsy-with-udp)
 - [Reference material](#reference-material)
 
 ## Usage
@@ -279,6 +279,23 @@ jsy.read() at 38400 bauds:
  - 14969706 EVT_READ
 ```
 
+### Remote JSY
+
+The JSY can be used connected to an ESP32 to send the JSY data each 500 ms to a remote server through UDP.
+Both devices needs to be connected to the same WiFi network and UDP packets must be allowed.
+
+See `examples/RemoteUDP` example to see how to use it.
+
+Screenshot of the ESP32 running the JSY app called the `Sender`:
+
+![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/6a2c8cad-beaf-4e9a-a84e-514f7fe6dd81)
+
+Screenshot of the ESP32 listening for data, called the `Listener`:
+
+![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/2e7af56b-217b-43b2-9c31-95cc8cb7923d)
+
+The `Sender` app can be also used as standalone app connected to a JSY to see the power meter data in real-time.
+
 ## Performance tests
 
 Here are below some test results for the JSY at different baud rates for 50 consecutive reads on a nominal load of about 650W, controlled with a random SSR relay (0-100%).
@@ -409,21 +426,6 @@ The "Ramp down time" is the time it takes for the JSY to return to 0W after the 
   This duration contains the duration for the load to reach its nominal power, plus the duration it takes for the JSY to stabilize its measurements (I think the JSY is using some kind of filtering or averaging).
 
 - Reading the JSY too frequently will lead to the same results, so an improvement could be to have the JSY read in a dedicated task asynchronously and use the callback mechanism to be called as soon as the JSY sees a change
-
-## Remote JSY with UDP
-
-The JSY can be used connected to an ESP32 to send the JSY data each 500 ms to a remote server through UDP.
-Both devices needs to be connected to the same WiFi network and UDP packets must be allowed.
-
-See `examples/RemoteUDP` example to see how to use it.
-
-Screenshot of the ESP32 running the JSY: the `Sender`
-
-![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/6a2c8cad-beaf-4e9a-a84e-514f7fe6dd81)
-
-Screenshot of the ESP32 listening for data: the `Listener`:
-
-![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/2e7af56b-217b-43b2-9c31-95cc8cb7923d)
 
 ## Reference material
 
