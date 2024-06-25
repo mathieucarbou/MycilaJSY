@@ -197,17 +197,13 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   voltage.update(jsyData.voltage2);
 
   // shift array
-  for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
-    historyX[i] = historyX[i + 1];
+  for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++)
     gridPowerHistoryY[i] = gridPowerHistoryY[i + 1];
-  }
 
   // set new value
-  historyX[MYCILA_GRAPH_POINTS - 1] = millis() / 1000;
   gridPowerHistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsyData.power2);
 
   // update charts
-  gridPowerHistory.updateX(historyX, MYCILA_GRAPH_POINTS);
   gridPowerHistory.updateY(gridPowerHistoryY, MYCILA_GRAPH_POINTS);
 
   dashboard.sendUpdates();
@@ -286,11 +282,18 @@ void setup() {
 
   // Dashboard
   webServer.rewrite("/", "/dashboard").setFilter([](AsyncWebServerRequest* request) { return ESPConnect.getState() != ESPConnectState::PORTAL_STARTED; });
+
   restart.attachCallback([](int32_t value) { restartTask.resume(); });
+
   reset.attachCallback([](int32_t value) {
     ESPConnect.clearConfiguration();
     restartTask.resume();
   });
+
+  for (int i = 0; i < MYCILA_GRAPH_POINTS; i++)
+    historyX[i] = i + 1 - MYCILA_GRAPH_POINTS;
+  gridPowerHistory.updateX(historyX, MYCILA_GRAPH_POINTS);
+
   dashboard.onBeforeUpdate([](bool changes_only) {
     if (!changes_only) {
       logger.debug(TAG, "Dashboard refresh requested");
@@ -304,7 +307,7 @@ void setup() {
   dashboard.refreshLayout();
   dashboardTask.forceRun();
 
-  // listener
+  // UDP
   udp.onPacket([](AsyncUDPPacket packet) {
     size_t len = packet.length();
     uint8_t* data = packet.data();

@@ -19,6 +19,7 @@
     "string_view": "cpp",
     "initializer_list": "cpp",
     "span": "cpp",
-    "regex": "cpp"
+    "regex": "cpp",
+    "cmath": "cpp"
   }
 }
