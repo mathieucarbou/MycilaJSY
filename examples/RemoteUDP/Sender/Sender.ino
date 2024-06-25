@@ -66,12 +66,13 @@
   #define MYCILA_ADMIN_PASSWORD ""
 #endif
 
-#define TAG                          "JSY-UDP"
-#define MYCILA_APP_NAME              "JSY Remote UDP Sender"
 #define MYCILA_ADMIN_USERNAME        "admin"
-#define MYCILA_UDP_PORT              53964
-#define MYCILA_UDP_MSG_TYPE_JSY_DATA 0x01
+#define MYCILA_APP_NAME              "JSY Remote UDP Sender"
 #define MYCILA_GRAPH_POINTS          120
+#define MYCILA_UDP_MSG_TYPE_JSY_DATA 0x01
+#define MYCILA_UDP_PORT              53964
+#define MYCILA_UDP_SEND_INTERVAL_MS  200
+#define TAG                          "JSY-UDP"
 
 #include <Arduino.h>
 #include <ESPmDNS.h>
@@ -303,7 +304,7 @@ void setup() {
   profilerTask.setManager(coreTaskManager);
   restartTask.setManager(coreTaskManager);
   senderTask.setEnabledWhen([]() { return jsy.isEnabled() && ESPConnect.isConnected(); });
-  senderTask.setInterval(500 * Mycila::TaskDuration::MILLISECONDS);
+  senderTask.setInterval(MYCILA_UDP_SEND_INTERVAL_MS * Mycila::TaskDuration::MILLISECONDS);
   senderTask.setManager(ioTaskManager);
 
   // profiling
@@ -353,7 +354,7 @@ void setup() {
   });
 
   for (int i = 0; i < MYCILA_GRAPH_POINTS; i++)
-    historyX[i] = i + 1 - MYCILA_GRAPH_POINTS;
+    historyX[i] = i - MYCILA_GRAPH_POINTS;
   power1History.updateX(historyX, MYCILA_GRAPH_POINTS);
   power2History.updateX(historyX, MYCILA_GRAPH_POINTS);
 

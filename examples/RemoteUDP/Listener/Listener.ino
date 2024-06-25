@@ -320,7 +320,7 @@ void setup() {
   });
 
   for (int i = 0; i < MYCILA_GRAPH_POINTS; i++)
-    historyX[i] = i + 1 - MYCILA_GRAPH_POINTS;
+    historyX[i] = i - MYCILA_GRAPH_POINTS;
   power1History.updateX(historyX, MYCILA_GRAPH_POINTS);
   power2History.updateX(historyX, MYCILA_GRAPH_POINTS);
 

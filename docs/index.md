@@ -282,7 +282,7 @@ jsy.read() at 38400 bauds:
 
 ### Remote JSY
 
-The JSY can be used connected to an ESP32 to send the JSY data each 500 ms to a remote server through UDP.
+The JSY can be used connected to an ESP32 to send the JSY data several times per second to a remote server through UDP.
 Both devices needs to be connected to the same WiFi network and UDP packets must be allowed.
 
 The application can be found in `examples/RemoteUDP`.

@@ -1,6 +1,6 @@
 # Remote JSY with UDP
 
-The JSY can be used connected to an ESP32 to send the JSY data each 500 ms to a remote server through UDP.
+The JSY can be used connected to an ESP32 to send the JSY data several times per second to a remote server through UDP.
 Both devices needs to be connected to the same WiFi network and UDP packets must be allowed.
 
 Screenshot of the ESP32 running the JSY: the `Sender`
