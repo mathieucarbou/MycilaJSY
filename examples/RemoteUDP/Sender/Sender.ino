@@ -111,14 +111,26 @@ Statistic networkWiFiRSSI = Statistic(&dashboard, "Network WiFi RSSI");
 Statistic networkWiFiSignal = Statistic(&dashboard, "Network WiFi Signal");
 Statistic uptime = Statistic(&dashboard, "Uptime");
 
-Card voltage = Card(&dashboard, GENERIC_CARD, "Voltage", "V");
-Card activePower = Card(&dashboard, GENERIC_CARD, "Active Power", "W");
-Card apparentPower = Card(&dashboard, GENERIC_CARD, "Apparent Power", "VA");
-Card powerFactor = Card(&dashboard, GENERIC_CARD, "Power Factor");
+Card voltage1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Voltage", "V");
+Card activePower1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Active Power", "W");
+Card apparentPower1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Apparent Power", "VA");
+Card powerFactor1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Power Factor");
 
-Card current = Card(&dashboard, GENERIC_CARD, "Current", "A");
-Card energy = Card(&dashboard, GENERIC_CARD, "Imported Energy", "kWh");
-Card energyReturned = Card(&dashboard, GENERIC_CARD, "Exported Energy", "kWh");
+Card voltageDimmed1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Dimmed Voltage", "V");
+Card current1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Current", "A");
+Card energy1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Imported Energy", "kWh");
+Card energyReturned1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Exported Energy", "kWh");
+
+Card voltage2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Voltage", "V");
+Card activePower2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Active Power", "W");
+Card apparentPower2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Apparent Power", "VA");
+Card powerFactor2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Power Factor");
+
+Card voltageDimmed2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Dimmed Voltage", "V");
+Card current2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Current", "A");
+Card energy2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Imported Energy", "kWh");
+Card energyReturned2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Exported Energy", "kWh");
+
 Card frequency = Card(&dashboard, GENERIC_CARD, "Grid Frequency", "Hz");
 
 Card restart = Card(&dashboard, BUTTON_CARD, "Restart");
@@ -126,8 +138,10 @@ Card energyReset = Card(&dashboard, BUTTON_CARD, "Reset JSY");
 Card reset = Card(&dashboard, BUTTON_CARD, "Reset Device");
 
 int historyX[MYCILA_GRAPH_POINTS] = {0};
-int gridPowerHistoryY[MYCILA_GRAPH_POINTS] = {0};
-Chart gridPowerHistory = Chart(&dashboard, BAR_CHART, "Grid Power (Watts)");
+int power1HistoryY[MYCILA_GRAPH_POINTS] = {0};
+int power2HistoryY[MYCILA_GRAPH_POINTS] = {0};
+Chart power1History = Chart(&dashboard, BAR_CHART, "Channel 1 Active Power (W)");
+Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)");
 
 String hostname;
 String ssid;
@@ -190,24 +204,39 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   networkWiFiSSID.set(ESPConnect.getWiFiSSID().c_str());
   uptime.set(toDHHMMSS(Mycila::System.getUptime()).c_str());
 
-  activePower.update(jsy.getPower2());
-  apparentPower.update(jsy.getApparentPower2());
-  current.update(jsy.getCurrent2());
-  energy.update(jsy.getEnergy2());
-  energyReturned.update(jsy.getEnergyReturned2());
+  activePower1.update(jsy.getPower1());
+  apparentPower1.update(jsy.getApparentPower1());
+  current1.update(jsy.getCurrent1());
+  energy1.update(jsy.getEnergy1());
+  energyReturned1.update(jsy.getEnergyReturned1());
+  powerFactor1.update(jsy.getPowerFactor1());
+  voltage1.update(jsy.getVoltage1());
+  voltageDimmed1.update(jsy.getDimmedVoltage1());
+
+  activePower2.update(jsy.getPower2());
+  apparentPower2.update(jsy.getApparentPower2());
+  current2.update(jsy.getCurrent2());
+  energy2.update(jsy.getEnergy2());
+  energyReturned2.update(jsy.getEnergyReturned2());
+  powerFactor2.update(jsy.getPowerFactor2());
+  voltage2.update(jsy.getVoltage2());
+  voltageDimmed2.update(jsy.getDimmedVoltage2());
+
   frequency.update(jsy.getFrequency());
-  powerFactor.update(jsy.getPowerFactor2());
-  voltage.update(jsy.getVoltage2());
 
   // shift array
-  for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++)
-    gridPowerHistoryY[i] = gridPowerHistoryY[i + 1];
+  for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
+    power1HistoryY[i] = power1HistoryY[i + 1];
+    power2HistoryY[i] = power2HistoryY[i + 1];
+  }
 
   // set new value
-  gridPowerHistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.getPower2());
+  power1HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.getPower1());
+  power2HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.getPower2());
 
   // update charts
-  gridPowerHistory.updateY(gridPowerHistoryY, MYCILA_GRAPH_POINTS);
+  power1History.updateY(power1HistoryY, MYCILA_GRAPH_POINTS);
+  power2History.updateY(power2HistoryY, MYCILA_GRAPH_POINTS);
 
   dashboard.sendUpdates();
 });
@@ -325,7 +354,8 @@ void setup() {
 
   for (int i = 0; i < MYCILA_GRAPH_POINTS; i++)
     historyX[i] = i + 1 - MYCILA_GRAPH_POINTS;
-  gridPowerHistory.updateX(historyX, MYCILA_GRAPH_POINTS);
+  power1History.updateX(historyX, MYCILA_GRAPH_POINTS);
+  power2History.updateX(historyX, MYCILA_GRAPH_POINTS);
 
   energyReset.attachCallback([](int32_t value) {
     jsy.resetEnergy();

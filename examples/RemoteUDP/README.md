@@ -5,11 +5,9 @@ Both devices needs to be connected to the same WiFi network and UDP packets must
 
 Screenshot of the ESP32 running the JSY: the `Sender`
 
-![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/6a2c8cad-beaf-4e9a-a84e-514f7fe6dd81)
+![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/3066bf12-31d5-45de-9303-d810f14731d0)
 
-Screenshot of the ESP32 listening for data: the `Listener`:
-
-![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/2e7af56b-217b-43b2-9c31-95cc8cb7923d)
+The `Listener` is teh same app but will display the data received through UDP.
 
 ## How to wire
 
