@@ -7,7 +7,7 @@ Screenshot of the ESP32 running the JSY: the `Sender`
 
 ![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/3066bf12-31d5-45de-9303-d810f14731d0)
 
-The `Listener` is teh same app but will display the data received through UDP.
+The `Listener` is the same app but will display the data received through UDP.
 
 ## How to wire
 
@@ -16,7 +16,7 @@ The `Listener` is teh same app but will display the data received through UDP.
 1. Just attach the JSY module to the ESP32
 2. Eventually reconfigure the Serial, TX and RX pin in `Sender.ino`
 3. Advise is to power the ESP32 thanks to a MeanWell HDR-15-5 DIN module which is placed just after a 2A breaker.
-4. Connect L + N wires to the JSY and set teh clamp around the main phase.
+4. Connect L + N wires to the JSY and set the clamp around the main phase.
 5. Ideally, put everything in an isolated box or DIN rail
 
 ## Installation with Arduino IDE

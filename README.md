@@ -41,7 +41,7 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
   - [Energy reset](#energy-reset)
   - [Update Baud rate (change speed)](#update-baud-rate-change-speed)
   - [Callbacks](#callbacks)
-  - [Remote JSY with UDP](#remote-jsy-with-udp)
+  - [Remote JSY](#remote-jsy)
 - [Performance tests](#performance-tests)
 - [Reference material](#reference-material)
 
@@ -290,11 +290,9 @@ Screenshot of the ESP32 running the JSY app called the `Sender`:
 
 ![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/3066bf12-31d5-45de-9303-d810f14731d0)
 
-There is also a `Listener` app as example that will display the received data
+There is also a `Listener` app as example that will display the received data. The Listener app looks like the Sender app but does not have any JSY connected to it.
 
-![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/2e7af56b-217b-43b2-9c31-95cc8cb7923d)
-
-The `Sender` app can be also used as standalone app connected to a JSY to see the power meter data in real-time.
+**The `Sender` app can be also used as standalone app connected to a JSY to see the power meter data in real-time.**
 
 ## Performance tests
 
