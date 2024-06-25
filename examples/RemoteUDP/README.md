@@ -38,6 +38,7 @@ _Please help contribute to this README if the explanation needs to be improved._
 #include <ESPAsyncWebServer.h> // https://github.com/mathieucarbou/ESPAsyncWebServer
 #include <ESPDash.h>           // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
 #include <ElegantOTA.h>        // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
+#include <FastCRC32.h>         // https://github.com/RobTillaart/CRC
 #include <MycilaESPConnect.h>  // https://github.com/mathieucarbou/MycilaESPConnect
 #include <MycilaJSY.h>         // https://github.com/mathieucarbou/MycilaJSY
 #include <MycilaLogger.h>      // https://github.com/mathieucarbou/MycilaLogger

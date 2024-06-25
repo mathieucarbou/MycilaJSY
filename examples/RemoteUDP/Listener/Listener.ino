@@ -69,6 +69,7 @@
 #include <ESPAsyncWebServer.h> // https://github.com/mathieucarbou/ESPAsyncWebServer
 #include <ESPDash.h>           // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
 #include <ElegantOTA.h>        // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
+#include <FastCRC32.h>         // https://github.com/RobTillaart/CRC
 #include <MycilaESPConnect.h>  // https://github.com/mathieucarbou/MycilaESPConnect
 #include <MycilaLogger.h>      // https://github.com/mathieucarbou/MycilaLogger
 #include <MycilaSystem.h>      // https://github.com/mathieucarbou/MycilaSystem
@@ -339,21 +340,31 @@ void setup() {
 
   // UDP
   udp.onPacket([](AsyncUDPPacket packet) {
+    // [0] uint8_t == message type
+    // [1] sizeof(Mycila::JSYData)
+    // [sizeOfBody] uint32_t == CRC32
+    constexpr size_t sizeOfJSYData = sizeof(JSYData);
+    constexpr size_t sizeOfBody = 1 + sizeOfJSYData;
+    constexpr size_t sizeOfCRC32 = sizeof(uint32_t);
+    constexpr size_t sizeOfUDP = sizeOfBody + sizeOfCRC32;
+
     size_t len = packet.length();
-    uint8_t* data = packet.data();
-    if (!len)
+    if (len != sizeOfUDP)
       return;
+
+    uint8_t* data = packet.data();
     const uint8_t type = data[0];
-    data++;
-    len--;
-    switch (type) {
-      case MYCILA_UDP_MSG_TYPE_JSY_DATA:
-        if (len == sizeof(JSYData))
-          memcpy(&jsyData, data, sizeof(JSYData));
-        break;
-      default:
-        break;
-    }
+
+    if (type != MYCILA_UDP_MSG_TYPE_JSY_DATA)
+      return;
+
+    FastCRC32 crc32;
+    crc32.add(data, sizeOfBody);
+    uint32_t crc = crc32.calc();
+    if (memcmp(&crc, data + sizeOfBody, sizeOfCRC32) != 0)
+      return;
+
+    memcpy(&jsyData, data + 1, sizeOfJSYData);
   });
 
   // Network Manager

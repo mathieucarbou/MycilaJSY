@@ -83,6 +83,7 @@
 #include <ESPAsyncWebServer.h> // https://github.com/mathieucarbou/ESPAsyncWebServer
 #include <ESPDash.h>           // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
 #include <ElegantOTA.h>        // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
+#include <FastCRC32.h>         // https://github.com/RobTillaart/CRC
 #include <MycilaESPConnect.h>  // https://github.com/mathieucarbou/MycilaESPConnect
 #include <MycilaJSY.h>         // https://github.com/mathieucarbou/MycilaJSY
 #include <MycilaLogger.h>      // https://github.com/mathieucarbou/MycilaLogger
@@ -148,8 +149,6 @@ Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)")
 
 String hostname;
 String ssid;
-
-const size_t sendBufferSize = sizeof(Mycila::JSYData) + 1;
 
 // circular buffer for rates
 float sendTimes[MYCILA_UDP_SEND_RATE_WINDOW];
@@ -362,30 +361,49 @@ void setup() {
 
   // jsy
   jsy.setCallback([](const Mycila::JSYEventType eventType) {
-    if (eventType == Mycila::JSYEventType::EVT_READ && ESPConnect.isConnected()) {
-      Mycila::JSYData jsyData;
-      jsy.getData(jsyData);
-      uint8_t buffer[sendBufferSize];
-      buffer[0] = MYCILA_UDP_MSG_TYPE_JSY_DATA;
-      memcpy(buffer + 1, &jsyData, sizeof(Mycila::JSYData));
-      bool send = false;
-      switch (ESPConnect.getMode()) {
-        case ESPConnectMode::AP:
-          udp.broadcastTo(buffer, sendBufferSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_AP);
-          send = true;
-          break;
-        case ESPConnectMode::STA:
-          udp.broadcastTo(buffer, sendBufferSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_STA);
-          send = true;
-          break;
-        case ESPConnectMode::ETH:
-          udp.broadcastTo(buffer, sendBufferSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_ETH);
-          send = true;
-          break;
-        default:
-          break;
-      }
-      if (send) {
+    if (eventType == Mycila::JSYEventType::EVT_READ) {
+      ESPConnectMode mode = ESPConnect.getMode();
+
+      if (mode != ESPConnectMode::NONE) {
+        // [0] uint8_t == message type
+        // [1] sizeof(Mycila::JSYData)
+        // [sizeOfBody] uint32_t == CRC32
+        constexpr size_t sizeOfJSYData = sizeof(Mycila::JSYData);
+        constexpr size_t sizeOfBody = 1 + sizeOfJSYData;
+        constexpr size_t sizeOfCRC32 = sizeof(uint32_t);
+        constexpr size_t sizeOfUDP = sizeOfBody + sizeOfCRC32;
+
+        // read local JSY data
+        Mycila::JSYData jsyData;
+        jsy.getData(jsyData);
+
+        // build buffer
+        uint8_t buffer[sizeOfUDP];
+        buffer[0] = MYCILA_UDP_MSG_TYPE_JSY_DATA;
+        memcpy(buffer + 1, &jsyData, sizeOfJSYData);
+
+        // add CRC32
+        FastCRC32 crc32;
+        crc32.add(buffer, sizeOfBody);
+        uint32_t crc = crc32.calc();
+        memcpy(buffer + sizeOfBody, &crc, sizeOfCRC32);
+
+        // send
+        switch (mode) {
+          case ESPConnectMode::AP:
+            udp.broadcastTo(buffer, sizeOfUDP, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_AP);
+            break;
+          case ESPConnectMode::STA:
+            udp.broadcastTo(buffer, sizeOfUDP, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_STA);
+            break;
+          case ESPConnectMode::ETH:
+            udp.broadcastTo(buffer, sizeOfUDP, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_ETH);
+            break;
+          default:
+            break;
+        }
+
+        // compute send rate
         float last = millis() / 1000.0f;
         sendTimes[sendTimesIndex] = last;
         if (sendTimesCount < MYCILA_UDP_SEND_RATE_WINDOW)
