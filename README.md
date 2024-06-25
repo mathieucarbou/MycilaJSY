@@ -35,6 +35,16 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
     volatile uint8_t frequency = 0; // Hz
 ```
 
+- [Usage](#usage)
+  - [Blocking mode](#blocking-mode)
+  - [Non-Blocking mode (async)](#non-blocking-mode-async)
+  - [Energy reset](#energy-reset)
+  - [Update Baud rate (change speed)](#update-baud-rate-change-speed)
+  - [Callbacks](#callbacks)
+- [Performance tests](#performance-tests)
+- [Remote JSY with UDP](#remote-jsy-with-udp)
+- [Reference material](#reference-material)
+
 ## Usage
 
 Have a look at all the examples in the [examples](examples) folder.
@@ -399,6 +409,21 @@ The "Ramp down time" is the time it takes for the JSY to return to 0W after the 
   This duration contains the duration for the load to reach its nominal power, plus the duration it takes for the JSY to stabilize its measurements (I think the JSY is using some kind of filtering or averaging).
 
 - Reading the JSY too frequently will lead to the same results, so an improvement could be to have the JSY read in a dedicated task asynchronously and use the callback mechanism to be called as soon as the JSY sees a change
+
+## Remote JSY with UDP
+
+The JSY can be used connected to an ESP32 to send the JSY data each 500 ms to a remote server through UDP.
+Both devices needs to be connected to the same WiFi network and UDP packets must be allowed.
+
+See `examples/RemoteUDP` example to see how to use it.
+
+Screenshot of the ESP32 running the JSY: the `Sender`
+
+![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/6a2c8cad-beaf-4e9a-a84e-514f7fe6dd81)
+
+Screenshot of the ESP32 listening for data: the `Listener`:
+
+![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/2e7af56b-217b-43b2-9c31-95cc8cb7923d)
 
 ## Reference material
 
