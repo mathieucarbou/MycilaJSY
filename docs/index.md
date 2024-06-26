@@ -46,6 +46,8 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
 - [Performance tests](#performance-tests)
 - [Reference material](#reference-material)
 
+Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
+
 ## Usage
 
 Have a look at all the examples in the [examples](examples) folder.
