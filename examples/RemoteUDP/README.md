@@ -33,19 +33,21 @@ _Please help contribute to this README if the explanation needs to be improved._
 1. You need to install these Arduino dependencies from the library manager or by downloading them:
 
 ```c++
-#include <ArduinoJson.h>       // https://github.com/bblanchon/ArduinoJson
-#include <AsyncTCP.h>          // https://github.com/mathieucarbou/AsyncTCP
-#include <ESPAsyncWebServer.h> // https://github.com/mathieucarbou/ESPAsyncWebServer
-#include <ESPDash.h>           // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
-#include <ElegantOTA.h>        // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
-#include <FastCRC32.h>         // https://github.com/RobTillaart/CRC
-#include <MycilaESPConnect.h>  // https://github.com/mathieucarbou/MycilaESPConnect
-#include <MycilaJSY.h>         // https://github.com/mathieucarbou/MycilaJSY
-#include <MycilaLogger.h>      // https://github.com/mathieucarbou/MycilaLogger
-#include <MycilaSystem.h>      // https://github.com/mathieucarbou/MycilaSystem
-#include <MycilaTaskManager.h> // https://github.com/mathieucarbou/MycilaTaskMonitor
-#include <MycilaTaskMonitor.h> // https://github.com/mathieucarbou/MycilaTaskMonitor
-#include <WebSerialLite.h>     // https://github.com/mathieucarbou/WebSerialLite
+#include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
+#include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
+#include <ElegantOTA.h>           // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
+#include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
+#include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
+#include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
+#include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
+#include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
+#include <MycilaJSY.h>            // https://github.com/mathieucarbou/MycilaJSY
+#include <MycilaLogger.h>         // https://github.com/mathieucarbou/MycilaLogger
+#include <MycilaSystem.h>         // https://github.com/mathieucarbou/MycilaSystem
+#include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
+#include <MycilaTaskMonitor.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
+#include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
+#include <WebSerial.h>            // https://github.com/mathieucarbou/ayushsharma82-WebSerial#dev
 ```
 
 The program also uses these Arduino libraries:
@@ -89,6 +91,5 @@ Once the device has joined the WiFi and is connected to a JSY, you will see the 
 - Some statistics and device / network information are available:
 
 ![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/1943a697-f108-4cdc-a886-98cb3748af24)
-
 
 - To add a password, change the line `#define MYCILA_ADMIN_PASSWORD ""`

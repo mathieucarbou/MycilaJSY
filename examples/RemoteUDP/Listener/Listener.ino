@@ -54,44 +54,32 @@
   #define MYCILA_ADMIN_PASSWORD ""
 #endif
 
-#define TAG                          "JSY-UDP"
-#define MYCILA_APP_NAME              "JSY Remote UDP Listener"
 #define MYCILA_ADMIN_USERNAME        "admin"
-#define MYCILA_UDP_PORT              53964
-#define MYCILA_UDP_MSG_TYPE_JSY_DATA 0x01
+#define MYCILA_APP_NAME              "JSY Remote UDP Listener"
 #define MYCILA_GRAPH_POINTS          120
+#define MYCILA_UDP_MSG_TYPE_JSY_DATA 0x01
+#define MYCILA_UDP_PORT              53964
+#define MYCILA_UDP_SEND_RATE_WINDOW  50
+#define TAG                          "JSY-UDP"
 
 #include <Arduino.h>
 #include <ESPmDNS.h>
 
-#include <ArduinoJson.h>       // https://github.com/bblanchon/ArduinoJson
-#include <AsyncTCP.h>          // https://github.com/mathieucarbou/AsyncTCP
-#include <ESPAsyncWebServer.h> // https://github.com/mathieucarbou/ESPAsyncWebServer
-#include <ESPDash.h>           // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
-#include <ElegantOTA.h>        // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
-#include <FastCRC32.h>         // https://github.com/RobTillaart/CRC
-#include <MycilaESPConnect.h>  // https://github.com/mathieucarbou/MycilaESPConnect
-#include <MycilaLogger.h>      // https://github.com/mathieucarbou/MycilaLogger
-#include <MycilaSystem.h>      // https://github.com/mathieucarbou/MycilaSystem
-#include <MycilaTaskManager.h> // https://github.com/mathieucarbou/MycilaTaskMonitor
-#include <MycilaTaskMonitor.h> // https://github.com/mathieucarbou/MycilaTaskMonitor
-#include <WebSerial.h>         // https://github.com/mathieucarbou/ayushsharma82-WebSerial#dev
-
-typedef struct {
-    float current1 = 0;        // A
-    float current2 = 0;        // A
-    float energy1 = 0;         // kWh
-    float energy2 = 0;         // kWh
-    float energyReturned1 = 0; // kWh
-    float energyReturned2 = 0; // kWh
-    float frequency = 0;       // Hz
-    float power1 = 0;          // W
-    float power2 = 0;          // W
-    float powerFactor1 = 0;
-    float powerFactor2 = 0;
-    float voltage1 = 0; // V
-    float voltage2 = 0; // V
-} JSYData;
+#include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
+#include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
+#include <ElegantOTA.h>           // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
+#include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
+#include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
+#include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
+#include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
+#include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
+#include <MycilaJSY.h>            // https://github.com/mathieucarbou/MycilaJSY
+#include <MycilaLogger.h>         // https://github.com/mathieucarbou/MycilaLogger
+#include <MycilaSystem.h>         // https://github.com/mathieucarbou/MycilaSystem
+#include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
+#include <MycilaTaskMonitor.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
+#include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
+#include <WebSerial.h>            // https://github.com/mathieucarbou/ayushsharma82-WebSerial#dev
 
 AsyncUDP udp;
 AsyncWebServer webServer(80);
@@ -134,6 +122,8 @@ Card energyReturned2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Exported Energy
 
 Card frequency = Card(&dashboard, GENERIC_CARD, "Grid Frequency", "Hz");
 
+Card updateRateCard = Card(&dashboard, GENERIC_CARD, "Receive Rate", "msg/s");
+
 Card restart = Card(&dashboard, BUTTON_CARD, "Restart");
 Card reset = Card(&dashboard, BUTTON_CARD, "Reset Device");
 
@@ -145,10 +135,11 @@ Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)")
 
 String hostname;
 String ssid;
-JSYData jsyData;
+Mycila::JSYData jsyData;
 
-const String toDHHMMSS(uint32_t seconds);
-String getEspId();
+// circular buffer for rate
+Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> jsyRemoteUdpRate;
+volatile float updateRate = 0;
 
 const Mycila::TaskDoneCallback LOG_EXEC_TIME = [](const Mycila::Task& me, const uint32_t elapsed) {
   logger.debug(TAG, "%s in %" PRIu32 " us", me.getName(), elapsed);
@@ -183,6 +174,7 @@ Mycila::Task networkUpTask("Network UP", Mycila::TaskType::ONCE, [](void* params
 
 Mycila::Task otaTask("OTA", Mycila::TaskType::ONCE, [](void* params) {
   logger.info(TAG, "Preparing OTA update...");
+  udp.close();
 });
 
 Mycila::Task restartTask("Restart", Mycila::TaskType::ONCE, [](void* params) {
@@ -200,7 +192,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   networkWiFiRSSI.set((String(ESPConnect.getWiFiRSSI()) + " dBm").c_str());
   networkWiFiSignal.set((String(ESPConnect.getWiFiSignalQuality()) + " %").c_str());
   networkWiFiSSID.set(ESPConnect.getWiFiSSID().c_str());
-  uptime.set(toDHHMMSS(Mycila::System.getUptime()).c_str());
+  uptime.set(Mycila::Time::toDHHMMSS(Mycila::System.getUptime()).c_str());
 
   activePower1.update(jsyData.power1);
   apparentPower1.update(jsyData.powerFactor1 == 0 ? 0 : jsyData.power1 / jsyData.powerFactor1);
@@ -221,6 +213,8 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   voltageDimmed2.update(jsyData.current2 == 0 ? 0 : jsyData.power2 / jsyData.current2);
 
   frequency.update(jsyData.frequency);
+
+  updateRateCard.update(updateRate);
 
   // shift array
   for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -251,9 +245,9 @@ void setup() {
 #endif
 
   // hostname
-  hostname = "Listener-" + getEspId();
+  hostname = "listener-" + Mycila::System.getEspID();
   hostname.toLowerCase();
-  ssid = "Listener-" + getEspId();
+  ssid = "Listener-" + Mycila::System.getEspID();
 
   // logging
   esp_log_level_set("*", static_cast<esp_log_level_t>(ARDUHAL_LOG_LEVEL_DEBUG));
@@ -343,7 +337,7 @@ void setup() {
     // [0] uint8_t == message type
     // [1] sizeof(Mycila::JSYData)
     // [sizeOfBody] uint32_t == CRC32
-    constexpr size_t sizeOfJSYData = sizeof(JSYData);
+    constexpr size_t sizeOfJSYData = sizeof(Mycila::JSYData);
     constexpr size_t sizeOfBody = 1 + sizeOfJSYData;
     constexpr size_t sizeOfCRC32 = sizeof(uint32_t);
     constexpr size_t sizeOfUDP = sizeOfBody + sizeOfCRC32;
@@ -358,6 +352,7 @@ void setup() {
     if (type != MYCILA_UDP_MSG_TYPE_JSY_DATA)
       return;
 
+    // CRC32 check
     FastCRC32 crc32;
     crc32.add(data, sizeOfBody);
     uint32_t crc = crc32.calc();
@@ -365,6 +360,10 @@ void setup() {
       return;
 
     memcpy(&jsyData, data + 1, sizeOfJSYData);
+
+    // update rate
+    jsyRemoteUdpRate.add(millis() / 1000.0f);
+    updateRate = jsyRemoteUdpRate.rate();
   });
 
   // Network Manager
@@ -430,25 +429,3 @@ void setup() {
 
 // Destroy default Arduino async task
 void loop() { vTaskDelete(NULL); }
-
-const String toDHHMMSS(uint32_t seconds) {
-  const uint8_t days = seconds / 86400;
-  seconds = seconds % (uint32_t)86400;
-  const uint8_t hh = seconds / 3600;
-  seconds = seconds % (uint32_t)3600;
-  const uint8_t mm = seconds / 60;
-  const uint8_t ss = seconds % (uint32_t)60;
-  char buffer[14];
-  snprintf(buffer, sizeof(buffer), "%" PRIu8 "d %02" PRIu8 ":%02" PRIu8 ":%02" PRIu8, days % 1000, hh % 100, mm % 100, ss % 100);
-  return buffer;
-}
-
-String getEspId() {
-  uint32_t chipId = 0;
-  for (int i = 0; i < 17; i += 8) {
-    chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
-  }
-  String espId = String(chipId, HEX);
-  espId.toUpperCase();
-  return espId;
-}

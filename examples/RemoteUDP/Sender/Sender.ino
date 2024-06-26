@@ -78,19 +78,21 @@
 #include <Arduino.h>
 #include <ESPmDNS.h>
 
-#include <ArduinoJson.h>       // https://github.com/bblanchon/ArduinoJson
-#include <AsyncTCP.h>          // https://github.com/mathieucarbou/AsyncTCP
-#include <ESPAsyncWebServer.h> // https://github.com/mathieucarbou/ESPAsyncWebServer
-#include <ESPDash.h>           // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
-#include <ElegantOTA.h>        // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
-#include <FastCRC32.h>         // https://github.com/RobTillaart/CRC
-#include <MycilaESPConnect.h>  // https://github.com/mathieucarbou/MycilaESPConnect
-#include <MycilaJSY.h>         // https://github.com/mathieucarbou/MycilaJSY
-#include <MycilaLogger.h>      // https://github.com/mathieucarbou/MycilaLogger
-#include <MycilaSystem.h>      // https://github.com/mathieucarbou/MycilaSystem
-#include <MycilaTaskManager.h> // https://github.com/mathieucarbou/MycilaTaskMonitor
-#include <MycilaTaskMonitor.h> // https://github.com/mathieucarbou/MycilaTaskMonitor
-#include <WebSerial.h>         // https://github.com/mathieucarbou/ayushsharma82-WebSerial#dev
+#include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
+#include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
+#include <ElegantOTA.h>           // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
+#include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
+#include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
+#include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
+#include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
+#include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
+#include <MycilaJSY.h>            // https://github.com/mathieucarbou/MycilaJSY
+#include <MycilaLogger.h>         // https://github.com/mathieucarbou/MycilaLogger
+#include <MycilaSystem.h>         // https://github.com/mathieucarbou/MycilaSystem
+#include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
+#include <MycilaTaskMonitor.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
+#include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
+#include <WebSerial.h>            // https://github.com/mathieucarbou/ayushsharma82-WebSerial#dev
 
 AsyncUDP udp;
 AsyncWebServer webServer(80);
@@ -135,7 +137,7 @@ Card energyReturned2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Exported Energy
 
 Card frequency = Card(&dashboard, GENERIC_CARD, "Grid Frequency", "Hz");
 
-Card sendRateCard = Card(&dashboard, GENERIC_CARD, "Send Rate", "msg/s");
+Card updateRateCard = Card(&dashboard, GENERIC_CARD, "Send Rate", "msg/s");
 
 Card restart = Card(&dashboard, BUTTON_CARD, "Restart");
 Card energyReset = Card(&dashboard, BUTTON_CARD, "Reset JSY");
@@ -150,14 +152,9 @@ Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)")
 String hostname;
 String ssid;
 
-// circular buffer for rates
-float sendTimes[MYCILA_UDP_SEND_RATE_WINDOW];
-size_t sendTimesIndex = 0;
-size_t sendTimesCount = 0;
-volatile float sendRate = 0;
-
-const String toDHHMMSS(uint32_t seconds);
-String getEspId();
+// circular buffer for rate
+Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> jsyRemoteUdpRate;
+volatile float updateRate = 0;
 
 const Mycila::TaskDoneCallback LOG_EXEC_TIME = [](const Mycila::Task& me, const uint32_t elapsed) {
   logger.debug(TAG, "%s in %" PRIu32 " us", me.getName(), elapsed);
@@ -209,7 +206,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   networkWiFiRSSI.set((String(ESPConnect.getWiFiRSSI()) + " dBm").c_str());
   networkWiFiSignal.set((String(ESPConnect.getWiFiSignalQuality()) + " %").c_str());
   networkWiFiSSID.set(ESPConnect.getWiFiSSID().c_str());
-  uptime.set(toDHHMMSS(Mycila::System.getUptime()).c_str());
+  uptime.set(Mycila::Time::toDHHMMSS(Mycila::System.getUptime()).c_str());
 
   activePower1.update(jsy.getPower1());
   apparentPower1.update(jsy.getApparentPower1());
@@ -231,7 +228,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
 
   frequency.update(jsy.getFrequency());
 
-  sendRateCard.update(sendRate);
+  updateRateCard.update(updateRate);
 
   // shift array
   for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -262,9 +259,9 @@ void setup() {
 #endif
 
   // hostname
-  hostname = "jsy-" + getEspId();
+  hostname = "jsy-" + Mycila::System.getEspID();
   hostname.toLowerCase();
-  ssid = "JSY-" + getEspId();
+  ssid = "JSY-" + Mycila::System.getEspID();
 
   // logging
   esp_log_level_set("*", static_cast<esp_log_level_t>(ARDUHAL_LOG_LEVEL_DEBUG));
@@ -403,15 +400,9 @@ void setup() {
             break;
         }
 
-        // compute send rate
-        float last = millis() / 1000.0f;
-        sendTimes[sendTimesIndex] = last;
-        if (sendTimesCount < MYCILA_UDP_SEND_RATE_WINDOW)
-          sendTimesCount++;
-        sendTimesIndex = (sendTimesIndex + 1) % MYCILA_UDP_SEND_RATE_WINDOW;
-        float first = sendTimes[sendTimesIndex];
-        float diff = last - first;
-        sendRate = diff == 0 ? 0 : sendTimesCount / diff;
+        // update rate
+        jsyRemoteUdpRate.add(millis() / 1000.0f);
+        updateRate = jsyRemoteUdpRate.rate();
       }
     }
   });
@@ -483,25 +474,3 @@ void setup() {
 
 // Destroy default Arduino async task
 void loop() { vTaskDelete(NULL); }
-
-const String toDHHMMSS(uint32_t seconds) {
-  const uint8_t days = seconds / 86400;
-  seconds = seconds % (uint32_t)86400;
-  const uint8_t hh = seconds / 3600;
-  seconds = seconds % (uint32_t)3600;
-  const uint8_t mm = seconds / 60;
-  const uint8_t ss = seconds % (uint32_t)60;
-  char buffer[14];
-  snprintf(buffer, sizeof(buffer), "%" PRIu8 "d %02" PRIu8 ":%02" PRIu8 ":%02" PRIu8, days % 1000, hh % 100, mm % 100, ss % 100);
-  return buffer;
-}
-
-String getEspId() {
-  uint32_t chipId = 0;
-  for (int i = 0; i < 17; i += 8) {
-    chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
-  }
-  String espId = String(chipId, HEX);
-  espId.toUpperCase();
-  return espId;
-}
