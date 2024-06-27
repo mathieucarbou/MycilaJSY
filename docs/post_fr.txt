@@ -1,0 +1,76 @@
+Tout sur le JSY-MK-194T
+
+Bonjour à tous,
+Je développe pas mal de projets dans le domaine Arduino / ESP32 / Domotique / routage / etc (https://oss.carbou.me).
+J'ai créé l'année dernière une librairie spécialisée pour le JSY-MK194T, dont je souhaitais vous parler aujourd'hui afin de vous présenter son fonctionnement et usage dans le cadre d'un routeur.
+Pour les codeurs, elle peut se greffer dans le logiciel de André assez facilement pour améliorer les performances et l'efficacité du routage, mais jusqu'à un certain point comme vous allez le découvrir
+1. UTILISATION DANS LE CADRE D'UN ROUTEUR:
+
+Un routeur solaire a besoin de mesurer le courant, pour réagir à ces mesures et proposer un nouveau duty cycle à appliquer au dimmer, durant un certain temps, jusqu'à ce qu'il obtienne une nouvelle mesure.
+Donc il est tributaire de la vitesse à laquelle ces mesures sont prises, et leur précision, mais aussi bien sûr de l'algorithme de routage utilisé et précision des pas (0-100, 8-bit, 12-bit, etc) - je n'en parlerai pas ici car c'est tout un autre sujet.
+Il est rare de trouver un routeur solaire qui utilise correctement le JSY a sa pleine capacité, en partie du par le manque cruel de librairie efficace pour le JSY, et c'est pour cela que je l'ai créé.
+2. FONCTIONNEMENT ASYNCHRONE
+
+Comme le JSY ralenti l'ajustement routage, c'est important de pouvoir récupérer ses valeurs le plus vite possible.
+La plupart des librairies utilisent des délais ou des read() dans des loop, ce qui est non bloquant, bien, mais n'assure pas de lire les données dès qu'elles sont prêtes car ces tests de lecture dépendent de la vitesse d'exécution de la loop.
+Pas beaucoup de personnes le savent, mais Arduino propose une méthode de lecture série (Serial.readBytes()), qui est implémentée de façon différente du read() non bloquant: readBytes() est bloquant et utilise directement les interruptions du UART en arrière pour se débloquer dès que les données sont prêtes.
+C'est la méthode la plus efficace pour être averti immédiatement de la disponibilité des mesures.
+Il suffit alors de mettre en place une boule de lecture dans une tâche asynchrone sur le coeur 0 de l'ESP32, pour être averti dès que les données sont prêtes.
+3. VITESSES DE LECTURE DU JSY
+
+La vitesse du JSY peut se changer, de son défaut (4800 bps) à 9600, 19200 et 38400 bps.
+- À 4800 bps, le JSY met en moyenne 171 ms pour faire une lecture
+- À 9600 bps, le JSY met en moyenne 100 ms pour faire une lecture
+- À 19200 bps, le JSY met en moyenne 60 ms pour faire une lecture
+- À 38400 bps, le JSY met en moyenne 41 ms pour faire une lecture
+Donc augmenter la vitesse de son JSY de 4800 à 38400 permet potentiellement de réagir 4x plus rapidement aux lectures.
+Mais attention... Est-ce que toutes les lectures sont à prendre en compte ?
+C'est ce que nous allons voir...
+4. FONCTIONNEMENT INTERNE DU JSY
+
+Le JSY fonctionne avec une puce Renergy RN8209G, qui mesure continuellement en faisant une moyenne glissante et rend les résultats disponibles sur le UART.
+Par exemple, si vous lisez le JSY en boucle:
+- À 4800 bps, le JSY rapporte en moyenne un changement toutes les 3 lectures, soit 513 ms
+- À 9600 bps, le JSY rapporte en moyenne un changement toutes les 4-5 lectures, soit 400-500 ms
+- À 19200 bps, le JSY rapporte en moyenne un changement toutes les 7 lectures, soit 360 ms
+- À 38400 bps, le JSY rapporte en moyenne un changement toutes les 9 lectures, soit 369 ms
+Donc il n'est pas possible d'avoir un routeur qui va apporter une correction au routage plus rapidement que ce délai minimal pour que le JSY détecte un changement dans les mesures.
+Donc l'algorithme de routage va s'appliquer pendant au moins 300 ms.
+5. TEMPS DE DÉTECTION
+
+Le JSY a un temps de détection minimal de charge.
+Par exemple, lorsqu'on allument une charge de 0-100%, il met un certains temps afin de commencer à rendre ses données disponibles.
+- À 4800 bps, le JSY met environ 680 ms pour détecter une charge qui s'allume
+- À 9600 bps, le JSY met environ 400-700 ms pour détecter une charge qui s'allume
+- À 19200 bps, le JSY met environ 360 ms pour détecter une charge qui s'allume
+- À 38400 bps, le JSY met environ 330 ms pour détecter une charge qui s'allume
+C'est le temps minimal que le JSY met pour rendre disponible une mesure après un changement de charge.
+6. RAMP-UP TIME
+
+Lorsque'une charge est allumée de 0 à 100%, passe de 0 à 3000W par exemple, le JSY met du temps à voir la puissance nominale car il fait une moyenne glissante.
+- À 4800 bps, le JSY a un ramp-up time (temps avant de voir la puissance nominale) de 1198 ms
+- À 9600 bps, le JSY a un ramp-up time de 800-1101 ms
+- À 19200 bps, le JSY a un ramp-up time de 1020 ms
+- À 38400 bps, le JSY a un ramp-up time de 1030 ms
+C'est assez consistant, et c'est le temps de la fenêtre glissante du JSY, qui est d'environ 1 seconde.
+7. UTILISATION DU JSY EN MODE REMOTE
+
+La librairie comporte une application `Sender` et une autre `Listener`.
+L'application sender est une application standalone à flasher sur un ESP32 connecté à un JSY.
+Elle utilise ESP-DASH, ElegantOTA, MycilaESPConnect, etc et vous permet de
+- voir toutes les stats du JSY
+- remettre à zéro l'énergie
+- et envoie par UDP les mesures à une vitesse de 20 messages par seconde, soit aussi vite que de lire les données en local à 38400 bps sur un JSY connecté à l'ESP32.
+L'application `Listener` montre comment les recevoir à une vitesse également de traitement de 20 messages par seconde.
+CONCLUSION:
+
+- Augmenter la vitesse du JSY ne sert pas à lire plus de mesures, mais sert surtout à être prévenu le plus vite possible lorsque de nouvelles mesures arrivent, sans avoir à attendre le retour de la loop.
+- Le JSY semble avoir une fenêtre glissante de 1 seconde, et semble rendre ses mesures disponibles toutes les 300 ms
+- Que le JSY soit connecté à l'ESP ou que les données soient récupérés en remote par UDP avec l'application `Sender` ne change rien à la vitesse ou précision du routage
+La librairie est ici, avec les tests de performance en fonction des vitesses: https://github.com/mathieucarbou/MycilaJSY
+Elle supporte:
+- Mode non-bloquant avec tâche asynchrone
+- Callbacks pour être averti des lectures et changements de métriques
+- Reset de l'énergie
+- Changement de vitesse
+- Fonctionnement remote par UDP à une vitesse de 20 messages par seconde
