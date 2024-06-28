@@ -137,7 +137,8 @@ Card energyReturned2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Exported Energy
 
 Card frequency = Card(&dashboard, GENERIC_CARD, "Grid Frequency", "Hz");
 
-Card updateRateCard = Card(&dashboard, GENERIC_CARD, "Send Rate", "msg/s");
+Card messageRateCard = Card(&dashboard, GENERIC_CARD, "Message Rate", "msg/s");
+Card dataRateCard = Card(&dashboard, GENERIC_CARD, "Data Rate", "bytes/s");
 
 Card restart = Card(&dashboard, BUTTON_CARD, "Restart");
 Card energyReset = Card(&dashboard, BUTTON_CARD, "Reset JSY");
@@ -152,9 +153,17 @@ Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)")
 String hostname;
 String ssid;
 
-// circular buffer for rate
-Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> jsyRemoteUdpRate;
-volatile float updateRate = 0;
+// [0] uint8_t == message type
+// [1] sizeof(Mycila::JSYData)
+// [sizeOfBody] uint32_t == CRC32
+size_t sizeOfJSYData = sizeof(Mycila::JSYData);
+size_t sizeOfBody = 1 + sizeOfJSYData;
+size_t sizeOfCRC32 = sizeof(uint32_t);
+size_t sizeOfUDP = sizeOfBody + sizeOfCRC32;
+
+// circular buffer for msg rate
+Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> messageRateBuffer;
+volatile float messageRate = 0;
 
 const Mycila::TaskDoneCallback LOG_EXEC_TIME = [](const Mycila::Task& me, const uint32_t elapsed) {
   logger.debug(TAG, "%s in %" PRIu32 " us", me.getName(), elapsed);
@@ -228,7 +237,8 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
 
   frequency.update(jsy.getFrequency());
 
-  updateRateCard.update(updateRate);
+  messageRateCard.update(messageRate);
+  dataRateCard.update(static_cast<int>(round(messageRate * sizeOfUDP)));
 
   // shift array
   for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -362,14 +372,6 @@ void setup() {
       ESPConnectMode mode = ESPConnect.getMode();
 
       if (mode != ESPConnectMode::NONE) {
-        // [0] uint8_t == message type
-        // [1] sizeof(Mycila::JSYData)
-        // [sizeOfBody] uint32_t == CRC32
-        constexpr size_t sizeOfJSYData = sizeof(Mycila::JSYData);
-        constexpr size_t sizeOfBody = 1 + sizeOfJSYData;
-        constexpr size_t sizeOfCRC32 = sizeof(uint32_t);
-        constexpr size_t sizeOfUDP = sizeOfBody + sizeOfCRC32;
-
         // read local JSY data
         Mycila::JSYData jsyData;
         jsy.getData(jsyData);
@@ -401,8 +403,8 @@ void setup() {
         }
 
         // update rate
-        jsyRemoteUdpRate.add(millis() / 1000.0f);
-        updateRate = jsyRemoteUdpRate.rate();
+        messageRateBuffer.add(millis() / 1000.0f);
+        messageRate = messageRateBuffer.rate();
       }
     }
   });

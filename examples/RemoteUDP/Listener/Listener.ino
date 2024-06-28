@@ -122,7 +122,7 @@ Card energyReturned2 = Card(&dashboard, GENERIC_CARD, "Channel 2 Exported Energy
 
 Card frequency = Card(&dashboard, GENERIC_CARD, "Grid Frequency", "Hz");
 
-Card updateRateCard = Card(&dashboard, GENERIC_CARD, "Receive Rate", "msg/s");
+Card messageRateCard = Card(&dashboard, GENERIC_CARD, "Message Rate", "msg/s");
 
 Card restart = Card(&dashboard, BUTTON_CARD, "Restart");
 Card reset = Card(&dashboard, BUTTON_CARD, "Reset Device");
@@ -137,9 +137,17 @@ String hostname;
 String ssid;
 Mycila::JSYData jsyData;
 
-// circular buffer for rate
-Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> jsyRemoteUdpRate;
-volatile float updateRate = 0;
+// [0] uint8_t == message type
+// [1] sizeof(Mycila::JSYData)
+// [sizeOfBody] uint32_t == CRC32
+size_t sizeOfJSYData = sizeof(Mycila::JSYData);
+size_t sizeOfBody = 1 + sizeOfJSYData;
+size_t sizeOfCRC32 = sizeof(uint32_t);
+size_t sizeOfUDP = sizeOfBody + sizeOfCRC32;
+
+// circular buffer for msg rate
+Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> messageRateBuffer;
+volatile float messageRate = 0;
 
 const Mycila::TaskDoneCallback LOG_EXEC_TIME = [](const Mycila::Task& me, const uint32_t elapsed) {
   logger.debug(TAG, "%s in %" PRIu32 " us", me.getName(), elapsed);
@@ -214,7 +222,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
 
   frequency.update(jsyData.frequency);
 
-  updateRateCard.update(updateRate);
+  messageRateCard.update(messageRate);
 
   // shift array
   for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -334,14 +342,6 @@ void setup() {
 
   // UDP
   udp.onPacket([](AsyncUDPPacket packet) {
-    // [0] uint8_t == message type
-    // [1] sizeof(Mycila::JSYData)
-    // [sizeOfBody] uint32_t == CRC32
-    constexpr size_t sizeOfJSYData = sizeof(Mycila::JSYData);
-    constexpr size_t sizeOfBody = 1 + sizeOfJSYData;
-    constexpr size_t sizeOfCRC32 = sizeof(uint32_t);
-    constexpr size_t sizeOfUDP = sizeOfBody + sizeOfCRC32;
-
     size_t len = packet.length();
     if (len != sizeOfUDP)
       return;
@@ -362,8 +362,8 @@ void setup() {
     memcpy(&jsyData, data + 1, sizeOfJSYData);
 
     // update rate
-    jsyRemoteUdpRate.add(millis() / 1000.0f);
-    updateRate = jsyRemoteUdpRate.rate();
+    messageRateBuffer.add(millis() / 1000.0f);
+    messageRate = messageRateBuffer.rate();
   });
 
   // Network Manager
