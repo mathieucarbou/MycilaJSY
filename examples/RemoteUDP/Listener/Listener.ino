@@ -67,9 +67,9 @@
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
-#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
 #include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
-#include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
+#include <ESPDash.h>              // https://github.com/ayushsharma82/ESP-DASH
+#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
 #include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
 #include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
 #include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
@@ -79,7 +79,7 @@
 #include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
 #include <MycilaTaskMonitor.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
 #include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
-#include <WebSerial.h>            // https://github.com/mathieucarbou/ayushsharma82-WebSerial#dev
+#include <WebSerial.h>            // https://github.com/ayushsharma82/WebSerial
 
 AsyncUDP udp;
 AsyncWebServer webServer(80);
@@ -135,23 +135,11 @@ Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)")
 
 String hostname;
 String ssid;
-Mycila::JSYData jsyData;
-
-// [0] uint8_t == message type
-// [1] sizeof(Mycila::JSYData)
-// [sizeOfBody] uint32_t == CRC32
-size_t sizeOfJSYData = sizeof(Mycila::JSYData);
-size_t sizeOfBody = 1 + sizeOfJSYData;
-size_t sizeOfCRC32 = sizeof(uint32_t);
-size_t sizeOfUDP = sizeOfBody + sizeOfCRC32;
+volatile Mycila::JSYData jsyData;
 
 // circular buffer for msg rate
 Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> messageRateBuffer;
 volatile float messageRate = 0;
-
-const Mycila::TaskDoneCallback LOG_EXEC_TIME = [](const Mycila::Task& me, const uint32_t elapsed) {
-  logger.debug(TAG, "%s in %" PRIu32 " us", me.getName(), elapsed);
-};
 
 Mycila::Task networkManagerTask("ESPConnect", [](void* params) { ESPConnect.loop(); });
 
@@ -282,9 +270,7 @@ void setup() {
 
   // profiling
   dashboardTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
-  otaTask.setCallback(LOG_EXEC_TIME);
   profilerTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
-  profilerTask.setCallback(LOG_EXEC_TIME);
 
   // Task Monitor
   Mycila::TaskMonitor.begin();
@@ -342,24 +328,47 @@ void setup() {
 
   // UDP
   udp.onPacket([](AsyncUDPPacket packet) {
+    // buffer[0] == MYCILA_UDP_MSG_TYPE_JSY_DATA (1)
+    // buffer[1] == size_t (4)
+    // buffer[5] == MsgPack (?)
+    // buffer[5 + size] == CRC32 (4)
+
     size_t len = packet.length();
-    if (len != sizeOfUDP)
+    uint8_t* buffer = packet.data();
+
+    if (len < 5 || buffer[0] != MYCILA_UDP_MSG_TYPE_JSY_DATA)
       return;
 
-    uint8_t* data = packet.data();
-    const uint8_t type = data[0];
+    uint32_t size;
+    memcpy(&size, buffer + 1, 4);
 
-    if (type != MYCILA_UDP_MSG_TYPE_JSY_DATA)
+    if (len != size + 9)
       return;
 
-    // CRC32 check
+    // crc32
     FastCRC32 crc32;
-    crc32.add(data, sizeOfBody);
+    crc32.add(buffer, size + 5);
     uint32_t crc = crc32.calc();
-    if (memcmp(&crc, data + sizeOfBody, sizeOfCRC32) != 0)
+
+    if (memcmp(&crc, buffer + size + 5, 4) != 0)
       return;
 
-    memcpy(&jsyData, data + 1, sizeOfJSYData);
+    JsonDocument doc;
+    deserializeMsgPack(doc, buffer + 5, size);
+
+    jsyData.current1 = doc["c1"].as<float>();
+    jsyData.current2 = doc["c2"].as<float>();
+    jsyData.energy1 = doc["e1"].as<float>();
+    jsyData.energy2 = doc["e2"].as<float>();
+    jsyData.energyReturned1 = doc["er1"].as<float>();
+    jsyData.energyReturned2 = doc["er2"].as<float>();
+    jsyData.frequency = doc["f"].as<float>();
+    jsyData.power1 = doc["p1"].as<float>();
+    jsyData.power2 = doc["p2"].as<float>();
+    jsyData.powerFactor1 = doc["pf1"].as<float>();
+    jsyData.powerFactor2 = doc["pf2"].as<float>();
+    jsyData.voltage1 = doc["v1"].as<float>();
+    jsyData.voltage2 = doc["v2"].as<float>();
 
     // update rate
     messageRateBuffer.add(millis() / 1000.0f);

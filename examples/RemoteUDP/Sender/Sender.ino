@@ -80,9 +80,9 @@
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
-#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
 #include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
-#include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
+#include <ESPDash.h>              // https://github.com/ayushsharma82/ESP-DASH
+#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
 #include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
 #include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
 #include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
@@ -92,7 +92,7 @@
 #include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
 #include <MycilaTaskMonitor.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
 #include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
-#include <WebSerial.h>            // https://github.com/mathieucarbou/ayushsharma82-WebSerial#dev
+#include <WebSerial.h>            // https://github.com/ayushsharma82/WebSerial
 
 AsyncUDP udp;
 AsyncWebServer webServer(80);
@@ -153,21 +153,13 @@ Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)")
 String hostname;
 String ssid;
 
-// [0] uint8_t == message type
-// [1] sizeof(Mycila::JSYData)
-// [sizeOfBody] uint32_t == CRC32
-size_t sizeOfJSYData = sizeof(Mycila::JSYData);
-size_t sizeOfBody = 1 + sizeOfJSYData;
-size_t sizeOfCRC32 = sizeof(uint32_t);
-size_t sizeOfUDP = sizeOfBody + sizeOfCRC32;
-
 // circular buffer for msg rate
 Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> messageRateBuffer;
 volatile float messageRate = 0;
 
-const Mycila::TaskDoneCallback LOG_EXEC_TIME = [](const Mycila::Task& me, const uint32_t elapsed) {
-  logger.debug(TAG, "%s in %" PRIu32 " us", me.getName(), elapsed);
-};
+// circular buffer for data rate
+Mycila::CircularBuffer<uint32_t, MYCILA_UDP_SEND_RATE_WINDOW> dataRateBuffer;
+volatile uint32_t dataRate = 0;
 
 Mycila::Task jsyTask("JSY", [](void* params) { jsy.read(); });
 Mycila::Task networkManagerTask("ESPConnect", [](void* params) { ESPConnect.loop(); });
@@ -238,7 +230,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   frequency.update(jsy.getFrequency());
 
   messageRateCard.update(messageRate);
-  dataRateCard.update(static_cast<int>(round(messageRate * sizeOfUDP)));
+  dataRateCard.update(static_cast<int>(dataRate));
 
   // shift array
   for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -301,9 +293,7 @@ void setup() {
   // profiling
   dashboardTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
   jsyTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
-  otaTask.setCallback(LOG_EXEC_TIME);
   profilerTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
-  profilerTask.setCallback(LOG_EXEC_TIME);
 
   // Task Monitor
   Mycila::TaskMonitor.begin();
@@ -372,31 +362,49 @@ void setup() {
       ESPConnectMode mode = ESPConnect.getMode();
 
       if (mode != ESPConnectMode::NONE) {
-        // read local JSY data
-        Mycila::JSYData jsyData;
-        jsy.getData(jsyData);
+        JsonDocument doc;
+        JsonObject root = doc.to<JsonObject>();
+        root["c1"] = jsy.getCurrent1();
+        root["c2"] = jsy.getCurrent2();
+        root["e1"] = jsy.getEnergy1();
+        root["e2"] = jsy.getEnergy2();
+        root["er1"] = jsy.getEnergyReturned1();
+        root["er2"] = jsy.getEnergyReturned2();
+        root["f"] = jsy.getFrequency();
+        root["p1"] = jsy.getPower1();
+        root["p2"] = jsy.getPower2();
+        root["pf1"] = jsy.getPowerFactor1();
+        root["pf2"] = jsy.getPowerFactor2();
+        root["v1"] = jsy.getVoltage1();
+        root["v2"] = jsy.getVoltage2();
 
-        // build buffer
-        uint8_t buffer[sizeOfUDP];
+        // buffer[0] == MYCILA_UDP_MSG_TYPE_JSY_DATA (1)
+        // buffer[1] == size_t (4)
+        // buffer[5] == MsgPack (?)
+        // buffer[5 + size] == CRC32 (4)
+        uint32_t size = measureMsgPack(doc);
+        uint32_t packetSize = size + 9;
+        uint8_t buffer[packetSize];
         buffer[0] = MYCILA_UDP_MSG_TYPE_JSY_DATA;
-        memcpy(buffer + 1, &jsyData, sizeOfJSYData);
+        memcpy(buffer + 1, &size, 4);
+        serializeMsgPack(root, buffer + 5, size);
 
-        // add CRC32
+        // crc32
         FastCRC32 crc32;
-        crc32.add(buffer, sizeOfBody);
+        crc32.add(buffer, size + 5);
         uint32_t crc = crc32.calc();
-        memcpy(buffer + sizeOfBody, &crc, sizeOfCRC32);
+        memcpy(buffer + size + 5, &crc, 4);
 
         // send
         switch (mode) {
           case ESPConnectMode::AP:
-            udp.broadcastTo(buffer, sizeOfUDP, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_AP);
+            udp.broadcastTo(buffer, packetSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_AP);
             break;
           case ESPConnectMode::STA:
-            udp.broadcastTo(buffer, sizeOfUDP, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_STA);
+            udp.broadcastTo(buffer, packetSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_STA);
             break;
           case ESPConnectMode::ETH:
-            udp.broadcastTo(buffer, sizeOfUDP, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_ETH);
+            udp.broadcastTo(buffer, packetSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_ETH);
             break;
           default:
             break;
@@ -404,7 +412,11 @@ void setup() {
 
         // update rate
         messageRateBuffer.add(millis() / 1000.0f);
-        messageRate = messageRateBuffer.rate();
+        float diff = messageRateBuffer.diff();
+        float count = messageRateBuffer.count();
+        messageRate = diff == 0 ? 0 : count / diff;
+        dataRateBuffer.add(packetSize);
+        dataRate = diff == 0 ? 0 : dataRateBuffer.sum() / diff;
       }
     }
   });

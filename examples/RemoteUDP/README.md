@@ -37,7 +37,7 @@ _Please help contribute to this README if the explanation needs to be improved._
 #include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
 #include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
 #include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
-#include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
+#include <ESPDash.h>              // https://github.com/ayushsharma82/ESP-DASH
 #include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
 #include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
 #include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
@@ -47,7 +47,7 @@ _Please help contribute to this README if the explanation needs to be improved._
 #include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
 #include <MycilaTaskMonitor.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
 #include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
-#include <WebSerial.h>            // https://github.com/mathieucarbou/ayushsharma82-WebSerial#dev
+#include <WebSerial.h>            // https://github.com/ayushsharma82/WebSerial
 ```
 
 The program also uses these Arduino libraries:
