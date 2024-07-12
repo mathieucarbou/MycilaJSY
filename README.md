@@ -61,6 +61,19 @@ Have a look at all the examples in the [examples](examples) folder.
 
 There is a getter for each metric.
 
+### Baud rate detection / forcing a baud rate
+
+```c++
+// Will try to detect the baud rate
+jsy.begin(Serial2, 16, 17);
+
+// equivalent as above
+jsy.begin(Serial2, 16, 17, Mycila::JSYBaudRate::UNKNOWN);
+
+// Skips baud rate detection and use the given baud rate
+jsy.begin(Serial2, 16, 17, Mycila::JSYBaudRate::BAUD_38400);
+```
+
 ### Blocking mode
 
 ```c++

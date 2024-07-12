@@ -17,6 +17,7 @@ void setup() {
   // read JSY on pins 17 (JSY RX / Serial TX) and 16 (JSY TX / Serial RX)
   // baud rate will be detected automatically
   jsy.begin(Serial2, 16, 17);
+  // jsy.begin(Serial2, 16, 17, Mycila::JSYBaudRate::UNKNOWN);
 
   // if you know the bauds rate, you can set it manually
   // jsy.begin(Serial2, 16, 17, Mycila::JSYBaudRate::BAUD_4800);
