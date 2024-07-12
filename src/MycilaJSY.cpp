@@ -36,7 +36,14 @@ static const uint8_t JSY_READ_MSG[] = {0x01, 0x03, 0x00, 0x48, 0x00, 0x0E, 0x44,
                                         (((1ULL << (gpio_num)) & SOC_GPIO_VALID_GPIO_MASK) != 0))
 #endif
 
-void Mycila::JSY::begin(HardwareSerial& serial, const int8_t rxPin, const int8_t txPin, const bool async, uint8_t core, uint32_t stackSize, uint32_t pause) {
+void Mycila::JSY::begin(HardwareSerial& serial,
+                        const int8_t rxPin,
+                        const int8_t txPin,
+                        const JSYBaudRate baudRate,
+                        const bool async,
+                        const uint8_t core,
+                        const uint32_t stackSize,
+                        const uint32_t pause) {
   if (_enabled)
     return;
 
@@ -60,15 +67,21 @@ void Mycila::JSY::begin(HardwareSerial& serial, const int8_t rxPin, const int8_t
 
   _pause = pause;
   _serial = &serial;
-  _baudRate = _detectBauds();
 
-  if (_baudRate == JSYBaudRate::UNKNOWN) {
-    LOGE(TAG, "Unable to read at any supported speed. Disabling.");
-    _serial->end();
-    return;
+  if (baudRate == JSYBaudRate::UNKNOWN) {
+    _baudRate = _detectBauds();
+    if (_baudRate == JSYBaudRate::UNKNOWN) {
+      LOGE(TAG, "Unable to read at any supported speed. Disabling.");
+      _serial->end();
+      return;
+    } else {
+      LOGI(TAG, "Detected speed: %" PRIu32 " bauds", (uint32_t)_baudRate);
+    }
+  } else {
+    _baudRate = baudRate;
+    _openSerial(baudRate);
+    LOGW(TAG, "JSY bauds detection skipped, forcing baud rate: %" PRIu32, (uint32_t)_baudRate);
   }
-
-  LOGI(TAG, "Detected speed: %" PRIu32 " bauds", (uint32_t)_baudRate);
 
   assert(!async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, MYCILA_JSY_ASYNC_PRIORITY, &_taskHandle, core) == pdPASS);
 
@@ -394,8 +407,11 @@ Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {
   for (int i = 0; i < MYCILA_JSY_DETECT_BAUDS_RETRIES * 4; i++) {
     LOGD(TAG, "Trying to read at %u bauds...", (uint32_t)baudRates[i % 4]);
     _openSerial(baudRates[i % 4]);
-    if (_canRead())
-      return baudRates[i % 4];
+    for (int j = 0; j < MYCILA_JSY_DETECT_BAUDS_RETRIES; j++) {
+      if (_canRead()) {
+        return baudRates[i % 4];
+      }
+    }
   }
   return JSYBaudRate::UNKNOWN;
 }

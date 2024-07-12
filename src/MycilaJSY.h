@@ -39,7 +39,7 @@
 #endif
 
 #ifndef MYCILA_JSY_DETECT_BAUDS_RETRIES
-  #define MYCILA_JSY_DETECT_BAUDS_RETRIES 10
+  #define MYCILA_JSY_DETECT_BAUDS_RETRIES 5
 #endif
 
 namespace Mycila {
@@ -92,9 +92,25 @@ namespace Mycila {
                  const int8_t rxPin,
                  const int8_t txPin,
                  const bool async = false,
-                 uint8_t core = MYCILA_JSY_ASYNC_CORE,
-                 uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
-                 uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS);
+                 const uint8_t core = MYCILA_JSY_ASYNC_CORE,
+                 const uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
+                 const uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS) {
+        begin(serial, rxPin, txPin, JSYBaudRate::UNKNOWN, async, core, stackSize, pause);
+      }
+
+      // - rxPin: RX board pin connected to the TX of the JSY
+      // - txPin: TX board pin connected to the RX of the JSY
+      // - baudRate: the baud rate of the JSY. If set to JSYBaudRate::UNKNOWN, the baud rate is automatically detected
+      // - pause: time in milliseconds to wait between each read in async mode
+      // The baud rate is automatically detected
+      void begin(HardwareSerial& serial, // NOLINT
+                 const int8_t rxPin,
+                 const int8_t txPin,
+                 const JSYBaudRate baudRate,
+                 const bool async = false,
+                 const uint8_t core = MYCILA_JSY_ASYNC_CORE,
+                 const uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
+                 const uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS);
 
       void end();
 
@@ -137,7 +153,7 @@ namespace Mycila {
       float getVoltage1() const { return _voltage1; }
       float getVoltage2() const { return _voltage2; }
       float getDimmedVoltage1() const { return _current1 == 0 || _power1 < 0 ? 0 : _power1 / _current1; }
-      float getDimmedVoltage2() const { return _current2 == 0 || _power2 < 0? 0 : _power2 / _current2; }
+      float getDimmedVoltage2() const { return _current2 == 0 || _power2 < 0 ? 0 : _power2 / _current2; }
       float getNominalPower1() const {
         float r1 = getResistance1();
         return r1 == 0 ? 0 : _voltage1 * _voltage1 / r1;
