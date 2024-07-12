@@ -38,6 +38,10 @@
   #define MYCILA_JSY_READ_TIMEOUT_MS 200
 #endif
 
+#ifndef MYCILA_JSY_DETECT_BAUDS_RETRIES
+  #define MYCILA_JSY_DETECT_BAUDS_RETRIES 10
+#endif
+
 namespace Mycila {
   enum class JSYBaudRate {
     UNKNOWN = 0,

@@ -35,6 +35,7 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
     volatile uint8_t frequency = 0; // Hz
 ```
 
+- [Tested boards](#tested-boards)
 - [Usage](#usage)
   - [Blocking mode](#blocking-mode)
   - [Non-Blocking mode (async)](#non-blocking-mode-async)
@@ -47,6 +48,12 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
 - [Reference material](#reference-material)
 
 Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
+
+## Tested boards:
+
+- ESP32 (`esp32dev`): ESP32 NodeMCU, ESP32e, ESP32ue, etc
+- ESP32s (`nodemcu-32s`)
+- ESP32 S3 (`esp32-s3-devkitc-1`)
 
 ## Usage
 

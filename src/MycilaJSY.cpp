@@ -390,8 +390,8 @@ bool Mycila::JSY::_canRead() {
 }
 
 Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {
-  const JSYBaudRate baudRates[] = {JSYBaudRate::BAUD_38400, JSYBaudRate::BAUD_19200, JSYBaudRate::BAUD_9600, JSYBaudRate::BAUD_4800};
-  for (int i = 0; i < 16; i++) {
+  constexpr JSYBaudRate baudRates[] = {JSYBaudRate::BAUD_38400, JSYBaudRate::BAUD_19200, JSYBaudRate::BAUD_9600, JSYBaudRate::BAUD_4800};
+  for (int i = 0; i < MYCILA_JSY_DETECT_BAUDS_RETRIES * 4; i++) {
     LOGD(TAG, "Trying to read at %u bauds...", (uint32_t)baudRates[i % 4]);
     _openSerial(baudRates[i % 4]);
     if (_canRead())
