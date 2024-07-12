@@ -2,6 +2,8 @@
 #include <ArduinoJson.h>
 #include <MycilaJSY.h>
 
+Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_38400;
+
 Mycila::JSY jsy;
 
 void setup() {
@@ -13,25 +15,23 @@ void setup() {
   jsy.begin(Serial2, 16, 17);
 
   if (jsy.isEnabled()) {
-    Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_4800;
-
     if (jsy.setBaudRate(target)) {
       Serial.println("JSY baud rate updated");
-
-      jsy.end();
-      jsy.begin(Serial2, 16, 17);
-
     } else {
       Serial.println("JSY baud rate update failed");
     }
-
   } else {
     Serial.println("JSY is disabled");
   }
 }
 
 void loop() {
+  uint32_t now = millis();
   if (jsy.read()) {
+    Serial.print("JSY read in ");
+    Serial.print(millis() - now);
+    Serial.print(" ms\n");
+    
     JsonDocument doc;
     jsy.toJson(doc.to<JsonObject>());
     serializeJson(doc, Serial);
