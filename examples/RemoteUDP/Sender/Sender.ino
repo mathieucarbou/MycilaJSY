@@ -140,6 +140,7 @@ Card frequency = Card(&dashboard, GENERIC_CARD, "Grid Frequency", "Hz");
 Card messageRateCard = Card(&dashboard, GENERIC_CARD, "Message Rate", "msg/s");
 Card dataRateCard = Card(&dashboard, GENERIC_CARD, "Data Rate", "bytes/s");
 
+Card udpSendEnabledCard = Card(&dashboard, BUTTON_CARD, "Enable UDP Transfer");
 Card restart = Card(&dashboard, BUTTON_CARD, "Restart");
 Card energyReset = Card(&dashboard, BUTTON_CARD, "Reset JSY");
 Card reset = Card(&dashboard, BUTTON_CARD, "Reset Device");
@@ -152,6 +153,8 @@ Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)")
 
 String hostname;
 String ssid;
+
+bool udpSendEnabled = true;
 
 // circular buffer for msg rate
 Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> messageRateBuffer;
@@ -231,6 +234,8 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
 
   messageRateCard.update(messageRate);
   dataRateCard.update(static_cast<int>(dataRate));
+
+  udpSendEnabledCard.update(udpSendEnabled);
 
   // shift array
   for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -343,6 +348,12 @@ void setup() {
     dashboard.refreshCard(&energyReset);
   });
 
+  udpSendEnabledCard.attachCallback([](int32_t value) {
+    udpSendEnabled = value != 0;
+    udpSendEnabledCard.update(udpSendEnabled);
+    dashboard.refreshCard(&udpSendEnabledCard);
+  });
+
   dashboard.onBeforeUpdate([](bool changes_only) {
     if (!changes_only) {
       logger.debug(TAG, "Dashboard refresh requested");
@@ -358,7 +369,14 @@ void setup() {
 
   // jsy
   jsy.setCallback([](const Mycila::JSYEventType eventType) {
+    if(!udpSendEnabled) {
+      messageRate = 0;
+      dataRate = 0;
+      return;
+    }
+
     if (eventType == Mycila::JSYEventType::EVT_READ) {
+
       ESPConnectMode mode = ESPConnect.getMode();
 
       if (mode != ESPConnectMode::NONE) {
@@ -417,6 +435,9 @@ void setup() {
         messageRate = diff == 0 ? 0 : count / diff;
         dataRateBuffer.add(packetSize);
         dataRate = diff == 0 ? 0 : dataRateBuffer.sum() / diff;
+      } else {
+        messageRate = 0;
+        dataRate = 0;
       }
     }
   });
