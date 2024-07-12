@@ -173,7 +173,6 @@ bool Mycila::JSY::read() {
   }
 
   _serial->write(JSY_READ_REGISTERS_REQUEST, sizeof(JSY_READ_REGISTERS_REQUEST));
-  _serial->flush();
 
   uint8_t buffer[JSY_READ_REGISTERS_RESPONSE_SIZE];
   const size_t count = _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE);
@@ -287,7 +286,6 @@ bool Mycila::JSY::resetEnergy() {
   }
 
   _serial->write(JSY_RESET_ENERGY_REQUEST, sizeof(JSY_RESET_ENERGY_REQUEST));
-  _serial->flush();
 
   uint8_t buffer[JSY_RESET_ENERGY_RESPONSE_SIZE];
   const size_t count = _timedRead(buffer, JSY_RESET_ENERGY_RESPONSE_SIZE);
@@ -376,7 +374,6 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
   }
 
   _serial->write(data, 11);
-  _serial->flush();
 
   uint8_t buffer[JSY_CMD_SET_BAUDS_RESPONSE_SIZE];
   const size_t count = _timedRead(buffer, JSY_CMD_SET_BAUDS_RESPONSE_SIZE);
@@ -435,10 +432,6 @@ void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
   _serial->setTimeout(MYCILA_JSY_READ_TIMEOUT_MS);
   while (!_serial)
     yield();
-  _serial->flush();
-  _drop();
-  while (!_serial->availableForWrite())
-    yield();
 }
 
 size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
@@ -448,7 +441,7 @@ size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
   // and are manually handling timeout instead of doing a low level call.
   // This is not efficient and can lead to a few milliseconds lost because they have to introducing delays in the loop.
   // Here, we ensure to read the data as fast as possible when everything works, and when no data is available, we have a timeout.
-  const size_t count = _serial->readBytes(buffer, length) + _drop();
+  const size_t count = _serial->readBytes(buffer, length);
   if (count == 0) {
     LOGD(TAG, "Read timeout");
     return count;
@@ -457,22 +450,8 @@ size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
   return count;
 }
 
-size_t Mycila::JSY::_drop() {
-  size_t count = 0;
-  // Serial.printf("Drop: ");
-  while (_serial->available()) {
-    // Serial.printf("%02X", _serial->read());
-    _serial->read();
-    count++;
-  }
-  // if (count > 0)
-  //   Serial.printf("Drop: %d\n", count);
-  return count;
-}
-
 bool Mycila::JSY::_canRead() {
   _serial->write(JSY_READ_REGISTERS_REQUEST, sizeof(JSY_READ_REGISTERS_REQUEST));
-  _serial->flush();
   uint8_t buffer[JSY_READ_REGISTERS_RESPONSE_SIZE];
   return _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE) == JSY_READ_REGISTERS_RESPONSE_SIZE && buffer[0] == 0x01;
 }

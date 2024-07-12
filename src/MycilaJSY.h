@@ -226,7 +226,6 @@ namespace Mycila {
     private:
       void _openSerial(JSYBaudRate baudRate);
       size_t _timedRead(uint8_t* buffer, size_t length);
-      size_t _drop();
       bool _canRead();
       JSYBaudRate _detectBauds();
       static void _jsyTask(void* pvParameters);
