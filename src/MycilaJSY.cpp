@@ -48,21 +48,25 @@ extern Mycila::Logger logger;
 
 #define JSY_READ_REGISTERS_RESPONSE_SIZE 61
 
+// CRC with JSY_ADDRESS_DEFAULT: 0x44 0x18
+// CRC with JSY_ADDRESS_BROADCAST: 0x45 0xC9
 static const uint8_t JSY_READ_REGISTERS_REQUEST[] = {
-  JSY_ADDRESS_DEFAULT,
+  JSY_ADDRESS_BROADCAST,
   JSY_CMD_READ,
   (uint8_t)(JSY_REGISTER_CH1_VOLTAGE >> 8),
   (uint8_t)(JSY_REGISTER_CH1_VOLTAGE & 0xFF),
   0x00, // 14 registers (high byte)
   0x0E, // 14 registers (low byte)
-  0x44, // CRC
-  0x18  // CRC
+  0x45, // CRC
+  0xC9  // CRC
 };
 
 #define JSY_RESET_ENERGY_RESPONSE_SIZE 8
 
+// CRC with JSY_ADDRESS_DEFAULT: 0xF3 0xFA
+// CRC with JSY_ADDRESS_BROADCAST: 0xF7 0x06
 static const uint8_t JSY_RESET_ENERGY_REQUEST[] = {
-  JSY_ADDRESS_DEFAULT,
+  JSY_ADDRESS_BROADCAST,
   JSY_CMD_WRITE,
   0x00, // start address high
   0x0C, // start address low
@@ -73,8 +77,8 @@ static const uint8_t JSY_RESET_ENERGY_REQUEST[] = {
   0x00, // data
   0x00, // data
   0x00, // data
-  0xF3, // CRC
-  0xFA  // CRC
+  0xF7, // CRC
+  0x06  // CRC
 };
 
 #define JSY_CMD_SET_BAUDS_RESPONSE_SIZE 8
@@ -172,6 +176,15 @@ bool Mycila::JSY::read() {
     return false;
   }
 
+#ifdef MYCILA_JSY_DEBUG
+  Serial.println("[JSY] read()");
+  Serial.printf("[JSY] > ");
+  for (size_t i = 0; i < sizeof(JSY_READ_REGISTERS_REQUEST); i++) {
+    Serial.printf("0x%02X ", JSY_READ_REGISTERS_REQUEST[i]);
+  }
+  Serial.println();
+#endif
+
   _serial->write(JSY_READ_REGISTERS_REQUEST, sizeof(JSY_READ_REGISTERS_REQUEST));
 
   uint8_t buffer[JSY_READ_REGISTERS_RESPONSE_SIZE];
@@ -196,7 +209,7 @@ bool Mycila::JSY::read() {
     return false;
   }
 
-  if (count != JSY_READ_REGISTERS_RESPONSE_SIZE || buffer[0] != 0x01) {
+  if (count != JSY_READ_REGISTERS_RESPONSE_SIZE) {
     // reset live values in case of read failure
     _current1 = 0;
     _current2 = 0;
@@ -284,6 +297,15 @@ bool Mycila::JSY::resetEnergy() {
     LOGW(TAG, "Cannot reset: Serial is busy!");
     return false;
   }
+
+#ifdef MYCILA_JSY_DEBUG
+  Serial.println("[JSY] resetEnergy()");
+  Serial.printf("[JSY] > ");
+  for (size_t i = 0; i < sizeof(JSY_RESET_ENERGY_REQUEST); i++) {
+    Serial.printf("0x%02X ", JSY_RESET_ENERGY_REQUEST[i]);
+  }
+  Serial.println();
+#endif
 
   _serial->write(JSY_RESET_ENERGY_REQUEST, sizeof(JSY_RESET_ENERGY_REQUEST));
 
@@ -373,7 +395,16 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
     return false;
   }
 
-  _serial->write(data, 11);
+#ifdef MYCILA_JSY_DEBUG
+  Serial.println("[JSY] setBaudRate()");
+  Serial.printf("[JSY] > ");
+  for (size_t i = 0; i < sizeof(data); i++) {
+    Serial.printf("0x%02X ", data[i]);
+  }
+  Serial.println();
+#endif
+
+  _serial->write(data, sizeof(data));
 
   uint8_t buffer[JSY_CMD_SET_BAUDS_RESPONSE_SIZE];
   const size_t count = _timedRead(buffer, JSY_CMD_SET_BAUDS_RESPONSE_SIZE);
@@ -442,6 +473,15 @@ size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
   // This is not efficient and can lead to a few milliseconds lost because they have to introducing delays in the loop.
   // Here, we ensure to read the data as fast as possible when everything works, and when no data is available, we have a timeout.
   const size_t count = _serial->readBytes(buffer, length);
+
+#ifdef MYCILA_JSY_DEBUG
+  Serial.printf("[JSY] < ");
+  for (size_t i = 0; i < count; i++) {
+    Serial.printf("0x%02X ", buffer[i]);
+  }
+  Serial.println();
+#endif
+
   if (count == 0) {
     LOGD(TAG, "Read timeout");
     return count;
@@ -451,9 +491,19 @@ size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
 }
 
 bool Mycila::JSY::_canRead() {
+#ifdef MYCILA_JSY_DEBUG
+  Serial.println("[JSY] _canRead()");
+  Serial.printf("[JSY] > ");
+  for (size_t i = 0; i < sizeof(JSY_READ_REGISTERS_REQUEST); i++) {
+    Serial.printf("0x%02X ", JSY_READ_REGISTERS_REQUEST[i]);
+  }
+  Serial.println();
+#endif
+
   _serial->write(JSY_READ_REGISTERS_REQUEST, sizeof(JSY_READ_REGISTERS_REQUEST));
+
   uint8_t buffer[JSY_READ_REGISTERS_RESPONSE_SIZE];
-  return _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE) == JSY_READ_REGISTERS_RESPONSE_SIZE && buffer[0] == 0x01;
+  return _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE) == JSY_READ_REGISTERS_RESPONSE_SIZE;
 }
 
 Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {

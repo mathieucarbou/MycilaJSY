@@ -42,6 +42,8 @@
   #define MYCILA_JSY_DETECT_BAUDS_RETRIES 4
 #endif
 
+// #define MYCILA_JSY_DEBUG 1
+
 namespace Mycila {
   enum class JSYBaudRate {
     UNKNOWN = 0,
