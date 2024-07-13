@@ -190,11 +190,11 @@ bool Mycila::JSY::read() {
   _serial->write(JSY_READ_REGISTERS_REQUEST, sizeof(JSY_READ_REGISTERS_REQUEST));
 
   uint8_t buffer[JSY_READ_REGISTERS_RESPONSE_SIZE];
-  const size_t count = _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE);
+  ReadResult result = _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE, _baudRate);
 
   _mutex.unlock();
 
-  if (!count) {
+  if (result == ReadResult::READ_TIMEOUT) {
     // reset live values in case of read timeout
     _current1 = 0;
     _current2 = 0;
@@ -211,7 +211,7 @@ bool Mycila::JSY::read() {
     return false;
   }
 
-  if (count != JSY_READ_REGISTERS_RESPONSE_SIZE) {
+  if (result == ReadResult::READ_ERROR_COUNT || result == ReadResult::READ_ERROR_CRC) {
     // reset live values in case of read failure
     _current1 = 0;
     _current2 = 0;
@@ -222,12 +222,13 @@ bool Mycila::JSY::read() {
     _powerFactor2 = 0;
     _voltage1 = 0;
     _voltage2 = 0;
-    LOGD(TAG, "Read failed: %d", count);
     if (_callback) {
       _callback(JSYEventType::EVT_READ_ERROR);
     }
     return false;
   }
+
+  assert(result == ReadResult::READ_SUCCESS);
 
   float voltage1 = ((buffer[3] << 24) + (buffer[4] << 16) + (buffer[5] << 8) + buffer[6]) * 0.0001;
   float current1 = ((buffer[7] << 24) + (buffer[8] << 16) + (buffer[9] << 8) + buffer[10]) * 0.0001;
@@ -312,20 +313,11 @@ bool Mycila::JSY::resetEnergy() {
   _serial->write(JSY_RESET_ENERGY_REQUEST, sizeof(JSY_RESET_ENERGY_REQUEST));
 
   uint8_t buffer[JSY_RESET_ENERGY_RESPONSE_SIZE];
-  const size_t count = _timedRead(buffer, JSY_RESET_ENERGY_RESPONSE_SIZE);
+  ReadResult result = _timedRead(buffer, JSY_RESET_ENERGY_RESPONSE_SIZE, _baudRate);
 
   _mutex.unlock();
 
-  if (!count) {
-    return false;
-  }
-
-  if (count != JSY_RESET_ENERGY_RESPONSE_SIZE) {
-    LOGW(TAG, "Reset failed!");
-    return false;
-  }
-
-  return true;
+  return result == ReadResult::READ_SUCCESS;
 }
 
 bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
@@ -409,14 +401,10 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
   _serial->write(data, sizeof(data));
 
   uint8_t buffer[JSY_CMD_SET_BAUDS_RESPONSE_SIZE];
-  const size_t count = _timedRead(buffer, JSY_CMD_SET_BAUDS_RESPONSE_SIZE);
+  ReadResult result = _timedRead(buffer, JSY_CMD_SET_BAUDS_RESPONSE_SIZE, _baudRate);
 
-  if (!count) {
-    return false;
-  }
-
-  if (count != JSY_CMD_SET_BAUDS_RESPONSE_SIZE) {
-    LOGW(TAG, "Update baud rate to %" PRIu32 " failed!", (uint32_t)baudRate);
+  if (result != ReadResult::READ_SUCCESS) {
+    _mutex.unlock();
     return false;
   }
 
@@ -424,17 +412,16 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
 
   bool success = false;
   for (int i = 0; i < MYCILA_JSY_RETRY_COUNT && !success; i++) {
-    success |= _canRead();
+    success |= _canRead(baudRate);
   }
-
-  _mutex.unlock();
 
   if (success) {
     _baudRate = baudRate;
-
   } else if (_baudRate != JSYBaudRate::UNKNOWN) {
     _openSerial(_baudRate);
   }
+
+  _mutex.unlock();
 
   return success;
 }
@@ -462,9 +449,6 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
 void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
   LOGD(TAG, "Open serial at %" PRIu32 " bauds", (uint32_t)baudRate);
   _serial->begin((uint32_t)baudRate, SERIAL_8N1, _pinRX, _pinTX);
-#if MYCILA_JSY_READ_TIMEOUT_MS > 0
-  _serial->setTimeout(MYCILA_JSY_READ_TIMEOUT_MS);
-#endif
   while (!_serial)
     yield();
   _serial->flush();
@@ -473,7 +457,11 @@ void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
     yield();
 }
 
-size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
+Mycila::JSY::ReadResult Mycila::JSY::_timedRead(uint8_t* buffer, size_t length, JSYBaudRate baudRate) {
+  const uint32_t timeout = _getTimeout(baudRate);
+  _serial->setTimeout(timeout);
+  size_t count = 0;
+
 #ifndef MYCILA_JSY_ALT_READ
   // const uint32_t now = millis();
   // readBytes is used because is is faster on ESP IDF since it directly calls the uart_read_bytes function.
@@ -481,12 +469,11 @@ size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
   // and are manually handling timeout instead of doing a low level call.
   // This is not efficient and can lead to a few milliseconds lost because they have to introducing delays in the loop.
   // Here, we ensure to read the data as fast as possible when everything works, and when no data is available, we have a timeout.
-  const size_t count = _serial->readBytes(buffer, length);
+  count = _serial->readBytes(buffer, length);
 
 #else
-  uint32_t start = millis();
-  size_t count = 0;
-  while (count < length && millis() - start < MYCILA_JSY_READ_TIMEOUT_MS) {
+  const uint32_t start = millis();
+  while (count < length && millis() - start < timeout) {
     while (_serial->available() && count < length) {
       buffer[count++] = _serial->read();
     }
@@ -502,15 +489,19 @@ size_t Mycila::JSY::_timedRead(uint8_t* buffer, size_t length) {
   Serial.println();
 #endif
 
-  _drop();
+  count += _drop();
 
   if (count == 0) {
     LOGD(TAG, "Read timeout");
-    return count;
+    return ReadResult::READ_TIMEOUT;
   }
 
-  // LOGD(TAG, "Read available after %d ms", millis() - now);
-  return count;
+  if (count != length) {
+    LOGD(TAG, "Read error: %d != %d", count, length);
+    return ReadResult::READ_ERROR_COUNT;
+  }
+
+  return ReadResult::READ_SUCCESS;
 }
 
 size_t Mycila::JSY::_drop() {
@@ -532,7 +523,7 @@ size_t Mycila::JSY::_drop() {
   return count;
 }
 
-bool Mycila::JSY::_canRead() {
+bool Mycila::JSY::_canRead(JSYBaudRate baudRate) {
 #ifdef MYCILA_JSY_DEBUG
   Serial.println("[JSY] _canRead()");
   Serial.printf("[JSY] Sent %d > ", sizeof(JSY_READ_REGISTERS_REQUEST));
@@ -545,7 +536,7 @@ bool Mycila::JSY::_canRead() {
   _serial->write(JSY_READ_REGISTERS_REQUEST, sizeof(JSY_READ_REGISTERS_REQUEST));
 
   uint8_t buffer[JSY_READ_REGISTERS_RESPONSE_SIZE];
-  return _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE) == JSY_READ_REGISTERS_RESPONSE_SIZE;
+  return _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE, baudRate) == ReadResult::READ_SUCCESS;
 }
 
 Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {
@@ -558,15 +549,35 @@ Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {
     JSYBaudRate::BAUD_1200};
   constexpr size_t baudsRateCount = 6;
   for (int i = 0; i < baudsRateCount * 2; i++) {
-    LOGD(TAG, "Trying to read at %" PRIu32 " bauds...", (uint32_t)baudRates[i % baudsRateCount]);
-    _openSerial(baudRates[i % baudsRateCount]);
+    JSYBaudRate baudRate = baudRates[i % baudsRateCount];
+    LOGD(TAG, "Trying to read at %" PRIu32 " bauds...", (uint32_t)baudRate);
+    _openSerial(baudRate);
     for (int j = 0; j < MYCILA_JSY_RETRY_COUNT; j++) {
-      if (_canRead()) {
-        return baudRates[i % baudsRateCount];
+      if (_canRead(baudRate)) {
+        return baudRate;
       }
     }
   }
   return JSYBaudRate::UNKNOWN;
+}
+
+uint32_t Mycila::JSY::_getTimeout(Mycila::JSYBaudRate baudRate) {
+  switch (baudRate) {
+    case Mycila::JSYBaudRate::BAUD_1200:
+      return 800;
+    case Mycila::JSYBaudRate::BAUD_2400:
+      return 600;
+    case Mycila::JSYBaudRate::BAUD_4800:
+      return 400;
+    case Mycila::JSYBaudRate::BAUD_9600:
+      return 300;
+    case Mycila::JSYBaudRate::BAUD_19200:
+      return 200;
+    case Mycila::JSYBaudRate::BAUD_38400:
+      return 100;
+    default:
+      return 1000;
+  }
 }
 
 void Mycila::JSY::_jsyTask(void* params) {
@@ -581,7 +592,7 @@ void Mycila::JSY::_jsyTask(void* params) {
     } else if (jsy->_pause > 0) {
       delay(jsy->_pause);
     } else {
-      delay(MYCILA_JSY_READ_TIMEOUT_MS < portTICK_PERIOD_MS ? portTICK_PERIOD_MS : MYCILA_JSY_READ_TIMEOUT_MS);
+      delay(10);
     }
   }
   jsy->_taskHandle = NULL;

@@ -34,16 +34,8 @@
   #define MYCILA_JSY_ASYNC_READ_PAUSE_MS 0
 #endif
 
-#ifndef MYCILA_JSY_READ_TIMEOUT_MS
-  #define MYCILA_JSY_READ_TIMEOUT_MS 1000
-#endif
-
 #ifndef MYCILA_JSY_RETRY_COUNT
   #define MYCILA_JSY_RETRY_COUNT 4
-#endif
-
-#if MYCILA_JSY_READ_TIMEOUT_MS < 200
-  #error MYCILA_JSY_READ_TIMEOUT_MS must be at least 200
 #endif
 
 // #define MYCILA_JSY_DEBUG 1
@@ -231,11 +223,18 @@ namespace Mycila {
       JSYCallback _callback = nullptr;
 
     private:
+      typedef enum {
+        READ_SUCCESS = 0,
+        READ_TIMEOUT,
+        READ_ERROR_COUNT,
+        READ_ERROR_CRC
+      } ReadResult;
       void _openSerial(JSYBaudRate baudRate);
-      size_t _timedRead(uint8_t* buffer, size_t length);
+      ReadResult _timedRead(uint8_t* buffer, size_t length, JSYBaudRate baudRate);
       size_t _drop();
-      bool _canRead();
+      bool _canRead(JSYBaudRate baudRate);
       JSYBaudRate _detectBauds();
+      static uint32_t _getTimeout(JSYBaudRate baudRate);
       static void _jsyTask(void* pvParameters);
   };
 } // namespace Mycila

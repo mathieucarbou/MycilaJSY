@@ -19,7 +19,8 @@ void setup() {
 
   // Try change speed until success
   uint32_t start = millis();
-  while (!jsy.setBaudRate(Mycila::JSYBaudRate::BAUD_38400) && millis() - start < 15000) {
+  Mycila::JSYBaudRate baudRate = jsy.getBaudRate() == Mycila::JSYBaudRate::BAUD_38400 ? Mycila::JSYBaudRate::BAUD_1200 : Mycila::JSYBaudRate::BAUD_38400;
+  while (!jsy.setBaudRate(baudRate) && millis() - start < 15000) {
     delay(500);
   }
 
