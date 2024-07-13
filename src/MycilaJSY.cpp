@@ -50,6 +50,7 @@ extern Mycila::Logger logger;
 
 // CRC with JSY_ADDRESS_DEFAULT: 0x44 0x18
 // CRC with JSY_ADDRESS_BROADCAST: 0x45 0xC9
+// Ref: https://crccalc.com (CRC-16/MODBUS)
 static const uint8_t JSY_READ_REGISTERS_REQUEST[] = {
   JSY_ADDRESS_BROADCAST,
   JSY_CMD_READ,
@@ -65,6 +66,7 @@ static const uint8_t JSY_READ_REGISTERS_REQUEST[] = {
 
 // CRC with JSY_ADDRESS_DEFAULT: 0xF3 0xFA
 // CRC with JSY_ADDRESS_BROADCAST: 0xF7 0x06
+// Ref: https://crccalc.com (CRC-16/MODBUS)
 static const uint8_t JSY_RESET_ENERGY_REQUEST[] = {
   JSY_ADDRESS_BROADCAST,
   JSY_CMD_WRITE,
