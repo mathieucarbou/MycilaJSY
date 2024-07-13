@@ -16,14 +16,13 @@ void setup() {
 
 void loop() {
   if (jsy.read()) {
-
     JsonDocument doc;
     jsy.toJson(doc.to<JsonObject>());
     serializeJson(doc, Serial);
     Serial.println();
-
-    if (jsy.getEnergy1() > 0 || jsy.getEnergy2() > 0 || jsy.getEnergyReturned1() > 0 || jsy.getEnergyReturned2() > 0)
-      jsy.resetEnergy();
   }
+
+  jsy.resetEnergy();
+
   delay(1000);
 }
