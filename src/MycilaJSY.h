@@ -35,14 +35,19 @@
 #endif
 
 #ifndef MYCILA_JSY_READ_TIMEOUT_MS
-  #define MYCILA_JSY_READ_TIMEOUT_MS 400
+  #define MYCILA_JSY_READ_TIMEOUT_MS 1000
 #endif
 
-#ifndef MYCILA_JSY_DETECT_BAUDS_RETRIES
-  #define MYCILA_JSY_DETECT_BAUDS_RETRIES 4
+#ifndef MYCILA_JSY_RETRY_COUNT
+  #define MYCILA_JSY_RETRY_COUNT 4
+#endif
+
+#if MYCILA_JSY_READ_TIMEOUT_MS < 200
+  #error MYCILA_JSY_READ_TIMEOUT_MS must be at least 200
 #endif
 
 // #define MYCILA_JSY_DEBUG 1
+// #define MYCILA_JSY_ALT_READ 1
 
 namespace Mycila {
   enum class JSYBaudRate {
@@ -228,6 +233,7 @@ namespace Mycila {
     private:
       void _openSerial(JSYBaudRate baudRate);
       size_t _timedRead(uint8_t* buffer, size_t length);
+      size_t _drop();
       bool _canRead();
       JSYBaudRate _detectBauds();
       static void _jsyTask(void* pvParameters);
