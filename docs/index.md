@@ -44,6 +44,7 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
   - [Callbacks](#callbacks)
   - [Remote JSY](#remote-jsy)
   - [JSON Support](#json-support)
+  - [Debugging](#debugging)
 - [Performance tests](#performance-tests)
 - [Reference material](#reference-material)
 
@@ -326,6 +327,10 @@ This is the rate at which the JSY usually updates its data.
 ## JSON Support
 
 You can activate JSON support by defining `-D MYCILA_JSON_SUPPORT` in your project and add the `ArduinoJson` library.
+
+## Debugging
+
+Set the flag: `-D MYCILA_JSY_DEBUG` and you will see all the JSY requests and responses.
 
 ## Performance tests
 

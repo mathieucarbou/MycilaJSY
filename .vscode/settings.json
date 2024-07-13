@@ -21,6 +21,7 @@
     "span": "cpp",
     "regex": "cpp",
     "cmath": "cpp",
-    "mutex": "cpp"
+    "mutex": "cpp",
+    "algorithm": "cpp"
   }
 }
