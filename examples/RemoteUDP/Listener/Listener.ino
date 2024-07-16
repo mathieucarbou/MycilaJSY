@@ -67,19 +67,18 @@
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
+#include <ElegantOTA.h>           // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
 #include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
-#include <ESPDash.h>              // https://github.com/ayushsharma82/ESP-DASH
-#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
+#include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
 #include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
 #include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
 #include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
 #include <MycilaJSY.h>            // https://github.com/mathieucarbou/MycilaJSY
 #include <MycilaLogger.h>         // https://github.com/mathieucarbou/MycilaLogger
 #include <MycilaSystem.h>         // https://github.com/mathieucarbou/MycilaSystem
-#include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
-#include <MycilaTaskMonitor.h>    // https://github.com/mathieucarbou/MycilaTaskMonitor
+#include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskManager
 #include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
-#include <WebSerial.h>            // https://github.com/ayushsharma82/WebSerial
+#include <WebSerial.h>            // https://github.com/mathieucarbou/ayushsharma82-WebSerial#dev
 
 AsyncUDP udp;
 AsyncWebServer webServer(80);
@@ -142,11 +141,6 @@ Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> messageRateBuffer;
 volatile float messageRate = 0;
 
 Mycila::Task networkManagerTask("ESPConnect", [](void* params) { ESPConnect.loop(); });
-
-Mycila::Task profilerTask("Profiler", [](void* params) {
-  Mycila::TaskMonitor.log();
-  coreTaskManager.log();
-});
 
 Mycila::Task networkUpTask("Network UP", Mycila::TaskType::ONCE, [](void* params) {
   logger.info(TAG, "Enable Network Services...");
@@ -264,21 +258,7 @@ void setup() {
   networkManagerTask.setManager(coreTaskManager);
   networkUpTask.setManager(coreTaskManager);
   otaTask.setManager(coreTaskManager);
-  profilerTask.setInterval(10 * Mycila::TaskDuration::SECONDS);
-  profilerTask.setManager(coreTaskManager);
   restartTask.setManager(coreTaskManager);
-
-  // profiling
-  dashboardTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
-  profilerTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
-
-  // Task Monitor
-  Mycila::TaskMonitor.begin();
-  Mycila::TaskMonitor.addTask("arduino_events");          // Network
-  Mycila::TaskMonitor.addTask("async_tcp");               // AsyncTCP
-  Mycila::TaskMonitor.addTask("async_udp");               // AsyncUDP
-  Mycila::TaskMonitor.addTask("wifi");                    // WiFI
-  Mycila::TaskMonitor.addTask(coreTaskManager.getName()); // App
 
   // WebSerial
   WebSerial.setAuthentication(MYCILA_ADMIN_USERNAME, MYCILA_ADMIN_PASSWORD);
