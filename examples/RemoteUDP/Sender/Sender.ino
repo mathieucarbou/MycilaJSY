@@ -279,7 +279,7 @@ void setup() {
   Mycila::System.begin();
 
   // tasks
-  dashboardTask.setEnabledWhen([]() { return ESPConnect.isConnected() && dashboard.hasClient() && !dashboard.isAsyncAccessInProgress(); });
+  dashboardTask.setEnabledWhen([]() { return ESPConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
   dashboardTask.setInterval(1000 * Mycila::TaskDuration::MILLISECONDS);
   dashboardTask.setManager(coreTaskManager);
   jsyTask.setEnabledWhen([]() { return jsy.isEnabled(); });
