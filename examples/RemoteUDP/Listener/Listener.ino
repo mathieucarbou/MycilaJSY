@@ -78,7 +78,7 @@
 #include <MycilaSystem.h>         // https://github.com/mathieucarbou/MycilaSystem
 #include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskManager
 #include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
-#include <WebSerial.h>            // https://github.com/ayushsharma82/WebSerial#2.0.5
+#include <WebSerial.h>            // https://github.com/ayushsharma82/WebSerial#v2.0.5
 
 AsyncUDP udp;
 AsyncWebServer webServer(80);
