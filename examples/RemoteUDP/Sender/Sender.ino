@@ -80,7 +80,7 @@
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
-#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA#3.1.3
+#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
 #include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
 #include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
 #include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
@@ -91,7 +91,7 @@
 #include <MycilaSystem.h>         // https://github.com/mathieucarbou/MycilaSystem
 #include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskManager
 #include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
-#include <WebSerial.h>            // https://github.com/ayushsharma82/WebSerial#v2.0.5
+#include <WebSerial.h>            // https://github.com/ayushsharma82/WebSerial
 
 AsyncUDP udp;
 AsyncWebServer webServer(80);
