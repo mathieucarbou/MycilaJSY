@@ -361,7 +361,7 @@ void setup() {
       return;
     }
 
-    if (eventType == Mycila::JSYEventType::EVT_READ) {
+    if (eventType == Mycila::JSYEventType::EVT_CHANGE) {
 
       ESPConnectMode mode = ESPConnect.getMode();
 
