@@ -64,7 +64,7 @@ extern Mycila::Logger logger;
 // CRC with JSY_ADDRESS_DEFAULT: 0x44 0x18
 // CRC with JSY_ADDRESS_BROADCAST: 0x45 0xC9
 // Ref: https://crccalc.com (CRC-16/MODBUS)
-static const uint8_t JSY_READ_REGISTERS_REQUEST[] = {
+static constexpr uint8_t JSY_READ_REGISTERS_REQUEST[] PROGMEM = {
   JSY_ADDRESS_BROADCAST,
   JSY_CMD_READ,
   (uint8_t)(JSY_REGISTER_CH1_VOLTAGE >> 8),
@@ -80,7 +80,7 @@ static const uint8_t JSY_READ_REGISTERS_REQUEST[] = {
 // CRC with JSY_ADDRESS_DEFAULT: 0xF3 0xFA
 // CRC with JSY_ADDRESS_BROADCAST: 0xF7 0x06
 // Ref: https://crccalc.com (CRC-16/MODBUS)
-static const uint8_t JSY_RESET_ENERGY_REQUEST[] = {
+static constexpr uint8_t JSY_RESET_ENERGY_REQUEST[] PROGMEM = {
   JSY_ADDRESS_BROADCAST,
   JSY_CMD_WRITE,
   0x00, // start address high
@@ -98,7 +98,7 @@ static const uint8_t JSY_RESET_ENERGY_REQUEST[] = {
 
 #define JSY_CMD_SET_BAUDS_RESPONSE_SIZE 8
 
-const uint16_t CRCTable[] PROGMEM = {
+static constexpr uint16_t CRCTable[] PROGMEM = {
   0x0000,
   0xC0C1,
   0xC181,
