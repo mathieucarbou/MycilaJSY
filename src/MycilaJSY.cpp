@@ -689,9 +689,11 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
 
 #ifdef MYCILA_JSON_SUPPORT
 void Mycila::JSY::toJson(const JsonObject& root) const {
+  root["enabled"] = _enabled;
+  root["speed"] = (uint32_t)_baudRate;
+  root["time"] = _lastReadSuccess;
   root["current1"] = _current1;
   root["current2"] = _current2;
-  root["enabled"] = _enabled;
   root["energy_returned1"] = _energyReturned1;
   root["energy_returned2"] = _energyReturned2;
   root["energy1"] = _energy1;
@@ -703,7 +705,6 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
   root["power2"] = _power2;
   root["voltage1"] = _voltage1;
   root["voltage2"] = _voltage2;
-  root["time"] = _lastReadSuccess;
 }
 #endif
 
