@@ -39,7 +39,6 @@
 #endif
 
 // #define MYCILA_JSY_DEBUG 1
-// #define MYCILA_JSY_ALT_READ 1
 
 namespace Mycila {
   enum class JSYBaudRate {
@@ -230,11 +229,10 @@ namespace Mycila {
         READ_ERROR_CRC
       } ReadResult;
       void _openSerial(JSYBaudRate baudRate);
-      ReadResult _timedRead(uint8_t* buffer, size_t length, JSYBaudRate baudRate);
+      ReadResult _timedRead(uint8_t* buffer, const size_t length, const JSYBaudRate baudRate);
       size_t _drop();
       bool _canRead(JSYBaudRate baudRate);
       JSYBaudRate _detectBauds();
-      static uint32_t _getTimeout(JSYBaudRate baudRate);
       static void _jsyTask(void* pvParameters);
   };
 } // namespace Mycila
