@@ -86,12 +86,6 @@ jobs:
       - name: Build SetSpeed
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SetSpeed/SetSpeed.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
-      - name: Build SimpleEnergyReset
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SimpleEnergyReset/SimpleEnergyReset.ino"
-
-      - name: Build SimpleSetSpeed
-        run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/SimpleSetSpeed/SimpleSetSpeed.ino"
-
       - name: Build PerfTest1
         run: arduino-cli compile --library . --warnings all -b ${{ matrix.board }} "examples/PerfTest1/PerfTest1.ino" --build-property build.extra_flags=-DMYCILA_JSON_SUPPORT
 
@@ -166,12 +160,6 @@ jobs:
 
       - name: Build SetSpeed
         run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/SetSpeed/SetSpeed.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
-
-      - name: Build SimpleEnergyReset
-        run: platformio ci "examples/SimpleEnergyReset/SimpleEnergyReset.ino" -l '.' -b ${{ matrix.board }} ${{ matrix.opts }}
-
-      - name: Build SimpleSetSpeed
-        run: platformio ci "examples/SimpleSetSpeed/SimpleSetSpeed.ino" -l '.' -b ${{ matrix.board }} ${{ matrix.opts }}
 
       - name: Build PerfTest1
         run: PLATFORMIO_BUILD_FLAGS="-Wall -Wextra -DMYCILA_JSON_SUPPORT" platformio ci "examples/PerfTest1/PerfTest1.ino" -l '.' --project-option="lib_deps=bblanchon/ArduinoJson" -b ${{ matrix.board }} ${{ matrix.opts }}
