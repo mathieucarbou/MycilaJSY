@@ -80,9 +80,9 @@
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
-#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
 #include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
 #include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
+#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
 #include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
 #include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
 #include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
@@ -113,6 +113,7 @@ Statistic networkWiFiSSID = Statistic(&dashboard, "Network WiFi SSID");
 Statistic networkWiFiRSSI = Statistic(&dashboard, "Network WiFi RSSI");
 Statistic networkWiFiSignal = Statistic(&dashboard, "Network WiFi Signal");
 Statistic uptime = Statistic(&dashboard, "Uptime");
+Statistic version = Statistic(&dashboard, "Version");
 
 Card voltage1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Voltage", "V");
 Card activePower1 = Card(&dashboard, GENERIC_CARD, "Channel 1 Active Power", "W");
@@ -316,6 +317,8 @@ void setup() {
   // Dashboard
   webServer.rewrite("/", "/dashboard").setFilter([](AsyncWebServerRequest* request) { return ESPConnect.getState() != ESPConnectState::PORTAL_STARTED; });
 
+  version.set(MYCILA_JSY_VERSION);
+
   restart.attachCallback([](int32_t value) { restartTask.resume(); });
 
   reset.attachCallback([](int32_t value) {
@@ -355,7 +358,7 @@ void setup() {
 
   // jsy
   jsy.setCallback([](const Mycila::JSYEventType eventType) {
-    if(!udpSendEnabled) {
+    if (!udpSendEnabled) {
       messageRate = 0;
       dataRate = 0;
       return;
