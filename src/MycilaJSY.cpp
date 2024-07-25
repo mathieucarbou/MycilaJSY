@@ -714,7 +714,7 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
 void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
   LOGD(TAG, "Open serial at %" PRIu32 " bauds", (uint32_t)baudRate);
   _serial->begin((uint32_t)baudRate, SERIAL_8N1, _pinRX, _pinTX);
-  _serial->setTimeout(50);
+  _serial->setTimeout(100);
   while (!_serial)
     yield();
   while (!_serial->availableForWrite())

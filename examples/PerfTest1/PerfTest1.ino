@@ -52,8 +52,11 @@ void setup() {
     int64_t times[50];
     for (size_t j = 0; j < 50; j++) {
       times[j] = esp_timer_get_time();
-      jsy.read();
-      times[j] = esp_timer_get_time() - times[j];
+      if(jsy.read()) {
+        times[j] = esp_timer_get_time() - times[j];
+      } else {
+        times[j] = 0;
+      }
       // Serial.printf(" %" PRId64, times[j]);
     }
     // Serial.println();
