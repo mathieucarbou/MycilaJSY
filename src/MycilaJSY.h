@@ -222,12 +222,12 @@ namespace Mycila {
       JSYCallback _callback = nullptr;
 
     private:
-      typedef enum {
+      enum class ReadResult {
         READ_SUCCESS = 0,
         READ_TIMEOUT,
         READ_ERROR_COUNT,
         READ_ERROR_CRC
-      } ReadResult;
+      };
       void _openSerial(JSYBaudRate baudRate);
       ReadResult _timedRead(uint8_t* buffer, const size_t length, const JSYBaudRate baudRate);
       size_t _drop();
