@@ -46,7 +46,7 @@ _Please help contribute to this README if the explanation needs to be improved._
 #include <MycilaSystem.h>         // https://github.com/mathieucarbou/MycilaSystem
 #include <MycilaTaskManager.h>    // https://github.com/mathieucarbou/MycilaTaskManager
 #include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
-#include <WebSerial.h>            // https://github.com/ayushsharma82/WebSerial
+#include <MycilaWebSerial.h>      // https://github.com/mathieucarbou/MycilaWebSerial
 ```
 
 The program also uses these Arduino libraries:
