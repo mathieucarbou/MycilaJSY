@@ -556,7 +556,7 @@ bool Mycila::JSY::resetEnergy() {
   if (!_enabled)
     return false;
 
-  LOGI(TAG, "Reset Energy data...");
+  LOGD(TAG, "Try reset energy data...");
 
   if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
     LOGW(TAG, "Cannot reset: Serial is busy!");
@@ -593,7 +593,7 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
   if (_baudRate == baudRate)
     return true;
 
-  LOGI(TAG, "Update baud rate to %" PRIu32 "...", (uint32_t)baudRate);
+  LOGD(TAG, "Try update baud rate to %" PRIu32 "...", (uint32_t)baudRate);
 
   uint8_t data[] = {
     JSY_ADDRESS_BROADCAST,
@@ -714,7 +714,7 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
 void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
   LOGD(TAG, "Open serial at %" PRIu32 " bauds", (uint32_t)baudRate);
   _serial->begin((uint32_t)baudRate, SERIAL_8N1, _pinRX, _pinTX);
-  _serial->setTimeout(100);
+  _serial->setTimeout(200);
   while (!_serial)
     yield();
   while (!_serial->availableForWrite())
