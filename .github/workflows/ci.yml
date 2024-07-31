@@ -112,7 +112,7 @@ jobs:
             opts:
           - name: esp32dev|arduino-2
             board: esp32dev
-            platform: espressif32@6.7.0
+            platform: espressif32@6.8.1
             opts:
           - name: esp32dev|arduino-3
             board: esp32dev
@@ -124,7 +124,7 @@ jobs:
             opts:
           - name: esp32-s3-devkitc-1|arduino-2
             board: esp32-s3-devkitc-1
-            platform: espressif32@6.7.0
+            platform: espressif32@6.8.1
             opts:
           - name: esp32-s3-devkitc-1|arduino-3
             board: esp32-s3-devkitc-1
