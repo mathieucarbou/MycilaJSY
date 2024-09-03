@@ -170,7 +170,7 @@ Mycila::Task otaTask("OTA", Mycila::TaskType::ONCE, [](void* params) {
 
 Mycila::Task restartTask("Restart", Mycila::TaskType::ONCE, [](void* params) {
   logger.warn(TAG, "Restarting " MYCILA_APP_NAME "...");
-  Mycila::System.restart(500);
+  Mycila::System::restart(500);
 });
 
 Mycila::Task dashboardTask("Dashboard", [](void* params) {
@@ -183,7 +183,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   networkWiFiRSSI.set((String(espConnect.getWiFiRSSI()) + " dBm").c_str());
   networkWiFiSignal.set((String(espConnect.getWiFiSignalQuality()) + " %").c_str());
   networkWiFiSSID.set(espConnect.getWiFiSSID().c_str());
-  uptime.set(Mycila::Time::toDHHMMSS(Mycila::System.getUptime()).c_str());
+  uptime.set(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()).c_str());
 
   activePower1.update(jsyData.power1);
   apparentPower1.update(jsyData.powerFactor1 == 0 ? 0 : jsyData.power1 / jsyData.powerFactor1);
@@ -236,9 +236,9 @@ void setup() {
 #endif
 
   // hostname
-  hostname = "listener-" + Mycila::System.getEspID();
+  hostname = "listener-" + Mycila::System::getChipIDStr();
   hostname.toLowerCase();
-  ssid = "Listener-" + Mycila::System.getEspID();
+  ssid = "Listener-" + Mycila::System::getChipIDStr();
 
   // logging
   esp_log_level_set("*", static_cast<esp_log_level_t>(ARDUHAL_LOG_LEVEL_DEBUG));
@@ -249,7 +249,7 @@ void setup() {
   logger.warn(TAG, "Initializing " MYCILA_APP_NAME "...");
 
   // system
-  Mycila::System.begin();
+  Mycila::System::init();
 
   // tasks
   dashboardTask.setEnabledWhen([]() { return espConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
