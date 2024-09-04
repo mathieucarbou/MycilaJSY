@@ -1,8 +1,14 @@
 # MycilaJSY
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Continuous Integration](https://github.com/mathieucarbou/MycilaJSY/actions/workflows/ci.yml/badge.svg)](https://github.com/mathieucarbou/MycilaJSY/actions/workflows/ci.yml)
+[![Latest Release](https://img.shields.io/github/release/mathieucarbou/MycilaJSY.svg)](https://GitHub.com/mathieucarbou/MycilaJSY/releases/)
 [![PlatformIO Registry](https://badges.registry.platformio.org/packages/mathieucarbou/library/MycilaJSY.svg)](https://registry.platformio.org/libraries/mathieucarbou/MycilaJSY)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
+
+[![Build](https://github.com/mathieucarbou/MycilaJSY/actions/workflows/ci.yml/badge.svg)](https://github.com/mathieucarbou/MycilaJSY/actions/workflows/ci.yml)
+[![GitHub latest commit](https://badgen.net/github/last-commit/mathieucarbou/MycilaJSY)](https://GitHub.com/mathieucarbou/MycilaJSY/commit/)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mathieucarbou/MycilaJSY)
 
 Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy metering module
 
