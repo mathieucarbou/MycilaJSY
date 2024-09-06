@@ -3,6 +3,13 @@
 #include <HardwareSerial.h>
 #include <MycilaJSY.h>
 
+#ifndef SOC_UART_HP_NUM
+  #define SOC_UART_HP_NUM SOC_UART_NUM
+#endif
+#if SOC_UART_HP_NUM < 3
+  #define Serial2 Serial1
+#endif
+
 void setup() {
   Serial.begin(115200);
   while (!Serial)

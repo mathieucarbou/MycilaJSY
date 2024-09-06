@@ -1,6 +1,13 @@
 #include <ArduinoJson.h>
 #include <MycilaJSY.h>
 
+#ifndef SOC_UART_HP_NUM
+  #define SOC_UART_HP_NUM SOC_UART_NUM
+#endif
+#if SOC_UART_HP_NUM < 3
+  #define Serial2 Serial1
+#endif
+
 // Pin: RX (ESP32) -> TX (JSY)
 #define JSY_TX_PIN 16
 

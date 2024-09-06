@@ -2,6 +2,13 @@
 #include <ArduinoJson.h>
 #include <MycilaJSY.h>
 
+#ifndef SOC_UART_HP_NUM
+  #define SOC_UART_HP_NUM SOC_UART_NUM
+#endif
+#if SOC_UART_HP_NUM < 3
+  #define Serial2 Serial1
+#endif
+
 Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_38400;
 
 Mycila::JSY jsy;

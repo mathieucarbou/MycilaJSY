@@ -728,7 +728,7 @@ Mycila::JSY::ReadResult Mycila::JSY::_timedRead(uint8_t* buffer, const size_t ex
 
   size_t count = 0;
   while (count < expectedLength) {
-    size_t read = Serial2.readBytes(buffer + count, expectedLength - count);
+    size_t read = _serial->readBytes(buffer + count, expectedLength - count);
     if (read) {
       count += read;
     } else {
