@@ -1,3 +1,10 @@
+#ifndef SOC_UART_HP_NUM
+  #define SOC_UART_HP_NUM SOC_UART_NUM
+#endif
+#if SOC_UART_HP_NUM < 3
+  #define Serial2 Serial1
+#endif
+
 #ifndef HTTPCLIENT_NOSECURE
   #define HTTPCLIENT_NOSECURE 1
 #endif
@@ -72,7 +79,7 @@
 #include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-DASH#dev
 #include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
 #include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
-#include <MycilaespConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
+#include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
 #include <MycilaJSY.h>            // https://github.com/mathieucarbou/MycilaJSY
 #include <MycilaLogger.h>         // https://github.com/mathieucarbou/MycilaLogger
 #include <MycilaSystem.h>         // https://github.com/mathieucarbou/MycilaSystem
@@ -409,7 +416,7 @@ void setup() {
         break;
     }
   });
-  espConnect.begin(hostname, ssid, MYCILA_ADMIN_PASSWORD);
+  espConnect.begin(hostname.c_str(), ssid.c_str(), MYCILA_ADMIN_PASSWORD);
 
   // start tasks
   assert(coreTaskManager.asyncStart(1024 * 4, 1, 1, 100, true)); // NOLINT
