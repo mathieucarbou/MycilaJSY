@@ -693,7 +693,7 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
 #ifdef MYCILA_JSON_SUPPORT
 void Mycila::JSY::toJson(const JsonObject& root) const {
   root["enabled"] = _enabled;
-  root["speed"] = (uint32_t)_baudRate;
+  root["speed"] = static_cast<uint32_t>(_baudRate);
   root["time"] = _lastReadSuccess;
   root["current1"] = _current1;
   root["current2"] = _current2;
@@ -713,7 +713,7 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
 
 void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
   LOGD(TAG, "Open serial at %" PRIu32 " bauds", (uint32_t)baudRate);
-  _serial->begin((uint32_t)baudRate, SERIAL_8N1, _pinRX, _pinTX);
+  _serial->begin(static_cast<uint32_t>(baudRate), SERIAL_8N1, _pinRX, _pinTX);
   _serial->setTimeout(200);
   while (!_serial)
     yield();
