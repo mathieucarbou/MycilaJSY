@@ -1,18 +1,3 @@
-#ifndef SOC_UART_HP_NUM
-  #define SOC_UART_HP_NUM SOC_UART_NUM
-#endif
-#if SOC_UART_HP_NUM < 3
-  #define Serial2 Serial1
-#endif
-
-#ifndef HTTPCLIENT_NOSECURE
-  #define HTTPCLIENT_NOSECURE 1
-#endif
-
-#ifndef ARDUINO_LOOP_STACK_SIZE
-  #define ARDUINO_LOOP_STACK_SIZE 4096
-#endif
-
 #ifndef CONFIG_ASYNC_TCP_MAX_ACK_TIME
   #define CONFIG_ASYNC_TCP_MAX_ACK_TIME 3000
 #endif
@@ -31,10 +16,6 @@
 
 #ifndef CONFIG_ASYNC_TCP_STACK_SIZE
   #define CONFIG_ASYNC_TCP_STACK_SIZE 4096
-#endif
-
-#ifndef DASH_JSON_SIZE
-  #define DASH_JSON_SIZE 4096
 #endif
 
 #ifndef ELEGANTOTA_USE_ASYNC_WEBSERVER
