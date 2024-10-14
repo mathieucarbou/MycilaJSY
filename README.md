@@ -41,6 +41,7 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
     volatile uint8_t frequency = 0; // Hz
 ```
 
+- [Remote JSY](#remote-jsy)
 - [Tested boards](#tested-boards)
 - [Usage](#usage)
   - [Blocking mode](#blocking-mode)
@@ -48,13 +49,23 @@ Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy
   - [Energy reset](#energy-reset)
   - [Update Baud rate (change speed)](#update-baud-rate-change-speed)
   - [Callbacks](#callbacks)
-  - [Remote JSY](#remote-jsy)
   - [JSON Support](#json-support)
   - [Debugging](#debugging)
 - [Performance tests](#performance-tests)
 - [Reference material](#reference-material)
 
 Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
+
+## Remote JSY
+
+The JSY can be used connected to an ESP32 to send the JSY data several times per second to a remote server through UDP.
+Both devices needs to be connected to the same network and UDP packets must be allowed.
+
+Screenshot of the ESP32 running the JSY app called the `Sender`:
+
+![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/3066bf12-31d5-45de-9303-d810f14731d0)
+
+[Click here for the download and installation instructions of the JSY Remote UDP Sender](https://github.com/mathieucarbou/MycilaJSY/tree/main/examples/RemoteUDP)
 
 ## Tested boards:
 
@@ -308,27 +319,6 @@ jsy.read() at 38400 bauds:
  - 14929499 EVT_READ
  - 14969706 EVT_READ
 ```
-
-### Remote JSY
-
-The JSY can be used connected to an ESP32 to send the JSY data several times per second to a remote server through UDP.
-Both devices needs to be connected to the same WiFi network and UDP packets must be allowed.
-
-The application can be found in `examples/RemoteUDP`.
-
-Screenshot of the ESP32 running the JSY app called the `Sender`:
-
-![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/3066bf12-31d5-45de-9303-d810f14731d0)
-
-There is also a `Listener` app as example that will display the received data. The Listener app looks like the Sender app but does not have any JSY connected to it.
-
-**The `Sender` app can be also used as standalone app connected to a JSY to see the power meter data in real-time.**
-
-**Speed**
-
-The JSY Remote through UDP is nearly as fast as having the JSY wired to the ESP.
-All changes to the JSY are immediately sent through UDP to the listener at a rate of about **20 messages per second.**
-This is the rate at which the JSY usually updates its data.
 
 ## JSON Support
 

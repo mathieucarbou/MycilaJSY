@@ -52,6 +52,7 @@
 
 #include <Arduino.h>
 #include <ESPmDNS.h>
+#include <AsyncUDP.h>
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP

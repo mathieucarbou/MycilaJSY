@@ -1,16 +1,13 @@
+#include <HardwareSerial.h>
+
 #ifndef SOC_UART_HP_NUM
   #define SOC_UART_HP_NUM SOC_UART_NUM
 #endif
+
 #if SOC_UART_HP_NUM < 3
   #define Serial2 Serial1
-#endif
-
-#ifndef HTTPCLIENT_NOSECURE
-  #define HTTPCLIENT_NOSECURE 1
-#endif
-
-#ifndef ARDUINO_LOOP_STACK_SIZE
-  #define ARDUINO_LOOP_STACK_SIZE 4096
+  #define RX2     RX1
+  #define TX2     TX1
 #endif
 
 #ifndef CONFIG_ASYNC_TCP_MAX_ACK_TIME
@@ -31,10 +28,6 @@
 
 #ifndef CONFIG_ASYNC_TCP_STACK_SIZE
   #define CONFIG_ASYNC_TCP_STACK_SIZE 4096
-#endif
-
-#ifndef DASH_JSON_SIZE
-  #define DASH_JSON_SIZE 4096
 #endif
 
 #ifndef ELEGANTOTA_USE_ASYNC_WEBSERVER
@@ -62,11 +55,11 @@
 #endif
 
 #ifndef MYCILA_JSY_RX
-  #define MYCILA_JSY_RX 16
+  #define MYCILA_JSY_RX RX2
 #endif
 
 #ifndef MYCILA_JSY_TX
-  #define MYCILA_JSY_TX 17
+  #define MYCILA_JSY_TX TX2
 #endif
 
 #ifndef MYCILA_ADMIN_PASSWORD
@@ -84,6 +77,7 @@
 
 #include <Arduino.h>
 #include <ESPmDNS.h>
+#include <AsyncUDP.h>
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
