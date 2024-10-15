@@ -1,5 +1,15 @@
 # Remote JSY with UDP
 
+- [Downloads](#downloads)
+- [Installation](#installation)
+  - [Firmware First Time Installation](#firmware-first-time-installation)
+  - [Firmware Update](#firmware-update)
+- [Wiring](#wiring)
+- [Usage](#usage)
+- [For developers](#for-developers)
+  - [Compilation with PlatformIO](#compilation-with-platformio)
+  - [Compilation with Arduino IDE](#compilation-with-arduino-ide)
+
 The JSY can be used connected to an ESP32 to send the JSY data several times per second to a remote server through UDP.
 Both devices needs to be connected to the same WiFi network and UDP packets must be allowed.
 
@@ -22,17 +32,60 @@ Local JSY readings are made at a rate of 20-25 reads per second.
 
 ## Downloads
 
-Firmware downloads for the Sender app are available in the project releases:
+Please look at the release section to find the firmwares.
 
-[https://github.com/mathieucarbou/MycilaJSY/releases](https://github.com/mathieucarbou/MycilaJSY/releases)
+👉 Releases: [https://github.com/mathieucarbou/MycilaJSY/releases](https://github.com/mathieucarbou/MycilaJSY/releases)
+
+**Make sure to download the firmware matching your board.**
+
+Firmware files are named as follow:
+
+- `JSYRemoteUDPSender-BOARD.OTA.bin`: This firmware is used to update through the Web OTA interface
+- `JSYRemoteUDPSender-BOARD.FACTORY.bin`: This firmware is used for a first ESP installation, or wen doing a factory reset through USB flashing
 
 ## Installation
 
-1. Flash the board
-2. Start it and look at the Serial console output:
-3. Look for a log line like that, indicating you the GPIO pins to use: `Enable JSY on Serial RX (JSY TX Pin): 4 and Serial TX (JSY RX Pin): 25`
+### Firmware First Time Installation
 
-**Default pinout**
+**The firmware file which must be used for a first installation is the one ending with `.FACTORY.bin`.**
+
+**With `esptool.py` (Linux / MacOS):**
+
+First erase the memory (including the user data):
+
+```bash
+esptool.py erase_flash
+```
+
+The flash the complete `FACTORY` firmware file:
+
+```bash
+esptool.py write_flash 0x0 JSYRemoteUDPSender-BOARD.FACTORY.bin
+```
+
+**With [Espressif Flash Tool](https://www.espressif.com/en/support/download/other-tools) (Windows):**
+
+Be careful to not forget the `0`!
+
+![Espressif Flash Tool](assets/img/screenshots/Espressif_Flash_Tool.png)
+
+### Firmware Update
+
+To update the firmware through OTA, please follow these steps:
+
+1. First [download the new firmware](download). The firmware file which must be used is the one ending with `.OTA.bin` (`JSYRemoteUDPSender-BOARD.OTA.bin`)
+
+2. Go to the update page at `http://<device-ip>/update`
+
+3. Upload the new OTA firmware
+
+4. The device will reboot
+
+## Wiring
+
+After the application is flashed, it will restart and you will see a log line in the Serial console telling you the RX and TX pins used for the JSY.
+
+The default pins are:
 
 | Board               | Serial RX (JSY TX) | Serial TX (JSY RX) |
 | :------------------ | :----------------: | :----------------: |
@@ -66,7 +119,7 @@ Once the device has joined the WiFi and is connected to a JSY, you will see the 
 
 ## For developers
 
-- You can  add a password by changing the line `#define MYCILA_ADMIN_PASSWORD ""`
+- You can add a password by changing the line `#define MYCILA_ADMIN_PASSWORD ""`
 - You can change the definitions for `MYCILA_JSY_RX`, `MYCILA_JSY_TX` and `MYCILA_JSY_SERIAL`
 
 ### Compilation with PlatformIO
