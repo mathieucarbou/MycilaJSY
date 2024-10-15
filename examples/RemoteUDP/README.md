@@ -67,7 +67,7 @@ esptool.py write_flash 0x0 JSYRemoteUDPSender-BOARD.FACTORY.bin
 
 Be careful to not forget the `0`!
 
-![Espressif Flash Tool](assets/img/screenshots/Espressif_Flash_Tool.png)
+![Espressif Flash Tool](https://yasolr.carbou.me/assets/img/screenshots/Espressif_Flash_Tool.png)
 
 ### Firmware Update
 
