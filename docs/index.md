@@ -10,7 +10,7 @@
 [![GitHub latest commit](https://badgen.net/github/last-commit/mathieucarbou/MycilaJSY)](https://GitHub.com/mathieucarbou/MycilaJSY/commit/)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mathieucarbou/MycilaJSY)
 
-Arduino / ESP32 library for the JSY-MK-194T single-phase two-way electric energy metering module
+Arduino / ESP32 library for the JSY-MK-194 T/G single-phase two-way electric energy metering module
 
 - Sync mode and async mode (non-blocking)
 - Core, stack size and interval can be configured
@@ -461,8 +461,9 @@ The "Ramp down time" is the time it takes for the JSY to return to 0W after the 
 
 ## Reference material
 
-- [JSY-MK-194T 1.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T%201.pdf) (version 1)
-- [JSY-MK-194T 2.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T%202.pdf) (version 2)
-- [JSY-MK-194T 3.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T%203.pdf) (version 3)
+- [JSY-MK-194 T 1.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T%201.pdf) (version 1)
+- [JSY-MK-194 T 2.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T%202.pdf) (version 2)
+- [JSY-MK-194 T 3.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T%203.pdf) (version 3)
+- [JSY-MK-194 G 3.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194G.pdf)
 - [JSY-MK-194T.exe](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T.exe) (Utility to configure the JSY with a USB-TTL adapter)
 - [ModbusMechanic](https://github.com/SciFiDryer/ModbusMechanic) (can connect and configure JSY with a USB-TTL adapter)

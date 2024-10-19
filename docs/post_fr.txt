@@ -1,4 +1,4 @@
-Tout sur le JSY-MK-194T
+Tout sur le JSY-MK- 194 T/G
 
 Bonjour à tous,
 Je développe pas mal de projets dans le domaine Arduino / ESP32 / Domotique / routage / etc (https://mathieu.carbou.me).
