@@ -52,6 +52,7 @@ Arduino / ESP32 library for the JSY-MK-194 T/G single-phase two-way electric ene
   - [JSON Support](#json-support)
   - [Debugging](#debugging)
 - [Performance tests](#performance-tests)
+- [Boxes and 3D models](#boxes-and-3d-models)
 - [Reference material](#reference-material)
 
 Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
@@ -458,6 +459,23 @@ The "Ramp down time" is the time it takes for the JSY to return to 0W after the 
   This duration contains the duration for the load to reach its nominal power, plus the duration it takes for the JSY to stabilize its measurements (I think the JSY is using some kind of filtering or averaging).
 
 - Reading the JSY too frequently will lead to the same results, so an improvement could be to have the JSY read in a dedicated task asynchronously and use the callback mechanism to be called as soon as the JSY sees a change
+
+## Boxes and 3D models
+
+You can make (print) a box or buy one, and then append a SSR Din Rail clip at the bottom:
+
+- [https://fr.aliexpress.com/item/1005005490499647.html](https://fr.aliexpress.com/item/1005005490499647.html)
+
+**Cases for the JSY-MK-194 T**
+
+- [https://www.thingiverse.com/thing:6003867](https://www.thingiverse.com/thing:6003867)
+
+**Cases for the JSY-MK-194 G**
+
+- [https://fr.aliexpress.com/item/1005002467813588.html](https://fr.aliexpress.com/item/1005002467813588.html)
+- [https://www.printables.com/model/72839-customizable-parametric-stable-and-waterproof-elec](https://www.printables.com/model/72839-customizable-parametric-stable-and-waterproof-elec)
+- [https://www.thingiverse.com/thing:4921568](https://www.thingiverse.com/thing:4921568)
+- [https://www.thingiverse.com/thing:2252270](https://www.thingiverse.com/thing:2252270)
 
 ## Reference material
 
