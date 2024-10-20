@@ -477,7 +477,7 @@ You can make (print) a box or buy one, and then append a SSR Din Rail clip at th
 - [https://www.thingiverse.com/thing:4921568](https://www.thingiverse.com/thing:4921568)
 - [https://www.thingiverse.com/thing:2252270](https://www.thingiverse.com/thing:2252270)
 
-Here is the STL file I use for the JSY-MK-194G box mounted on a DIN rail: [JSY-MK-194G.stl](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194G.stl)
+Here is the STL file I use for the JSY-MK-194G box mounted on a DIN rail: [JSY-MK-194G.stl](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194G.stl) which was created thanks to [this parametric model](https://forum-photovoltaique.fr/posting.php?mode=reply&t=62475&sid=ef44f9cec35ba745dda0fa627da996dd)
 
 | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg) |
 
