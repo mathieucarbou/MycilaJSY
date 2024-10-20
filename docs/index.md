@@ -477,7 +477,36 @@ You can make (print) a box or buy one, and then append a SSR Din Rail clip at th
 - [https://www.thingiverse.com/thing:4921568](https://www.thingiverse.com/thing:4921568)
 - [https://www.thingiverse.com/thing:2252270](https://www.thingiverse.com/thing:2252270)
 
-Here is the STL file I use for the JSY-MK-194G box mounted on a DIN rail: [JSY-MK-194G.stl](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194G.stl) which was created thanks to [this parametric model](https://forum-photovoltaique.fr/posting.php?mode=reply&t=62475&sid=ef44f9cec35ba745dda0fa627da996dd)
+Here is the STL file I use for the JSY-MK-194G box mounted on a DIN rail: [JSY-MK-194G.stl](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194G.stl) which was created thanks to [this parametric model](https://forum-photovoltaique.fr/posting.php?mode=reply&t=62475&sid=ef44f9cec35ba745dda0fa627da996dd) with these parameters:
+
+```ini
+ShowBottom                = true;
+ShowTop                   = true;
+DistanceBetweenObjects    = 10;
+ShowCaseAssembled         = false;
+
+Caselength                = 90;
+CaseWidth                 = 60;
+CaseHeight                = 42;
+
+BottomTopThickness        = 2.0; 
+
+CountersinkScrew          = 3.0;
+
+ShowDeviceHolder         = true;
+ScrewHoleDiameter        = 2.6;  
+ScrewCylinderDiameter    = 7;
+ScrewCylinderHeight      = 7.0;
+DeviceHolder_X_Distance  = 58;
+DeviceHolder_y_Distance  = 42;
+Offset_X                 = 0;
+Offset_Y                 = 0;
+ShowSideWallHoles        = true;
+SideWallHolesOn_X        = false;
+CountOfSideWallHoles     = 2;
+SideWallHoleDiameter     = 20;
+SiedWallHoleOffset_Z     = 0;     
+```
 
 | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg) |
 
