@@ -10,7 +10,7 @@
 [![GitHub latest commit](https://badgen.net/github/last-commit/mathieucarbou/MycilaJSY)](https://GitHub.com/mathieucarbou/MycilaJSY/commit/)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mathieucarbou/MycilaJSY)
 
-Arduino / ESP32 library for the JSY-MK-194 T/G single-phase two-way electric energy metering module
+Arduino / ESP32 library for the JSY-MK-194T, JSY-MK-194TG single-phase two-way electric energy meters
 
 - Sync mode and async mode (non-blocking)
 - Core, stack size and interval can be configured

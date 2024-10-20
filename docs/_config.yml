@@ -1,7 +1,7 @@
 # bundle exec jekyll serve --host=0.0.0.0
 
 title: MycilaJSY
-description: Arduino / ESP32 library for the JSY-MK-194 T/G single-phase two-way electric energy metering module
+description: Arduino / ESP32 library for the JSY-MK-194T, JSY-MK-194TG single-phase two-way electric energy meters
 remote_theme: pages-themes/cayman@v0.2.0
 plugins:
   - jekyll-remote-theme
