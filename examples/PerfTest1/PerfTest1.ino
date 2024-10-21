@@ -20,11 +20,11 @@
 
 Mycila::JSY jsy;
 JsonDocument doc;
-const Mycila::JSYBaudRate rates[] = {
-  Mycila::JSYBaudRate::BAUD_4800,
-  Mycila::JSYBaudRate::BAUD_9600,
-  Mycila::JSYBaudRate::BAUD_19200,
-  Mycila::JSYBaudRate::BAUD_38400,
+const Mycila::JSY::BaudRate rates[] = {
+  Mycila::JSY::BaudRate::BAUD_4800,
+  Mycila::JSY::BaudRate::BAUD_9600,
+  Mycila::JSY::BaudRate::BAUD_19200,
+  Mycila::JSY::BaudRate::BAUD_38400,
 };
 
 void setup() {

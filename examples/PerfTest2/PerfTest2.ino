@@ -20,11 +20,11 @@
 
 Mycila::JSY jsy;
 JsonDocument doc;
-const Mycila::JSYBaudRate rates[] = {
-  Mycila::JSYBaudRate::BAUD_4800,
-  Mycila::JSYBaudRate::BAUD_9600,
-  Mycila::JSYBaudRate::BAUD_19200,
-  Mycila::JSYBaudRate::BAUD_38400,
+const Mycila::JSY::BaudRate rates[] = {
+  Mycila::JSY::BaudRate::BAUD_4800,
+  Mycila::JSY::BaudRate::BAUD_9600,
+  Mycila::JSY::BaudRate::BAUD_19200,
+  Mycila::JSY::BaudRate::BAUD_38400,
 };
 
 void setup() {
@@ -60,7 +60,7 @@ void setup() {
       Serial.printf(" - ROUND: %d\n", rounds);
 
       digitalWrite(RELAY_PIN, LOW);
-      while (jsy.getPower2() > 0) {
+      while (jsy.getActivePower2() > 0) {
         jsy.read();
       }
 
@@ -80,7 +80,7 @@ void setup() {
       int64_t start = esp_timer_get_time();
       while (true) {
         jsy.read();
-        now = jsy.getPower2();
+        now = jsy.getActivePower2();
 
         if (reactivityTime == 0) {
           if (now > 0) {
@@ -106,7 +106,7 @@ void setup() {
       start = esp_timer_get_time();
       while (true) {
         jsy.read();
-        now = jsy.getPower2();
+        now = jsy.getActivePower2();
 
         if (now == 0) {
           break;

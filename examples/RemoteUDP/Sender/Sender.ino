@@ -212,7 +212,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   networkWiFiSSID.set(espConnect.getWiFiSSID().c_str());
   uptime.set(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()).c_str());
 
-  activePower1.update(jsy.getPower1());
+  activePower1.update(jsy.getActivePower1());
   apparentPower1.update(jsy.getApparentPower1());
   current1.update(jsy.getCurrent1());
   energy1.update(jsy.getEnergy1());
@@ -221,7 +221,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   voltage1.update(jsy.getVoltage1());
   voltageDimmed1.update(jsy.getDimmedVoltage1());
 
-  activePower2.update(jsy.getPower2());
+  activePower2.update(jsy.getActivePower2());
   apparentPower2.update(jsy.getApparentPower2());
   current2.update(jsy.getCurrent2());
   energy2.update(jsy.getEnergy2());
@@ -244,8 +244,8 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   }
 
   // set new value
-  power1HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.getPower1());
-  power2HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.getPower2());
+  power1HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.getActivePower1());
+  power2HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.getActivePower2());
 
   // update charts
   power1History.updateY(power1HistoryY, MYCILA_GRAPH_POINTS);
@@ -359,14 +359,14 @@ void setup() {
   dashboardTask.forceRun();
 
   // jsy
-  jsy.setCallback([](const Mycila::JSYEventType eventType) {
+  jsy.setCallback([](const Mycila::JSY::EventType eventType) {
     if (!udpSendEnabled) {
       messageRate = 0;
       dataRate = 0;
       return;
     }
 
-    if (eventType == Mycila::JSYEventType::EVT_CHANGE) {
+    if (eventType == Mycila::JSY::EventType::EVT_CHANGE) {
 
       Mycila::ESPConnect::Mode mode = espConnect.getMode();
 
@@ -380,8 +380,8 @@ void setup() {
         root["er1"] = jsy.getEnergyReturned1();
         root["er2"] = jsy.getEnergyReturned2();
         root["f"] = jsy.getFrequency();
-        root["p1"] = jsy.getPower1();
-        root["p2"] = jsy.getPower2();
+        root["p1"] = jsy.getActivePower1();
+        root["p2"] = jsy.getActivePower2();
         root["pf1"] = jsy.getPowerFactor1();
         root["pf2"] = jsy.getPowerFactor2();
         root["v1"] = jsy.getVoltage1();
@@ -433,8 +433,8 @@ void setup() {
     }
   });
   jsy.begin(MYCILA_JSY_SERIAL, MYCILA_JSY_RX, MYCILA_JSY_TX);
-  if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400)
-    jsy.setBaudRate(Mycila::JSYBaudRate::BAUD_38400);
+  if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSY::BaudRate::BAUD_38400)
+    jsy.setBaudRate(Mycila::JSY::BaudRate::BAUD_38400);
 
   // Network Manager
   espConnect.setAutoRestart(true);

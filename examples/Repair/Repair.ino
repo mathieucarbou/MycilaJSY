@@ -22,11 +22,11 @@ void setup() {
   jsy.begin(Serial2, 16, 17);
 
   // By forcing a baud rate you know you have set to JSY
-  // jsy.begin(Serial2, 16, 17, Mycila::JSYBaudRate::BAUD_38400);
+  // jsy.begin(Serial2, 16, 17, Mycila::JSY::BaudRate::BAUD_38400);
 
   // Try change speed until success
   uint32_t start = millis();
-  Mycila::JSYBaudRate baudRate = jsy.getBaudRate() == Mycila::JSYBaudRate::BAUD_38400 ? Mycila::JSYBaudRate::BAUD_1200 : Mycila::JSYBaudRate::BAUD_38400;
+  Mycila::JSY::BaudRate baudRate = jsy.getBaudRate() == Mycila::JSY::BaudRate::BAUD_38400 ? Mycila::JSY::BaudRate::BAUD_1200 : Mycila::JSY::BaudRate::BAUD_38400;
   while (!jsy.setBaudRate(baudRate) && millis() - start < 15000) {
     delay(500);
   }

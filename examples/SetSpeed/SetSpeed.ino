@@ -9,7 +9,7 @@
   #define Serial2 Serial1
 #endif
 
-Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_38400;
+Mycila::JSY::BaudRate target = Mycila::JSY::BaudRate::BAUD_38400;
 
 Mycila::JSY jsy;
 

@@ -20,15 +20,15 @@ void setup() {
   while (!Serial)
     continue;
 
-  jsy.setCallback([](const Mycila::JSYEventType eventType) {
-    if (eventType == Mycila::JSYEventType::EVT_CHANGE) {
-      Serial.printf(" - %" PRIu32 " EVT_CHANGE: %f V, %f A, %f W\n", (uint32_t)millis(), jsy.getVoltage2(), jsy.getCurrent2(), jsy.getPower2());
+  jsy.setCallback([](const Mycila::JSY::EventType eventType) {
+    if (eventType == Mycila::JSY::EventType::EVT_CHANGE) {
+      Serial.printf(" - %" PRIu32 " EVT_CHANGE: %f V, %f A, %f W\n", (uint32_t)millis(), jsy.getVoltage2(), jsy.getCurrent2(), jsy.getActivePower2());
     }
   });
 
   jsy.begin(Serial2, 16, 17);
-  if (jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
-    jsy.setBaudRate(Mycila::JSYBaudRate::BAUD_38400);
+  if (jsy.getBaudRate() != Mycila::JSY::BaudRate::BAUD_38400) {
+    jsy.setBaudRate(Mycila::JSY::BaudRate::BAUD_38400);
   }
   jsy.end();
 

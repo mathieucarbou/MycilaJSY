@@ -53,35 +53,35 @@ extern Mycila::Logger logger;
 #define JSY_REGISTER_CH2_PF              0x0054
 #define JSY_REGISTER_CH2_ENERGY_RETURNED 0x0055
 
-#define JSY_ADDRESS_BROADCAST 0x00
-#define JSY_ADDRESS_DEFAULT   0x01
-
 #define JSY_CMD_READ  0x03
 #define JSY_CMD_WRITE 0x10
 
-#define JSY_READ_REGISTERS_RESPONSE_SIZE 61
+#define JSY_READ_REGISTERS_RESPONSE_SIZE  61
+#define JSY_RESET_ENERGY_RESPONSE_SIZE    8
+#define JSY_CHANGE_SETTINGS_RESPONSE_SIZE 8
 
-// CRC with JSY_ADDRESS_DEFAULT: 0x44 0x18
-// CRC with JSY_ADDRESS_BROADCAST: 0x45 0xC9
+#define JSY_LOCK_TIMEOUT 2000
+
+// CRC with MYCILA_JSY_ADDRESS_DEFAULT: 0x44 0x18
+// CRC with MYCILA_JSY_ADDRESS_BROADCAST: 0x45 0xC9
 // Ref: https://crccalc.com (CRC-16/MODBUS)
 static constexpr uint8_t JSY_READ_REGISTERS_REQUEST[] PROGMEM = {
-  JSY_ADDRESS_BROADCAST,
+  MYCILA_JSY_ADDRESS_BROADCAST,
   JSY_CMD_READ,
   (uint8_t)(JSY_REGISTER_CH1_VOLTAGE >> 8),
   (uint8_t)(JSY_REGISTER_CH1_VOLTAGE & 0xFF),
   0x00, // 14 registers (high byte)
   0x0E, // 14 registers (low byte)
-  0x45, // CRC
-  0xC9  // CRC
+  0x45, // CRC (low)
+  0xC9  // CRC (high)
 };
+static constexpr size_t JSY_READ_REGISTERS_REQUEST_LEN = sizeof(JSY_READ_REGISTERS_REQUEST);
 
-#define JSY_RESET_ENERGY_RESPONSE_SIZE 8
-
-// CRC with JSY_ADDRESS_DEFAULT: 0xF3 0xFA
-// CRC with JSY_ADDRESS_BROADCAST: 0xF7 0x06
+// CRC with MYCILA_JSY_ADDRESS_DEFAULT: 0xF3 0xFA
+// CRC with MYCILA_JSY_ADDRESS_BROADCAST: 0xF7 0x06
 // Ref: https://crccalc.com (CRC-16/MODBUS)
 static constexpr uint8_t JSY_RESET_ENERGY_REQUEST[] PROGMEM = {
-  JSY_ADDRESS_BROADCAST,
+  MYCILA_JSY_ADDRESS_BROADCAST,
   JSY_CMD_WRITE,
   0x00, // start address high
   0x0C, // start address low
@@ -92,11 +92,34 @@ static constexpr uint8_t JSY_RESET_ENERGY_REQUEST[] PROGMEM = {
   0x00, // data
   0x00, // data
   0x00, // data
-  0xF7, // CRC
-  0x06  // CRC
+  0xF7, // CRC (low)
+  0x06  // CRC (high)
 };
+static constexpr size_t JSY_RESET_ENERGY_REQUEST_LEN = sizeof(JSY_RESET_ENERGY_REQUEST);
 
-#define JSY_CMD_SET_BAUDS_RESPONSE_SIZE 8
+static constexpr uint8_t JSY_CHANGE_SETTINGS_REQUEST[] PROGMEM = {
+  MYCILA_JSY_ADDRESS_BROADCAST,
+  JSY_CMD_WRITE,
+  (uint8_t)(JSY_REGISTER_ID_AND_BAUDS >> 8),
+  (uint8_t)(JSY_REGISTER_ID_AND_BAUDS & 0xFF),
+  0x00, // number of registers to write (high byte)
+  0x01, // number of registers to write (low byte)
+  0x02, // number of bytes to follow
+  0x00, // new device address
+  0x00, // BAUDS ID
+  0x00, // CRC (low)
+  0x00  // CRC (high)
+};
+static constexpr size_t JSY_CHANGE_SETTINGS_REQUEST_LEN = sizeof(JSY_CHANGE_SETTINGS_REQUEST);
+
+static constexpr Mycila::JSY::BaudRate BAUD_RATES[] = {
+  Mycila::JSY::BaudRate::BAUD_38400,
+  Mycila::JSY::BaudRate::BAUD_19200,
+  Mycila::JSY::BaudRate::BAUD_9600,
+  Mycila::JSY::BaudRate::BAUD_4800,
+  Mycila::JSY::BaudRate::BAUD_2400,
+  Mycila::JSY::BaudRate::BAUD_1200};
+static constexpr size_t BAUD_RATES_COUNT = 6;
 
 static constexpr uint16_t CRCTable[] PROGMEM = {
   0x0000,
@@ -359,7 +382,7 @@ static constexpr uint16_t CRCTable[] PROGMEM = {
 void Mycila::JSY::begin(HardwareSerial& serial,
                         const int8_t rxPin,
                         const int8_t txPin,
-                        const JSYBaudRate baudRate,
+                        const BaudRate baudRate,
                         const bool async,
                         const uint8_t core,
                         const uint32_t stackSize,
@@ -383,24 +406,47 @@ void Mycila::JSY::begin(HardwareSerial& serial,
     return;
   }
 
-  LOGI(TAG, "Enable JSY on Serial RX (JSY TX Pin): %" PRId8 " and Serial TX (JSY RX Pin): %" PRId8, rxPin, txPin);
+  LOGI(TAG, "Enable JSY @ 0x%02X on Serial RX (JSY TX Pin): %" PRId8 " and Serial TX (JSY RX Pin): %" PRId8, _destinationAddress, rxPin, txPin);
 
   _pause = pause;
   _serial = &serial;
 
-  if (baudRate == JSYBaudRate::UNKNOWN) {
-    _baudRate = _detectBauds();
-    if (_baudRate == JSYBaudRate::UNKNOWN) {
-      LOGE(TAG, "Unable to read at any supported speed. Disabling.");
+  if (baudRate == BaudRate::UNKNOWN) {
+    _baudRate = _detectBauds(_destinationAddress);
+
+    if (_lastAddress != MYCILA_JSY_ADDRESS_UNKNOWN) {
+      LOGI(TAG, "Detected JSY @ 0x%02X", _lastAddress);
+    }
+
+    if (_baudRate == BaudRate::UNKNOWN) {
+      LOGE(TAG, "Unable to read any JSY @ 0x%02X at any supported speed.", _destinationAddress);
       _serial->end();
       return;
-    } else {
-      LOGI(TAG, "Detected speed: %" PRIu32 " bauds", (uint32_t)_baudRate);
     }
+
+    LOGI(TAG, "Detected speed: %" PRIu32 " bauds", (uint32_t)_baudRate);
+
   } else {
-    _baudRate = baudRate;
+    LOGW(TAG, "JSY @ 0x%02X bauds detection skipped, forcing baud rate: %" PRIu32, _destinationAddress, (uint32_t)_baudRate);
     _openSerial(baudRate);
-    LOGW(TAG, "JSY bauds detection skipped, forcing baud rate: %" PRIu32, (uint32_t)_baudRate);
+
+    _baudRate = BaudRate::UNKNOWN;
+    for (int j = 0; j < MYCILA_JSY_RETRY_COUNT; j++) {
+      if (_canRead(_destinationAddress, baudRate)) {
+        _baudRate = baudRate;
+        break;
+      }
+    }
+
+    if (_lastAddress != MYCILA_JSY_ADDRESS_UNKNOWN) {
+      LOGI(TAG, "Detected JSY @ 0x%02X", _lastAddress);
+    }
+
+    if (_baudRate == BaudRate::UNKNOWN) {
+      LOGE(TAG, "Unable to read JSY @ 0x%02X at speed: %" PRIu32, _destinationAddress, (uint32_t)baudRate);
+      _serial->end();
+      return;
+    }
   }
 
   assert(!async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, MYCILA_JSY_ASYNC_PRIORITY, &_taskHandle, core) == pdPASS);
@@ -410,13 +456,15 @@ void Mycila::JSY::begin(HardwareSerial& serial,
 
 void Mycila::JSY::end() {
   if (_enabled) {
-    LOGI(TAG, "Disable JSY...");
+    LOGI(TAG, "Disable JSY @ 0x%02X", _destinationAddress);
     _enabled = false;
-    _baudRate = JSYBaudRate::UNKNOWN;
     while (_taskHandle != NULL) {
       // JSY takes at least 40-160 ms to finish a read
       delay(50);
     }
+    _baudRate = BaudRate::UNKNOWN;
+    _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
+    _address = MYCILA_JSY_ADDRESS_UNKNOWN;
     _current1 = 0;
     _current2 = 0;
     _frequency = 0;
@@ -430,31 +478,22 @@ void Mycila::JSY::end() {
   }
 }
 
-bool Mycila::JSY::read() {
+bool Mycila::JSY::read(const uint8_t address) {
   if (!_enabled)
     return false;
 
-  if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
-    LOGW(TAG, "Cannot read: Serial is busy!");
+  if (!_mutex.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
+    LOGW(TAG, "Cannot read JSY @ 0x%02X: Serial is busy!", address);
     return false;
   }
 
 #ifdef MYCILA_JSY_DEBUG
-  Serial.println("[JSY] read()");
-  Serial.printf("[JSY] Sent %d > ", sizeof(JSY_READ_REGISTERS_REQUEST));
-  for (size_t i = 0; i < sizeof(JSY_READ_REGISTERS_REQUEST); i++) {
-    Serial.printf("0x%02X ", JSY_READ_REGISTERS_REQUEST[i]);
-  }
-  Serial.println();
+  Serial.printf("[JSY] read( @ 0x%02X)\n", address);
 #endif
 
-  _serial->flush(false);
-  _serial->write(JSY_READ_REGISTERS_REQUEST, sizeof(JSY_READ_REGISTERS_REQUEST));
-
-  uint8_t buffer[JSY_READ_REGISTERS_RESPONSE_SIZE];
-  ReadResult result = _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE, _baudRate);
-
-  _mutex.unlock();
+  memcpy(_buffer, JSY_READ_REGISTERS_REQUEST, JSY_READ_REGISTERS_REQUEST_LEN);
+  _send(address, JSY_READ_REGISTERS_REQUEST_LEN);
+  ReadResult result = _timedRead(address, JSY_READ_REGISTERS_RESPONSE_SIZE, _baudRate);
 
   if (result == ReadResult::READ_TIMEOUT) {
     // reset live values in case of read timeout
@@ -467,9 +506,13 @@ bool Mycila::JSY::read() {
     _powerFactor2 = 0;
     _voltage1 = 0;
     _voltage2 = 0;
+
+    _mutex.unlock();
+
     if (_callback) {
-      _callback(JSYEventType::EVT_READ_TIMEOUT);
+      _callback(EventType::EVT_READ_TIMEOUT);
     }
+
     return false;
   }
 
@@ -484,33 +527,49 @@ bool Mycila::JSY::read() {
     _powerFactor2 = 0;
     _voltage1 = 0;
     _voltage2 = 0;
+
+    _mutex.unlock();
+
     if (_callback) {
-      _callback(JSYEventType::EVT_READ_ERROR);
+      _callback(EventType::EVT_READ_ERROR);
     }
+
+    return false;
+  }
+
+  if (result == ReadResult::READ_ERROR_ADDRESS) {
+    // we have set a destination address, but we read another device
+    _mutex.unlock();
+
+    if (_callback) {
+      _callback(EventType::EVT_READ_ERROR);
+    }
+
     return false;
   }
 
   assert(result == ReadResult::READ_SUCCESS);
 
-  float voltage1 = ((buffer[3] << 24) + (buffer[4] << 16) + (buffer[5] << 8) + buffer[6]) * 0.0001;
-  float current1 = ((buffer[7] << 24) + (buffer[8] << 16) + (buffer[9] << 8) + buffer[10]) * 0.0001;
-  float power1 = ((buffer[11] << 24) + (buffer[12] << 16) + (buffer[13] << 8) + buffer[14]) * (buffer[27] == 1 ? -0.0001 : 0.0001);
-  float energy1 = ((buffer[15] << 24) + (buffer[16] << 16) + (buffer[17] << 8) + buffer[18]) * 0.0001;
-  float powerFactor1 = ((buffer[19] << 24) + (buffer[20] << 16) + (buffer[21] << 8) + buffer[22]) * 0.001;
-  float energyReturned1 = ((buffer[23] << 24) + (buffer[24] << 16) + (buffer[25] << 8) + buffer[26]) * 0.0001;
-  // buffer[27] is the sign of power1
-  // buffer[28] is the sign of power2
-  // buffer[29] unused
-  // buffer[30] unused
-  float frequency = ((buffer[31] << 24) + (buffer[32] << 16) + (buffer[33] << 8) + buffer[34]) * 0.01;
-  float voltage2 = ((buffer[35] << 24) + (buffer[36] << 16) + (buffer[37] << 8) + buffer[38]) * 0.0001;
-  float current2 = ((buffer[39] << 24) + (buffer[40] << 16) + (buffer[41] << 8) + buffer[42]) * 0.0001;
-  float power2 = ((buffer[43] << 24) + (buffer[44] << 16) + (buffer[45] << 8) + buffer[46]) * (buffer[28] == 1 ? -0.0001 : 0.0001);
-  float energy2 = ((buffer[47] << 24) + (buffer[48] << 16) + (buffer[49] << 8) + buffer[50]) * 0.0001;
-  float powerFactor2 = ((buffer[51] << 24) + (buffer[52] << 16) + (buffer[53] << 8) + buffer[54]) * 0.001;
-  float energyReturned2 = ((buffer[55] << 24) + (buffer[56] << 16) + (buffer[57] << 8) + buffer[58]) * 0.0001;
+  float voltage1 = ((_buffer[3] << 24) + (_buffer[4] << 16) + (_buffer[5] << 8) + _buffer[6]) * 0.0001;
+  float current1 = ((_buffer[7] << 24) + (_buffer[8] << 16) + (_buffer[9] << 8) + _buffer[10]) * 0.0001;
+  float power1 = ((_buffer[11] << 24) + (_buffer[12] << 16) + (_buffer[13] << 8) + _buffer[14]) * (_buffer[27] == 1 ? -0.0001 : 0.0001);
+  float energy1 = ((_buffer[15] << 24) + (_buffer[16] << 16) + (_buffer[17] << 8) + _buffer[18]) * 0.0001;
+  float powerFactor1 = ((_buffer[19] << 24) + (_buffer[20] << 16) + (_buffer[21] << 8) + _buffer[22]) * 0.001;
+  float energyReturned1 = ((_buffer[23] << 24) + (_buffer[24] << 16) + (_buffer[25] << 8) + _buffer[26]) * 0.0001;
+  // _buffer[27] is the sign of power1
+  // _buffer[28] is the sign of power2
+  // _buffer[29] unused
+  // _buffer[30] unused
+  float frequency = ((_buffer[31] << 24) + (_buffer[32] << 16) + (_buffer[33] << 8) + _buffer[34]) * 0.01;
+  float voltage2 = ((_buffer[35] << 24) + (_buffer[36] << 16) + (_buffer[37] << 8) + _buffer[38]) * 0.0001;
+  float current2 = ((_buffer[39] << 24) + (_buffer[40] << 16) + (_buffer[41] << 8) + _buffer[42]) * 0.0001;
+  float power2 = ((_buffer[43] << 24) + (_buffer[44] << 16) + (_buffer[45] << 8) + _buffer[46]) * (_buffer[28] == 1 ? -0.0001 : 0.0001);
+  float energy2 = ((_buffer[47] << 24) + (_buffer[48] << 16) + (_buffer[49] << 8) + _buffer[50]) * 0.0001;
+  float powerFactor2 = ((_buffer[51] << 24) + (_buffer[52] << 16) + (_buffer[53] << 8) + _buffer[54]) * 0.001;
+  float energyReturned2 = ((_buffer[55] << 24) + (_buffer[56] << 16) + (_buffer[57] << 8) + _buffer[58]) * 0.0001;
 
-  bool changed = voltage1 != _voltage1 ||
+  bool changed = _buffer[0] != _address ||
+                 voltage1 != _voltage1 ||
                  current1 != _current1 ||
                  power1 != _power1 ||
                  energy1 != _energy1 ||
@@ -525,6 +584,7 @@ bool Mycila::JSY::read() {
                  energyReturned2 != _energyReturned2;
 
   if (changed) {
+    _address = _buffer[0];
     _voltage1 = voltage1;
     _current1 = current1;
     _power1 = power1;
@@ -542,147 +602,145 @@ bool Mycila::JSY::read() {
 
   _lastReadSuccess = millis();
 
+  _mutex.unlock();
+
   if (_callback) {
-    _callback(JSYEventType::EVT_READ);
+    _callback(EventType::EVT_READ);
     if (changed) {
-      _callback(JSYEventType::EVT_CHANGE);
+      _callback(EventType::EVT_CHANGE);
     }
   }
 
   return true;
 }
 
-bool Mycila::JSY::resetEnergy() {
+bool Mycila::JSY::resetEnergy(const uint8_t address) {
   if (!_enabled)
     return false;
 
-  LOGD(TAG, "Try reset energy data...");
+  LOGD(TAG, "Try reset energy data of JSY @ 0x%02X", address);
 
-  if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
-    LOGW(TAG, "Cannot reset: Serial is busy!");
+  if (!_mutex.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
+    LOGW(TAG, "Cannot reset JSY @ 0x%02X: Serial is busy!", address);
     return false;
   }
 
 #ifdef MYCILA_JSY_DEBUG
-  Serial.println("[JSY] resetEnergy()");
-  Serial.printf("[JSY] Sent %d > ", sizeof(JSY_RESET_ENERGY_REQUEST));
-  for (size_t i = 0; i < sizeof(JSY_RESET_ENERGY_REQUEST); i++) {
-    Serial.printf("0x%02X ", JSY_RESET_ENERGY_REQUEST[i]);
-  }
-  Serial.println();
+  Serial.printf("[JSY] resetEnergy(0x%02X)\n", address);
 #endif
 
-  _serial->flush(false);
-  _serial->write(JSY_RESET_ENERGY_REQUEST, sizeof(JSY_RESET_ENERGY_REQUEST));
-
-  uint8_t buffer[JSY_RESET_ENERGY_RESPONSE_SIZE];
-  ReadResult result = _timedRead(buffer, JSY_RESET_ENERGY_RESPONSE_SIZE, _baudRate);
+  memcpy(_buffer, JSY_RESET_ENERGY_REQUEST, JSY_RESET_ENERGY_REQUEST_LEN);
+  _send(address, JSY_RESET_ENERGY_REQUEST_LEN);
+  ReadResult result = _timedRead(address, JSY_RESET_ENERGY_RESPONSE_SIZE, _baudRate);
 
   _mutex.unlock();
 
   return result == ReadResult::READ_SUCCESS;
 }
 
-bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
+bool Mycila::JSY::setBaudRate(const uint8_t address, const BaudRate baudRate) {
+  return _set(address, address ? address : (_lastAddress ? _lastAddress : MYCILA_JSY_ADDRESS_DEFAULT), baudRate);
+}
+
+bool Mycila::JSY::setDeviceAddress(const uint8_t address, const uint8_t newAddress) {
+  return _set(address, newAddress, _baudRate);
+}
+
+bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const BaudRate newBaudRate) {
   if (!_enabled)
     return false;
 
-  if (baudRate == JSYBaudRate::UNKNOWN)
+  if (newBaudRate == BaudRate::UNKNOWN)
     return false;
 
-  if (_baudRate == baudRate)
-    return true;
+  if (newAddress == MYCILA_JSY_ADDRESS_UNKNOWN)
+    return false;
 
-  LOGD(TAG, "Try update baud rate to %" PRIu32 "...", (uint32_t)baudRate);
+  LOGD(TAG, "Try update JSY @ 0x%02X with new address 0x%02X and baud rate %" PRIu32 "...", address, newAddress, static_cast<uint32_t>(newBaudRate));
 
-  uint8_t data[] = {
-    JSY_ADDRESS_BROADCAST,
-    JSY_CMD_WRITE,
-    (uint8_t)(JSY_REGISTER_ID_AND_BAUDS >> 8),
-    (uint8_t)(JSY_REGISTER_ID_AND_BAUDS & 0xFF),
-    0x00, // number of registers to write (high byte)
-    0x01, // number of registers to write (low byte)
-    0x02, // number of bytes to follow
-    JSY_ADDRESS_DEFAULT,
-    0x00, // BAUDS ID
-    0x00, // CRC
-    0x00  // CRC
-  };
+  if (!_mutex.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
+    LOGW(TAG, "Cannot set JSY @ 0x%02X: Serial is busy!", address);
+    return false;
+  }
 
-  // For CRC: https://crccalc.com
-  // Select CRC-16/MODBUS
-  switch (baudRate) {
-    case JSYBaudRate::BAUD_1200:
-      data[8] = 0x03;  // BAUDS ID
-      data[9] = 0xEB;  // CRC
-      data[10] = 0xD5; // CRC
+#ifdef MYCILA_JSY_DEBUG
+  Serial.printf("[JSY] _set(0x%02X)\n", address);
+#endif
+
+  memcpy(_buffer, JSY_CHANGE_SETTINGS_REQUEST, JSY_CHANGE_SETTINGS_REQUEST_LEN);
+
+  // set address
+  _buffer[7] = newAddress;
+
+  // set baud rate ID
+  switch (newBaudRate) {
+    case BaudRate::BAUD_1200:
+      _buffer[8] = 0x03;
       break;
-    case JSYBaudRate::BAUD_2400:
-      data[8] = 0x04;  // BAUDS ID
-      data[9] = 0xAA;  // CRC
-      data[10] = 0x17; // CRC
+    case BaudRate::BAUD_2400:
+      _buffer[8] = 0x04;
       break;
-    case JSYBaudRate::BAUD_4800:
-      data[8] = 0x05;  // BAUDS ID
-      data[9] = 0x6B;  // CRC
-      data[10] = 0xD7; // CRC
+    case BaudRate::BAUD_4800:
+      _buffer[8] = 0x05;
       break;
-    case JSYBaudRate::BAUD_9600:
-      data[8] = 0x06;  // BAUDS ID
-      data[9] = 0x2B;  // CRC
-      data[10] = 0xD6; // CRC
+    case BaudRate::BAUD_9600:
+      _buffer[8] = 0x06;
       break;
-    case JSYBaudRate::BAUD_19200:
-      data[8] = 0x07;  // BAUDS ID
-      data[9] = 0xEA;  // CRC
-      data[10] = 0x16; // CRC
+    case BaudRate::BAUD_19200:
+      _buffer[8] = 0x07;
       break;
-    case JSYBaudRate::BAUD_38400:
-      data[8] = 0x08;  // BAUDS ID
-      data[9] = 0xAA;  // CRC
-      data[10] = 0x12; // CRC
+    case BaudRate::BAUD_38400:
+      _buffer[8] = 0x08;
       break;
     default:
       assert(false);
       break;
   }
 
-  if (!_mutex.try_lock_for(std::chrono::milliseconds(1000))) {
-    LOGW(TAG, "Cannot set baud rate: Serial is busy!");
-    return false;
-  }
+  // pre-calculate crc16 (with the default broadcast address)
+  uint16_t crc = _crc16(_buffer, JSY_CHANGE_SETTINGS_REQUEST_LEN - 2);
+  _buffer[JSY_CHANGE_SETTINGS_REQUEST_LEN - 2] = LOBYTE(crc);
+  _buffer[JSY_CHANGE_SETTINGS_REQUEST_LEN - 1] = HIBYTE(crc);
 
-#ifdef MYCILA_JSY_DEBUG
-  Serial.println("[JSY] setBaudRate()");
-  Serial.printf("[JSY] Sent %d > ", sizeof(data));
-  for (size_t i = 0; i < sizeof(data); i++) {
-    Serial.printf("0x%02X ", data[i]);
-  }
-  Serial.println();
-#endif
+  _send(address, JSY_CHANGE_SETTINGS_REQUEST_LEN);
+  ReadResult result = _timedRead(address, JSY_CHANGE_SETTINGS_RESPONSE_SIZE, _baudRate);
 
-  _serial->flush(false);
-  _serial->write(data, sizeof(data));
-
-  uint8_t buffer[JSY_CMD_SET_BAUDS_RESPONSE_SIZE];
-  ReadResult result = _timedRead(buffer, JSY_CMD_SET_BAUDS_RESPONSE_SIZE, _baudRate);
-
-  if (result != ReadResult::READ_SUCCESS) {
+  // unexpected error ?
+  if (result != ReadResult::READ_SUCCESS && result != ReadResult::READ_ERROR_ADDRESS) {
     _mutex.unlock();
     return false;
   }
 
-  _openSerial(baudRate);
+  // response from unexpected address ?
+  if (result == ReadResult::READ_ERROR_ADDRESS && _lastAddress != newAddress) {
+    _mutex.unlock();
+    return false;
+  }
+
+  _openSerial(newBaudRate);
 
   bool success = false;
-  for (int i = 0; i < MYCILA_JSY_RETRY_COUNT && !success; i++) {
-    success |= _canRead(baudRate);
+  for (int i = 0; i < MYCILA_JSY_RETRY_COUNT; i++) {
+    if (_canRead(address, newBaudRate)) {
+      success = true;
+      break;
+    }
   }
 
   if (success) {
-    _baudRate = baudRate;
-  } else if (_baudRate != JSYBaudRate::UNKNOWN) {
-    _openSerial(_baudRate);
+    // update baud rate
+    _baudRate = newBaudRate;
+
+    // update destination address if needed
+    if (_destinationAddress != MYCILA_JSY_ADDRESS_BROADCAST && _destinationAddress == address) {
+      _destinationAddress = newAddress;
+    }
+
+  } else {
+    LOGE(TAG, "Unable to read JSY @ 0x%02X at speed: %" PRIu32, address, (uint32_t)newBaudRate);
+    if (_baudRate != BaudRate::UNKNOWN) {
+      _openSerial(_baudRate);
+    }
   }
 
   _mutex.unlock();
@@ -693,6 +751,7 @@ bool Mycila::JSY::setBaudRate(const JSYBaudRate baudRate) {
 #ifdef MYCILA_JSON_SUPPORT
 void Mycila::JSY::toJson(const JsonObject& root) const {
   root["enabled"] = _enabled;
+  root["address"] = _address;
   root["speed"] = static_cast<uint32_t>(_baudRate);
   root["time"] = _lastReadSuccess;
   root["current1"] = _current1;
@@ -711,24 +770,20 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
 }
 #endif
 
-void Mycila::JSY::_openSerial(JSYBaudRate baudRate) {
-  LOGD(TAG, "Open serial at %" PRIu32 " bauds", (uint32_t)baudRate);
-  _serial->begin(static_cast<uint32_t>(baudRate), SERIAL_8N1, _pinRX, _pinTX);
-  _serial->setTimeout(200);
-  while (!_serial)
-    yield();
-  while (!_serial->availableForWrite())
-    yield();
-  _drop();
-  _serial->flush(false);
+bool Mycila::JSY::_canRead(const uint8_t address, BaudRate baudRate) {
+#ifdef MYCILA_JSY_DEBUG
+  Serial.printf("[JSY] _canRead(0x%02X)\n", address);
+#endif
+
+  memcpy(_buffer, JSY_READ_REGISTERS_REQUEST, JSY_READ_REGISTERS_REQUEST_LEN);
+  _send(address, JSY_READ_REGISTERS_REQUEST_LEN);
+  return _timedRead(address, JSY_READ_REGISTERS_RESPONSE_SIZE, baudRate) == ReadResult::READ_SUCCESS;
 }
 
-Mycila::JSY::ReadResult Mycila::JSY::_timedRead(uint8_t* buffer, const size_t expectedLength, const JSYBaudRate baudRate) {
-  assert(expectedLength > 2);
-
+Mycila::JSY::ReadResult Mycila::JSY::_timedRead(const uint8_t expectedAddress, const size_t expectedLen, const BaudRate baudRate) {
   size_t count = 0;
-  while (count < expectedLength) {
-    size_t read = _serial->readBytes(buffer + count, expectedLength - count);
+  while (count < expectedLen) {
+    size_t read = _serial->readBytes(_buffer + count, expectedLen - count);
     if (read) {
       count += read;
     } else {
@@ -737,40 +792,64 @@ Mycila::JSY::ReadResult Mycila::JSY::_timedRead(uint8_t* buffer, const size_t ex
   }
 
 #ifdef MYCILA_JSY_DEBUG
-  Serial.printf("[JSY] Read %d < ", count);
+  Serial.printf("[JSY] Read @ 0x%02X %d < ", expectedAddress, count);
   for (size_t i = 0; i < count; i++) {
-    Serial.printf("0x%02X ", buffer[i]);
+    Serial.printf("0x%02X ", _buffer[i]);
   }
   Serial.println();
 #endif
 
   _drop();
 
+  // timeout ?
   if (count == 0) {
-    LOGD(TAG, "Read timeout");
+    LOGD(TAG, "Read @ 0x%02X timeout", expectedAddress);
     return ReadResult::READ_TIMEOUT;
   }
 
-  if (count != expectedLength) {
-    LOGD(TAG, "Read error: %d != %d", count, expectedLength);
+  // check length
+  if (count != expectedLen) {
+    LOGD(TAG, "Read @ 0x%02X error: %d != %d", expectedAddress, count, expectedLen);
     return ReadResult::READ_ERROR_COUNT;
   }
 
   // CRC check
-  uint16_t crc = 0xFFFF;
-  uint8_t* data = buffer;
-  size_t len = expectedLength - 2;
-  while (len--) {
-    uint8_t temp = *(data++) ^ LOBYTE(crc);
-    crc = (crc >> 8) ^ pgm_read_word_near(CRCTable + temp);
-  }
-
-  if (buffer[expectedLength - 2] != LOBYTE(crc) || buffer[expectedLength - 1] != HIBYTE(crc)) {
-    LOGD(TAG, "Read error: Bad CRC 0x%02X 0x%02X != 0x%02X 0x%02X", buffer[expectedLength - 2], buffer[expectedLength - 1], LOBYTE(crc), HIBYTE(crc));
+  uint16_t crc = _crc16(_buffer, expectedLen - 2);
+  if (_buffer[expectedLen - 2] != LOBYTE(crc) || _buffer[expectedLen - 1] != HIBYTE(crc)) {
+    LOGD(TAG, "Read @ 0x%02X error: Bad CRC 0x%02X 0x%02X != 0x%02X 0x%02X", expectedAddress, _buffer[expectedLen - 2], _buffer[expectedLen - 1], LOBYTE(crc), HIBYTE(crc));
     return ReadResult::READ_ERROR_CRC;
   }
 
+  _lastAddress = _buffer[0];
+
+  // address check
+  if (expectedAddress != MYCILA_JSY_ADDRESS_BROADCAST && expectedAddress != _lastAddress) {
+    LOGD(TAG, "Read @ 0x%02X error: Wrong device address 0x%02X", expectedAddress, _buffer[0]);
+    return ReadResult::READ_ERROR_ADDRESS;
+  }
+
   return ReadResult::READ_SUCCESS;
+}
+
+void Mycila::JSY::_send(const uint8_t address, const size_t len) {
+  if (address != MYCILA_JSY_ADDRESS_BROADCAST) {
+    _buffer[0] = address;
+    // re-calculate crc16
+    uint16_t crc = _crc16(_buffer, len - 2);
+    _buffer[len - 2] = LOBYTE(crc);
+    _buffer[len - 1] = HIBYTE(crc);
+  }
+
+#ifdef MYCILA_JSY_DEBUG
+  Serial.printf("[JSY] Send @ 0x%02X %d > ", address, len);
+  for (size_t i = 0; i < len; i++) {
+    Serial.printf("0x%02X ", _buffer[i]);
+  }
+  Serial.println();
+#endif
+
+  _serial->flush(false);
+  _serial->write(_buffer, len);
 }
 
 size_t Mycila::JSY::_drop() {
@@ -794,43 +873,41 @@ size_t Mycila::JSY::_drop() {
   return count;
 }
 
-bool Mycila::JSY::_canRead(JSYBaudRate baudRate) {
-#ifdef MYCILA_JSY_DEBUG
-  Serial.println("[JSY] _canRead()");
-  Serial.printf("[JSY] Sent %d > ", sizeof(JSY_READ_REGISTERS_REQUEST));
-  for (size_t i = 0; i < sizeof(JSY_READ_REGISTERS_REQUEST); i++) {
-    Serial.printf("0x%02X ", JSY_READ_REGISTERS_REQUEST[i]);
-  }
-  Serial.println();
-#endif
-
+void Mycila::JSY::_openSerial(BaudRate baudRate) {
+  LOGD(TAG, "Open serial at %" PRIu32 " bauds", static_cast<uint32_t>(baudRate));
+  _serial->begin(static_cast<uint32_t>(baudRate), SERIAL_8N1, _pinRX, _pinTX);
+  _serial->setTimeout(200);
+  while (!_serial)
+    yield();
+  while (!_serial->availableForWrite())
+    yield();
+  _drop();
   _serial->flush(false);
-  _serial->write(JSY_READ_REGISTERS_REQUEST, sizeof(JSY_READ_REGISTERS_REQUEST));
-
-  uint8_t buffer[JSY_READ_REGISTERS_RESPONSE_SIZE];
-  return _timedRead(buffer, JSY_READ_REGISTERS_RESPONSE_SIZE, baudRate) == ReadResult::READ_SUCCESS;
 }
 
-Mycila::JSYBaudRate Mycila::JSY::_detectBauds() {
-  constexpr JSYBaudRate baudRates[] = {
-    JSYBaudRate::BAUD_38400,
-    JSYBaudRate::BAUD_19200,
-    JSYBaudRate::BAUD_9600,
-    JSYBaudRate::BAUD_4800,
-    JSYBaudRate::BAUD_2400,
-    JSYBaudRate::BAUD_1200};
-  constexpr size_t baudsRateCount = 6;
-  for (int i = 0; i < baudsRateCount * 2; i++) {
-    JSYBaudRate baudRate = baudRates[i % baudsRateCount];
-    LOGD(TAG, "Trying to read at %" PRIu32 " bauds...", (uint32_t)baudRate);
+Mycila::JSY::BaudRate Mycila::JSY::_detectBauds(const uint8_t address) {
+  for (int i = 0; i < BAUD_RATES_COUNT * 2; i++) {
+    BaudRate baudRate = BAUD_RATES[i % BAUD_RATES_COUNT];
+    LOGD(TAG, "Trying to read JSY @ 0x%02X at %" PRIu32 " bauds...", address, static_cast<uint32_t>(baudRate));
     _openSerial(baudRate);
     for (int j = 0; j < MYCILA_JSY_RETRY_COUNT; j++) {
-      if (_canRead(baudRate)) {
+      if (_canRead(address, baudRate)) {
         return baudRate;
       }
     }
   }
-  return JSYBaudRate::UNKNOWN;
+  return BaudRate::UNKNOWN;
+}
+
+// For CRC: https://crccalc.com
+// Select CRC-16/MODBUS
+uint16_t Mycila::JSY::_crc16(const uint8_t* data, size_t len) {
+  uint16_t crc = 0xFFFF;
+  while (len--) {
+    uint8_t temp = *(data++) ^ LOBYTE(crc);
+    crc = (crc >> 8) ^ pgm_read_word_near(CRCTable + temp);
+  }
+  return crc;
 }
 
 void Mycila::JSY::_jsyTask(void* params) {
