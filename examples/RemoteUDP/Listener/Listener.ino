@@ -124,7 +124,7 @@ Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)")
 
 String hostname;
 String ssid;
-volatile Mycila::JSYData jsyData;
+volatile Mycila::JSY::Data jsyData;
 
 // circular buffer for msg rate
 Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> messageRateBuffer;

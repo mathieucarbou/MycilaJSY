@@ -10,15 +10,16 @@
 [![GitHub latest commit](https://badgen.net/github/last-commit/mathieucarbou/MycilaJSY)](https://GitHub.com/mathieucarbou/MycilaJSY/commit/)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mathieucarbou/MycilaJSY)
 
-Arduino / ESP32 library for the JSY-MK-194T, JSY-MK-194TG single-phase two-way electric energy meters
+Arduino / ESP32 library for the JSY-MK-194T, JSY-MK-194TG single-phase two-way electric energy meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
 
-- Sync mode and async mode (non-blocking)
-- Core, stack size and interval can be configured
 - Automatically detect baud rate
-- Energy reset live at runtime
-- Switch bauds rate to any supported speed live at runtime
 - Configurable Serial (Serial2 by default)
+- Core, stack size and interval can be configured
+- Device address support (for multiple devices on the same bus)
+- Energy reset live at runtime
 - Focus on speed and reactivity with a callback mechanism
+- Switch bauds rate to any supported speed live at runtime
+- Sync mode and async mode (non-blocking)
 - Metrics:
 
 ```c++
@@ -87,10 +88,10 @@ There is a getter for each metric.
 jsy.begin(Serial2, 16, 17);
 
 // equivalent as above
-jsy.begin(Serial2, 16, 17, Mycila::JSYBaudRate::UNKNOWN);
+jsy.begin(Serial2, 16, 17, Mycila::JSY::BaudRate::UNKNOWN);
 
 // Skips baud rate detection and use the given baud rate
-jsy.begin(Serial2, 16, 17, Mycila::JSYBaudRate::BAUD_38400);
+jsy.begin(Serial2, 16, 17, Mycila::JSY::BaudRate::BAUD_38400);
 ```
 
 ### Blocking mode
@@ -134,8 +135,8 @@ jsy.resetEnergy();
 ### Update Baud rate (change speed)
 
 ```c++
-if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
-  if (jsy.setBaudRate(Mycila::JSYBaudRate::BAUD_38400)) {
+if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSY::BaudRate::BAUD_38400) {
+  if (jsy.setBaudRate(Mycila::JSY::BaudRate::BAUD_38400)) {
     // speed changed and switched to new speed
   } else {
     // speed changed failed, keeping current speed
@@ -146,7 +147,7 @@ if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
 
 ### Callbacks
 
-- `JSYCallback`: called when the JSY has read the data and when a change for any of the metric is detected by the JSY.
+- `Callback`: called when the JSY has read the data and when a change for any of the metric is detected by the JSY.
   This is useful to be notified exactly when required.
   You must check the event type
 
@@ -155,14 +156,14 @@ if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSYBaudRate::BAUD_38400) {
 Reading a load for 2 second after it is turned on:
 
 ```c++
-  jsy.setCallback([](const Mycila::JSYEventType eventType) {
+  jsy.setCallback([](const Mycila::JSY::EventType eventType) {
     int64_t now = esp_timer_get_time();
     switch (eventType) {
-      case Mycila::JSYEventType::EVT_READ:
+      case Mycila::JSY::EventType::EVT_READ:
         Serial.printf(" - %" PRId64 " EVT_READ\n", now);
         break;
-      case Mycila::JSYEventType::EVT_CHANGE:
-        Serial.printf(" - %" PRId64 " EVT_CHANGE: %f W\n", now, jsy.getPower2());
+      case Mycila::JSY::EventType::EVT_CHANGE:
+        Serial.printf(" - %" PRId64 " EVT_CHANGE: %f W\n", now, jsy.getActivePower2());
         break;
       default:
         Serial.printf(" - %" PRId64 " ERR\n", now);

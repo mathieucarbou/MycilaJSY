@@ -39,7 +39,7 @@ void loop() {
   }
 
   if (counts % 7 == 0) {
-    if (jsy.setBaudRate(jsy.getBaudRate() == Mycila::JSYBaudRate::BAUD_38400 ? Mycila::JSYBaudRate::BAUD_1200 : Mycila::JSYBaudRate::BAUD_38400)) {
+    if (jsy.setBaudRate(jsy.getBaudRate() == Mycila::JSY::BaudRate::BAUD_38400 ? Mycila::JSY::BaudRate::BAUD_1200 : Mycila::JSY::BaudRate::BAUD_38400)) {
       Serial.printf("JSY baud rate updated to %d\n", static_cast<int>(jsy.getBaudRate()));
     } else {
       Serial.println("JSY baud rate update failed");

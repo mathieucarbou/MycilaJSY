@@ -20,7 +20,7 @@ void setup() {
   jsy.begin(Serial2, 16, 17, true);
 }
 
-Mycila::JSYBaudRate target = Mycila::JSYBaudRate::BAUD_38400;
+Mycila::JSY::BaudRate target = Mycila::JSY::BaudRate::BAUD_38400;
 
 void loop() {
   if (!jsy.isEnabled()) {

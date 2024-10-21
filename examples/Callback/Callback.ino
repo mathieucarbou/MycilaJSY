@@ -20,11 +20,11 @@
 
 Mycila::JSY jsy;
 JsonDocument doc;
-const Mycila::JSYBaudRate rates[] = {
-  Mycila::JSYBaudRate::BAUD_4800,
-  Mycila::JSYBaudRate::BAUD_9600,
-  Mycila::JSYBaudRate::BAUD_19200,
-  Mycila::JSYBaudRate::BAUD_38400,
+const Mycila::JSY::BaudRate rates[] = {
+  Mycila::JSY::BaudRate::BAUD_4800,
+  Mycila::JSY::BaudRate::BAUD_9600,
+  Mycila::JSY::BaudRate::BAUD_19200,
+  Mycila::JSY::BaudRate::BAUD_38400,
 };
 
 void setup() {
@@ -32,14 +32,14 @@ void setup() {
   while (!Serial)
     continue;
 
-  jsy.setCallback([](const Mycila::JSYEventType eventType) {
+  jsy.setCallback([](const Mycila::JSY::EventType eventType) {
     int64_t now = esp_timer_get_time();
     switch (eventType) {
-      case Mycila::JSYEventType::EVT_READ:
+      case Mycila::JSY::EventType::EVT_READ:
         Serial.printf(" - %" PRId64 " EVT_READ\n", now);
         break;
-      case Mycila::JSYEventType::EVT_CHANGE:
-        Serial.printf(" - %" PRId64 " EVT_CHANGE: %f W\n", now, jsy.getPower2());
+      case Mycila::JSY::EventType::EVT_CHANGE:
+        Serial.printf(" - %" PRId64 " EVT_CHANGE: %f W\n", now, jsy.getActivePower2());
         break;
       default:
         Serial.printf(" - %" PRId64 " ERR\n", now);
