@@ -1,6 +1,6 @@
 {
   "name": "MycilaJSY",
-  "version": "9.1.10",
+  "version": "10.0.1",
   "description": "Arduino / ESP32 library for the JSY-MK-194T, JSY-MK-194TG single-phase two-way electric energy meters",
   "keywords": "JSY,JSY-MK-194,JSY-MK-194T,JSY-MK-194G",
   "homepage": "https://github.com/mathieucarbou/MycilaJSY",
