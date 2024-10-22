@@ -10,7 +10,7 @@
 [![GitHub latest commit](https://badgen.net/github/last-commit/mathieucarbou/MycilaJSY)](https://GitHub.com/mathieucarbou/MycilaJSY/commit/)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mathieucarbou/MycilaJSY)
 
-Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194TG** single-phase AC bidirectional meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
+Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194G**, **JSY-MK-163T** single-phase AC bidirectional meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
 
 - [Supported models](#supported-models)
 - [Features](#features)
@@ -31,9 +31,9 @@ Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194TG** single-phase A
 
 ## Supported models
 
-- JSY-MK-163T _(soon)_
+- JSY-MK-163T _(experimental)_
 - JSY-MK-194T
-- JSY-MK-194TG
+- JSY-MK-194G
 - JSY-MK-333 _(soon)_
 
 ## Features
@@ -52,7 +52,7 @@ Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194TG** single-phase A
 ## Metrics
 
 Metric depend on the model and they are all read.
-Here are below the metrics for the JSY-MK-194T and JSY-MK-194TG:
+Here are below the metrics for the JSY-MK-194T and JSY-MK-194G:
 
 ```c++
     // tore or first clamp
