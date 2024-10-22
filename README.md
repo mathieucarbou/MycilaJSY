@@ -513,10 +513,10 @@ SiedWallHoleOffset_Z     = 0;
 
 ## Reference material
 
+- [JSY-MK-163T.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-163T.pdf)
 - [JSY-MK-194T.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T.pdf)
 - [JSY-MK-194T_Manual.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T_Manual.pdf)
 - [JSY-MK-194G.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194G.pdf)
 - [JSY-MK-333.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-333.pdf)
-- [JSY-MK-333G.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-333G.pdf)
 - [RENERGY RN8209G](https://mathieu.carbou.me/MycilaJSY/RENERGY-RN8209G.pdf)
 - [ModbusMechanic](https://github.com/SciFiDryer/ModbusMechanic) (can connect and configure JSY with a USB-TTL adapter)
