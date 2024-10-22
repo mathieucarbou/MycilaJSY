@@ -1,6 +1,6 @@
 {
   "name": "MycilaJSY",
-  "version": "10.0.1",
+  "version": "10.1.0",
   "description": "Arduino / ESP32 library for the JSY-MK-194T, JSY-MK-194G, JSY-MK-163T single-phase AC bidirectional meters from Shenzhen Jiansiyan Technologies Co, Ltd.",
   "keywords": "JSY,JSY-MK-194,JSY-MK-194T,JSY-MK-194G,JSY-MK-163T",
   "homepage": "https://github.com/mathieucarbou/MycilaJSY",
