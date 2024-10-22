@@ -76,6 +76,7 @@ ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
 Mycila::Logger logger;
 Mycila::TaskManager coreTaskManager("core");
 
+Statistic jsyModelStat = Statistic(&dashboard, "JSY Model");
 Statistic networkHostname = Statistic(&dashboard, "Network Hostname");
 Statistic networkInterface = Statistic(&dashboard, "Network Interface");
 Statistic networkAPIP = Statistic(&dashboard, "Network Access Point IP Address");
@@ -125,6 +126,7 @@ Chart power2History = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)")
 String hostname;
 String ssid;
 volatile Mycila::JSY::Data jsyData;
+volatile uint16_t jsyModel;
 
 // circular buffer for msg rate
 Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> messageRateBuffer;
@@ -195,6 +197,8 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   frequency.update(jsyData.frequency);
 
   messageRateCard.update(messageRate);
+
+  jsyModelStat.set(Mycila::JSY::getModelName(jsyModel).c_str());
 
   // shift array
   for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -339,6 +343,7 @@ void setup() {
     jsyData.powerFactor2 = doc["pf2"].as<float>();
     jsyData.voltage1 = doc["v1"].as<float>();
     jsyData.voltage2 = doc["v2"].as<float>();
+    jsyModel = doc["m"].as<uint16_t>();
 
     // update rate
     messageRateBuffer.add(millis() / 1000.0f);

@@ -201,11 +201,13 @@ namespace Mycila {
        */
       uint16_t getModel() const { return _model; }
 
-      String getModelName() const { 
-        if(!_model) return emptyString;
+      String getModelName() const { return getModelName(_model); }
+      static String getModelName(uint16_t model) {
+        if (!model)
+          return emptyString;
         String name;
         name.reserve(10);
-        return _model ? (String("JSY-MK-") + String(_model, HEX)) : emptyString; 
+        return model ? (String("JSY-MK-") + String(model, HEX)) : emptyString;
       }
 
       /**
