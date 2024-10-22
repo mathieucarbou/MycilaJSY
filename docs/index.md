@@ -10,26 +10,49 @@
 [![GitHub latest commit](https://badgen.net/github/last-commit/mathieucarbou/MycilaJSY)](https://GitHub.com/mathieucarbou/MycilaJSY/commit/)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mathieucarbou/MycilaJSY)
 
-Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194TG** single-phase two-way electric energy meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
+Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194TG** single-phase AC bidirectional meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
 
-- Automatic baud rate detection
-- Automatic JSY model detection
-- Configurable Serial (Serial2 by default)
-- Core, stack size and pause interval can be configured
-- Device address support (for multiple devices on the same bus)
-- Energy reset live at runtime
-- Focus on speed and reactivity with a callback mechanism
-- Switch bauds rate to any supported speed live at runtime
-- Sync mode and async mode (non-blocking)
+- [Supported models](#supported-models)
+- [Features](#features)
+- [Metrics](#metrics)
+- [Remote JSY](#remote-jsy)
+- [Tested boards](#tested-boards)
+- [Usage](#usage)
+  - [Blocking mode](#blocking-mode)
+  - [Non-Blocking mode (async)](#non-blocking-mode-async)
+  - [Energy reset](#energy-reset)
+  - [Update Baud rate (change speed)](#update-baud-rate-change-speed)
+  - [Callbacks](#callbacks)
+  - [JSON Support](#json-support)
+  - [Debugging](#debugging)
+- [Performance tests](#performance-tests)
+- [Boxes and 3D models](#boxes-and-3d-models)
+- [Reference material](#reference-material)
 
-**Supported models:**
+## Supported models
 
 - JSY-MK-163T _(soon)_
 - JSY-MK-194T
 - JSY-MK-194TG
 - JSY-MK-333 _(soon)_
 
-Metrics:
+## Features
+
+- Async and blocking mode (configurable core, stack and pause interval)
+- Automatic baud rate detection
+- Automatic JSY model detection
+- Automatic device address detection
+- Support any Serial / TTL (RX/TX port)
+- Device address: support for multiple devices on the same bus
+- Energy reset live at runtime
+- Focus on speed and reactivity with a callback mechanism
+- Switch bauds rate to any supported speed live at runtime
+- Remote support with [UDP sender](#remote-jsy)
+
+## Metrics
+
+Metric depend on the model and they are all read.
+Here are below the metrics for the JSY-MK-194T and JSY-MK-194TG:
 
 ```c++
     // tore or first clamp
@@ -50,20 +73,6 @@ Metrics:
 
     volatile uint8_t frequency = 0; // Hz
 ```
-
-- [Remote JSY](#remote-jsy)
-- [Tested boards](#tested-boards)
-- [Usage](#usage)
-  - [Blocking mode](#blocking-mode)
-  - [Non-Blocking mode (async)](#non-blocking-mode-async)
-  - [Energy reset](#energy-reset)
-  - [Update Baud rate (change speed)](#update-baud-rate-change-speed)
-  - [Callbacks](#callbacks)
-  - [JSON Support](#json-support)
-  - [Debugging](#debugging)
-- [Performance tests](#performance-tests)
-- [Boxes and 3D models](#boxes-and-3d-models)
-- [Reference material](#reference-material)
 
 Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
 
