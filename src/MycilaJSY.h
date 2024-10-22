@@ -201,6 +201,13 @@ namespace Mycila {
        */
       uint16_t getModel() const { return _model; }
 
+      String getModelName() const { 
+        if(!_model) return emptyString;
+        String name;
+        name.reserve(10);
+        return _model ? (String("JSY-MK-") + String(_model, HEX)) : emptyString; 
+      }
+
       /**
        * @brief Read the JSY values.
        * @return true if the read was successful

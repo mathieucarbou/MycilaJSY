@@ -914,7 +914,7 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
   root["enabled"] = _enabled;
   root["address"] = _data.address;
   root["speed"] = static_cast<uint32_t>(_baudRate);
-  root["model"] = String("JSY-MK-") + String(static_cast<uint16_t>(_model), HEX);
+  root["model"] = getModelName();
   root["time"] = _lastReadSuccess;
   root["current1"] = _data.current1;
   root["current2"] = _data.current2;

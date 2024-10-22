@@ -117,6 +117,31 @@ Once the device has joined the WiFi and is connected to a JSY, you will see the 
 
 ![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/1943a697-f108-4cdc-a886-98cb3748af24)
 
+- An API is available at: `http://<device-ip>/api/jsy`
+
+```json
+{
+  "enabled": true,
+  "address": 1,
+  "speed": 38400,
+  "model": "JSY-MK-194",
+  "time": 116089,
+  "current1": 0,
+  "current2": 3.99,
+  "energy_returned1": 0,
+  "energy_returned2": 0,
+  "energy1": 0,
+  "energy2": 0.371,
+  "frequency": 49.98,
+  "power_factor1": 0,
+  "power_factor2": 0.719,
+  "power1": 0,
+  "power2": 666.8345,
+  "voltage1": 232.1408,
+  "voltage2": 232.1408
+}
+```
+
 ## For developers
 
 - You can add a password by changing the line `#define MYCILA_ADMIN_PASSWORD ""`

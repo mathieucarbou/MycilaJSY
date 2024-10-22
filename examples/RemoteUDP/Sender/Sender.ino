@@ -103,6 +103,7 @@ Mycila::Logger logger;
 Mycila::TaskManager coreTaskManager("core");
 Mycila::TaskManager jsyTaskManager("jsy");
 
+Statistic jsyModel = Statistic(&dashboard, "JSY Model");
 Statistic networkHostname = Statistic(&dashboard, "Network Hostname");
 Statistic networkInterface = Statistic(&dashboard, "Network Interface");
 Statistic networkAPIP = Statistic(&dashboard, "Network Access Point IP Address");
@@ -319,6 +320,13 @@ void setup() {
   // Dashboard
   webServer.rewrite("/", "/dashboard").setFilter([](AsyncWebServerRequest* request) { return espConnect.getState() != Mycila::ESPConnect::State::PORTAL_STARTED; });
 
+  webServer.on("/api/jsy", HTTP_GET, [](AsyncWebServerRequest* request) {
+    AsyncJsonResponse* response = new AsyncJsonResponse();
+    jsy.toJson(response->getRoot());
+    response->setLength();
+    request->send(response);
+  });
+
   version.set(MYCILA_JSY_VERSION);
 
   restart.attachCallback([](int32_t value) { restartTask.resume(); });
@@ -348,6 +356,7 @@ void setup() {
   dashboard.onBeforeUpdate([](bool changes_only) {
     if (!changes_only) {
       logger.debug(TAG, "Dashboard refresh requested");
+      jsyModel.set(jsy.getModelName().c_str());
       networkAPMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::AP).c_str());
       networkEthMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH).isEmpty() ? "N/A" : espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH).c_str());
       networkHostname.set(hostname.c_str());
@@ -386,6 +395,7 @@ void setup() {
         root["pf2"] = jsy.getPowerFactor2();
         root["v1"] = jsy.getVoltage1();
         root["v2"] = jsy.getVoltage2();
+        root["m"] = jsy.getModel();
 
         // buffer[0] == MYCILA_UDP_MSG_TYPE_JSY_DATA (1)
         // buffer[1] == size_t (4)
