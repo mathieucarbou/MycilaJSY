@@ -17,6 +17,17 @@
 #define MYCILA_JSY_VERSION_MINOR    0
 #define MYCILA_JSY_VERSION_REVISION 1
 
+// #define MYCILA_JSY_DEBUG 1
+
+// broadcast address to send requests to all devices
+#define MYCILA_JSY_ADDRESS_BROADCAST 0x00
+
+// default factory JSY address
+#define MYCILA_JSY_ADDRESS_DEFAULT 0x01
+
+// constant returned when device address is unknown
+#define MYCILA_JSY_ADDRESS_UNKNOWN 0x00
+
 #ifndef MYCILA_JSY_ASYNC_CORE
   #define MYCILA_JSY_ASYNC_CORE 0
 #endif
@@ -37,17 +48,6 @@
 #ifndef MYCILA_JSY_RETRY_COUNT
   #define MYCILA_JSY_RETRY_COUNT 4
 #endif
-
-// broadcast address to send requests to all devices
-#define MYCILA_JSY_ADDRESS_BROADCAST 0x00
-
-// default factory JSY address
-#define MYCILA_JSY_ADDRESS_DEFAULT 0x01
-
-// constant returned when device address is unknown
-#define MYCILA_JSY_ADDRESS_UNKNOWN 0x00
-
-// #define MYCILA_JSY_DEBUG 1
 
 namespace Mycila {
   class JSY {

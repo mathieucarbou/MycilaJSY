@@ -28,61 +28,61 @@ extern Mycila::Logger logger;
                                         (((1ULL << (gpio_num)) & SOC_GPIO_VALID_GPIO_MASK) != 0))
 #endif
 
-#define LOBYTE(x) (*((uint8_t*)&(x)))     // NOLINT
-#define HIBYTE(x) (*((uint8_t*)&(x) + 1)) // NOLINT
+#define LOBYTE(x) ((uint8_t)((x) & 0xFF))
+#define HIBYTE(x) ((uint8_t)((x) >> 8))
 
-#define TAG "JSY"
-
-#define JSY_REGISTER_MODEL1              0x0000
-#define JSY_REGISTER_MODEL2              0x0001
-#define JSY_REGISTER_VOLTAGE_RANGE       0x0002 // 250V
-#define JSY_REGISTER_CURRENT_RANGE       0x0003 // 800 (800 / 10 == 80A)
-#define JSY_REGISTER_ID_AND_BAUDS        0x0004 // ID (high byte) and Bauds Rate (low byte)
-#define JSY_REGISTER_CH1_VOLTAGE         0x0048
-#define JSY_REGISTER_CH1_CURRENT         0x0049
-#define JSY_REGISTER_CH1_POWER           0x004A
-#define JSY_REGISTER_CH1_ENERGY          0x004B
-#define JSY_REGISTER_CH1_PF              0x004C
-#define JSY_REGISTER_CH1_ENERGY_RETURNED 0x004D
-#define JSY_REGISTER_CH1_POWER_SIGN      0x004E
-#define JSY_REGISTER_FREQUENCY           0x004F
-#define JSY_REGISTER_CH2_VOLTAGE         0x0050
-#define JSY_REGISTER_CH2_CURRENT         0x0051
-#define JSY_REGISTER_CH2_POWER           0x0052
-#define JSY_REGISTER_CH2_ENERGY          0x0053
-#define JSY_REGISTER_CH2_PF              0x0054
-#define JSY_REGISTER_CH2_ENERGY_RETURNED 0x0055
-
-#define JSY_CMD_READ  0x03
-#define JSY_CMD_WRITE 0x10
-
-#define JSY_READ_REGISTERS_RESPONSE_SIZE  61
-#define JSY_RESET_ENERGY_RESPONSE_SIZE    8
-#define JSY_CHANGE_SETTINGS_RESPONSE_SIZE 8
-
+#define TAG              "JSY"
 #define JSY_LOCK_TIMEOUT 2000
 
-// CRC with MYCILA_JSY_ADDRESS_DEFAULT: 0x44 0x18
-// CRC with MYCILA_JSY_ADDRESS_BROADCAST: 0x45 0xC9
-// Ref: https://crccalc.com (CRC-16/MODBUS)
+// system
+#define JSY_REGISTER_MODEL1        0x0000 // RO
+#define JSY_REGISTER_MODEL2        0x0001 // RO
+#define JSY_REGISTER_VOLTAGE_RANGE 0x0002 // RO - 250V
+#define JSY_REGISTER_CURRENT_RANGE 0x0003 // RO - 800 (800 / 10 == 80A)
+
+// communication
+#define JSY_REGISTER_ID_AND_BAUDS 0x0004 // RW - ID (high byte) and Bauds Rate (low byte)
+
+// measurements (14 registers)
+#define JSY_REGISTER_CH1_VOLTAGE         0x0048 // RO
+#define JSY_REGISTER_CH1_CURRENT         0x0049 // RO
+#define JSY_REGISTER_CH1_POWER           0x004A // RO
+#define JSY_REGISTER_CH1_ENERGY          0x004B // RW
+#define JSY_REGISTER_CH1_PF              0x004C // RO
+#define JSY_REGISTER_CH1_ENERGY_RETURNED 0x004D // RW
+#define JSY_REGISTER_CH1_POWER_SIGN      0x004E // RO
+#define JSY_REGISTER_FREQUENCY           0x004F // RO
+#define JSY_REGISTER_CH2_VOLTAGE         0x0050 // RO
+#define JSY_REGISTER_CH2_CURRENT         0x0051 // RO
+#define JSY_REGISTER_CH2_POWER           0x0052 // RO
+#define JSY_REGISTER_CH2_ENERGY          0x0053 // RW
+#define JSY_REGISTER_CH2_PF              0x0054 // RO
+#define JSY_REGISTER_CH2_ENERGY_RETURNED 0x0055 // RW
+
+// commands
+#define JSY_CMD_READ_REGISTERS  0x03
+#define JSY_CMD_READ_RELAY1     0x01
+#define JSY_CMD_WRITE_REGISTERS 0x10
+#define JSY_CMD_WRITE_RELAY1    0x05
+
+static constexpr uint16_t JSY_REGISTER_MEASURE_START = JSY_REGISTER_CH1_VOLTAGE;
+static constexpr uint16_t JSY_REGISTER_MEASURE_COUNT = JSY_REGISTER_CH2_ENERGY_RETURNED - JSY_REGISTER_CH1_VOLTAGE + 1;
+
 static constexpr uint8_t JSY_READ_REGISTERS_REQUEST[] PROGMEM = {
   MYCILA_JSY_ADDRESS_BROADCAST,
-  JSY_CMD_READ,
-  (uint8_t)(JSY_REGISTER_CH1_VOLTAGE >> 8),
-  (uint8_t)(JSY_REGISTER_CH1_VOLTAGE & 0xFF),
-  0x00, // 14 registers (high byte)
-  0x0E, // 14 registers (low byte)
-  0x45, // CRC (low)
-  0xC9  // CRC (high)
+  JSY_CMD_READ_REGISTERS,
+  HIBYTE(JSY_REGISTER_MEASURE_START),
+  LOBYTE(JSY_REGISTER_MEASURE_START),
+  HIBYTE(JSY_REGISTER_MEASURE_COUNT),
+  LOBYTE(JSY_REGISTER_MEASURE_COUNT),
+  0x00, // CRC (low)
+  0x00  // CRC (high)
 };
 static constexpr size_t JSY_READ_REGISTERS_REQUEST_LEN = sizeof(JSY_READ_REGISTERS_REQUEST);
 
-// CRC with MYCILA_JSY_ADDRESS_DEFAULT: 0xF3 0xFA
-// CRC with MYCILA_JSY_ADDRESS_BROADCAST: 0xF7 0x06
-// Ref: https://crccalc.com (CRC-16/MODBUS)
 static constexpr uint8_t JSY_RESET_ENERGY_REQUEST[] PROGMEM = {
   MYCILA_JSY_ADDRESS_BROADCAST,
-  JSY_CMD_WRITE,
+  JSY_CMD_WRITE_REGISTERS,
   0x00, // start address high
   0x0C, // start address low
   0x00, // number of registers to write high
@@ -92,16 +92,16 @@ static constexpr uint8_t JSY_RESET_ENERGY_REQUEST[] PROGMEM = {
   0x00, // data
   0x00, // data
   0x00, // data
-  0xF7, // CRC (low)
-  0x06  // CRC (high)
+  0x00, // CRC (low)
+  0x00  // CRC (high)
 };
 static constexpr size_t JSY_RESET_ENERGY_REQUEST_LEN = sizeof(JSY_RESET_ENERGY_REQUEST);
 
 static constexpr uint8_t JSY_CHANGE_SETTINGS_REQUEST[] PROGMEM = {
   MYCILA_JSY_ADDRESS_BROADCAST,
-  JSY_CMD_WRITE,
-  (uint8_t)(JSY_REGISTER_ID_AND_BAUDS >> 8),
-  (uint8_t)(JSY_REGISTER_ID_AND_BAUDS & 0xFF),
+  JSY_CMD_WRITE_REGISTERS,
+  HIBYTE(JSY_REGISTER_ID_AND_BAUDS),
+  LOBYTE(JSY_REGISTER_ID_AND_BAUDS),
   0x00, // number of registers to write (high byte)
   0x01, // number of registers to write (low byte)
   0x02, // number of bytes to follow
@@ -120,6 +120,11 @@ static constexpr Mycila::JSY::BaudRate BAUD_RATES[] = {
   Mycila::JSY::BaudRate::BAUD_2400,
   Mycila::JSY::BaudRate::BAUD_1200};
 static constexpr size_t BAUD_RATES_COUNT = 6;
+
+// response sizes
+#define JSY_READ_REGISTERS_RESPONSE_SIZE  61
+#define JSY_RESET_ENERGY_RESPONSE_SIZE    8
+#define JSY_CHANGE_SETTINGS_RESPONSE_SIZE 8
 
 static constexpr uint16_t CRCTable[] PROGMEM = {
   0x0000,
@@ -697,11 +702,6 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
       break;
   }
 
-  // pre-calculate crc16 (with the default broadcast address)
-  uint16_t crc = _crc16(_buffer, JSY_CHANGE_SETTINGS_REQUEST_LEN - 2);
-  _buffer[JSY_CHANGE_SETTINGS_REQUEST_LEN - 2] = LOBYTE(crc);
-  _buffer[JSY_CHANGE_SETTINGS_REQUEST_LEN - 1] = HIBYTE(crc);
-
   _send(address, JSY_CHANGE_SETTINGS_REQUEST_LEN);
   ReadResult result = _timedRead(address, JSY_CHANGE_SETTINGS_RESPONSE_SIZE, _baudRate);
 
@@ -832,13 +832,13 @@ Mycila::JSY::ReadResult Mycila::JSY::_timedRead(const uint8_t expectedAddress, c
 }
 
 void Mycila::JSY::_send(const uint8_t address, const size_t len) {
-  if (address != MYCILA_JSY_ADDRESS_BROADCAST) {
-    _buffer[0] = address;
-    // re-calculate crc16
-    uint16_t crc = _crc16(_buffer, len - 2);
-    _buffer[len - 2] = LOBYTE(crc);
-    _buffer[len - 1] = HIBYTE(crc);
-  }
+  // set destination address
+  _buffer[0] = address;
+
+  // crc16
+  uint16_t crc = _crc16(_buffer, len - 2);
+  _buffer[len - 2] = LOBYTE(crc);
+  _buffer[len - 1] = HIBYTE(crc);
 
 #ifdef MYCILA_JSY_DEBUG
   Serial.printf("[JSY] Send @ 0x%02X %d > ", address, len);
