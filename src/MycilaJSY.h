@@ -52,6 +52,13 @@
 namespace Mycila {
   class JSY {
     public:
+      enum class Model {
+        UNKNOWN = 0x0000,
+        JSY_MK_163 = 0x0163,
+        JSY_MK_194 = 0x0194,
+        JSY_MK_333 = 0x0333,
+      };
+
       enum class BaudRate {
         UNKNOWN = 0,
         BAUD_1200 = 1200,
@@ -164,6 +171,19 @@ namespace Mycila {
        * @note The destination address is updated by this function if it was set to the old address.
        */
       bool setDeviceAddress(const uint8_t address, const uint8_t newAddress);
+
+      /**
+       * @brief Reads the JSY model.
+       * @note This function is blocking until the data is read or the timeout is reached.
+       */
+      Model readModel() { return readModel(_destinationAddress); }
+
+      /**
+       * @brief Reads the JSY model.
+       * @param address The address of the device to read (1-255) or MYCILA_JSY_ADDRESS_BROADCAST for all devices
+       * @note This function is blocking until the data is read or the timeout is reached.
+       */
+      Model readModel(const uint8_t address);
 
       /**
        * @brief Read the JSY values.
@@ -306,19 +326,20 @@ namespace Mycila {
       volatile float _voltage2 = 0; // V
 
     private:
+      Callback _callback = nullptr;
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
       HardwareSerial* _serial = nullptr;
-      uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS;
-      uint32_t _lastReadSuccess = 0;
-      TaskHandle_t _taskHandle;
-      volatile bool _enabled = false;
-      volatile BaudRate _baudRate = BaudRate::UNKNOWN;
       std::timed_mutex _mutex;
-      Callback _callback = nullptr;
+      TaskHandle_t _taskHandle;
+      uint32_t _lastReadSuccess = 0;
+      uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS;
+      uint8_t _buffer[64];
       uint8_t _destinationAddress = MYCILA_JSY_ADDRESS_BROADCAST;
       uint8_t _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
-      uint8_t _buffer[64];
+      BaudRate _baudRate = BaudRate::UNKNOWN;
+      bool _enabled = false;
+      Model _model = Model::UNKNOWN;
 
     private:
       enum class ReadResult {

@@ -10,17 +10,19 @@
 [![GitHub latest commit](https://badgen.net/github/last-commit/mathieucarbou/MycilaJSY)](https://GitHub.com/mathieucarbou/MycilaJSY/commit/)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mathieucarbou/MycilaJSY)
 
-Arduino / ESP32 library for the JSY-MK-194T, JSY-MK-194TG single-phase two-way electric energy meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
+Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194TG** single-phase two-way electric energy meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
 
-- Automatically detect baud rate
+- Automatic baud rate detection
+- Automatic JSY model detection
 - Configurable Serial (Serial2 by default)
-- Core, stack size and interval can be configured
+- Core, stack size and pause interval can be configured
 - Device address support (for multiple devices on the same bus)
 - Energy reset live at runtime
 - Focus on speed and reactivity with a callback mechanism
 - Switch bauds rate to any supported speed live at runtime
 - Sync mode and async mode (non-blocking)
-- Metrics:
+
+Metrics:
 
 ```c++
     // tore or first clamp
@@ -490,12 +492,12 @@ Caselength                = 90;
 CaseWidth                 = 60;
 CaseHeight                = 42;
 
-BottomTopThickness        = 2.0; 
+BottomTopThickness        = 2.0;
 
 CountersinkScrew          = 3.0;
 
 ShowDeviceHolder         = true;
-ScrewHoleDiameter        = 2.6;  
+ScrewHoleDiameter        = 2.6;
 ScrewCylinderDiameter    = 7;
 ScrewCylinderHeight      = 7.0;
 DeviceHolder_X_Distance  = 58;
@@ -506,7 +508,7 @@ ShowSideWallHoles        = true;
 SideWallHolesOn_X        = false;
 CountOfSideWallHoles     = 2;
 SideWallHoleDiameter     = 20;
-SiedWallHoleOffset_Z     = 0;     
+SiedWallHoleOffset_Z     = 0;
 ```
 
 | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg) |
