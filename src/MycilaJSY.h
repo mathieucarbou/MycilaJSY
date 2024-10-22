@@ -21,12 +21,19 @@
 
 // broadcast address to send requests to all devices
 #define MYCILA_JSY_ADDRESS_BROADCAST 0x00
-
 // default factory JSY address
 #define MYCILA_JSY_ADDRESS_DEFAULT 0x01
-
 // constant returned when device address is unknown
 #define MYCILA_JSY_ADDRESS_UNKNOWN 0x00
+
+// Model value for unknown JSY device
+#define MYCILA_JSY_MK_UNKNOWN 0x0000
+// Model value for JSY-MK-163 family
+#define MYCILA_JSY_MK_163 0x0163
+// Model value for JSY-MK-194 family
+#define MYCILA_JSY_MK_194 0x0194
+// Model value for JSY-MK-333 family
+#define MYCILA_JSY_MK_333 0x0333
 
 #ifndef MYCILA_JSY_ASYNC_CORE
   #define MYCILA_JSY_ASYNC_CORE 0
@@ -52,13 +59,6 @@
 namespace Mycila {
   class JSY {
     public:
-      enum class Model {
-        UNKNOWN = 0x0000,
-        JSY_MK_163 = 0x0163,
-        JSY_MK_194 = 0x0194,
-        JSY_MK_333 = 0x0333,
-      };
-
       enum class BaudRate {
         UNKNOWN = 0,
         BAUD_1200 = 1200,
@@ -166,6 +166,7 @@ namespace Mycila {
        * @param newAddress The new address to set (1-255)
        * @return true if the address was changed
        * @note The destination address is updated by this function if it was set to the old address.
+       * @note This function is blocking until the address is changed or the timeout is reached.
        */
       bool setDeviceAddress(const uint8_t newAddress) { return setDeviceAddress(_destinationAddress, newAddress); }
 
@@ -175,29 +176,30 @@ namespace Mycila {
        * @param newAddress The new address to set (1-255)
        * @return true if the address was changed
        * @note The destination address is updated by this function if it was set to the old address.
+       * @note This function is blocking until the address is changed or the timeout is reached.
        */
       bool setDeviceAddress(const uint8_t address, const uint8_t newAddress);
 
       /**
        * @brief Reads the JSY model.
-       * @return The JSY model or Model::UNKNOWN if the model is not supported
+       * @return The JSY model or MYCILA_JSY_MK_UNKNOWN if the model cannot be read.
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      Model readModel() { return readModel(_destinationAddress); }
+      uint16_t readModel() { return readModel(_destinationAddress); }
 
       /**
        * @brief Reads the JSY model.
        * @param address The address of the device to read (1-255) or MYCILA_JSY_ADDRESS_BROADCAST for all devices
-       * @return The JSY model or Model::UNKNOWN if the model is not supported
+       * @return The JSY model or MYCILA_JSY_MK_UNKNOWN if the model cannot be read.
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      Model readModel(const uint8_t address);
+      uint16_t readModel(const uint8_t address);
 
       /**
-       * @brief Get the cached JSY model that was read at begin()
-       * @return The JSY model or Model::UNKNOWN if the model was not read yet
+       * @brief Get the cached JSY model that was read during begin()
+       * @return The JSY model or MYCILA_JSY_MK_UNKNOWN if the model cannot be read.
        */
-      Model getModel() const { return _model; }
+      uint16_t getModel() const { return _model; }
 
       /**
        * @brief Read the JSY values.
@@ -462,7 +464,7 @@ namespace Mycila {
       uint8_t _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
       BaudRate _baudRate = BaudRate::UNKNOWN;
       bool _enabled = false;
-      Model _model = Model::UNKNOWN;
+      uint16_t _model = MYCILA_JSY_MK_UNKNOWN;
 
     private:
       enum class ReadResult {
