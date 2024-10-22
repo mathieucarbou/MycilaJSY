@@ -185,7 +185,7 @@ jobs:
         run: PLATFORMIO_SRC_DIR="examples/CallbackAsync" PIO_BOARD=${{ matrix.board }} pio run -e ${{ matrix.env }}
 
       - name: Build Remote UDP Listener
-        run: PIO_BOARD=${{ matrix.board }} pio run -e ${{ matrix.env }} -d examples/RemoteUDP/Listener
+        run: PIO_BOARD=${{ matrix.board }} pio run -e ci -d examples/RemoteUDP/Listener
 
   sender:
     name: JSYRemoteUDPSender-${{ matrix.board }}.bin
