@@ -22,6 +22,13 @@ Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194TG** single-phase t
 - Switch bauds rate to any supported speed live at runtime
 - Sync mode and async mode (non-blocking)
 
+**Supported models:**
+
+- JSY-MK-163T _(soon)_
+- JSY-MK-194T
+- JSY-MK-194TG
+- JSY-MK-333 _(soon)_
+
 Metrics:
 
 ```c++
