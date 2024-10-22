@@ -540,6 +540,7 @@ void Mycila::JSY::end() {
     }
     _baudRate = BaudRate::UNKNOWN;
     _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
+    _model = MYCILA_JSY_MK_UNKNOWN;
     _clear();
     _serial->end();
   }
