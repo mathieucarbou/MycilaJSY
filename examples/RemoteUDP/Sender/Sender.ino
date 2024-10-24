@@ -76,8 +76,8 @@
 #define TAG                          "JSY-UDP"
 
 #include <Arduino.h>
-#include <ESPmDNS.h>
 #include <AsyncUDP.h>
+#include <ESPmDNS.h>
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
@@ -413,6 +413,13 @@ void setup() {
         crc32.add(buffer, size + 5);
         uint32_t crc = crc32.calc();
         memcpy(buffer + size + 5, &crc, 4);
+
+        if (packetSize <= CONFIG_TCP_MSS) {
+          ESP_LOGE(TAG, "Packet size too big: %d. Max is: %d", packetSize, CONFIG_TCP_MSS);
+          messageRate = 0;
+          dataRate = 0;
+          return;
+        }
 
         // send
         switch (mode) {
