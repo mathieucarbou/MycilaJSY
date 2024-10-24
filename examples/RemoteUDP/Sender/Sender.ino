@@ -389,13 +389,13 @@ void setup() {
         root["er1"] = jsy.getEnergyReturned1();
         root["er2"] = jsy.getEnergyReturned2();
         root["f"] = jsy.getFrequency();
+        root["m"] = jsy.getModel();
         root["p1"] = jsy.getActivePower1();
         root["p2"] = jsy.getActivePower2();
         root["pf1"] = jsy.getPowerFactor1();
         root["pf2"] = jsy.getPowerFactor2();
         root["v1"] = jsy.getVoltage1();
         root["v2"] = jsy.getVoltage2();
-        root["m"] = jsy.getModel();
 
         // buffer[0] == MYCILA_UDP_MSG_TYPE_JSY_DATA (1)
         // buffer[1] == size_t (4)
