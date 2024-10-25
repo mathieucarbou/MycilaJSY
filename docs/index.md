@@ -10,11 +10,14 @@
 [![GitHub latest commit](https://badgen.net/github/last-commit/mathieucarbou/MycilaJSY)](https://GitHub.com/mathieucarbou/MycilaJSY/commit/)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mathieucarbou/MycilaJSY)
 
-Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194G**, **JSY-MK-163T** single-phase AC bidirectional meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
+Arduino / ESP32 library for the **JSY-MK-194**, **JSY-MK-163**, **JSY-MK-333** families single-phase and three-phase AC bidirectional meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
 
 - [Supported models](#supported-models)
 - [Features](#features)
 - [Metrics](#metrics)
+  - [JSY-MK-163](#jsy-mk-163)
+  - [JSY-MK-194](#jsy-mk-194)
+  - [JSY-MK-333](#jsy-mk-333)
 - [Remote JSY](#remote-jsy)
 - [Tested boards](#tested-boards)
 - [Usage](#usage)
@@ -34,7 +37,7 @@ Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194G**, **JSY-MK-163T*
 - JSY-MK-163T _(experimental)_
 - JSY-MK-194T
 - JSY-MK-194G
-- JSY-MK-333 _(soon)_
+- JSY-MK-333 _(experimental)_
 
 ## Features
 
@@ -49,32 +52,62 @@ Arduino / ESP32 library for the **JSY-MK-194T**, **JSY-MK-194G**, **JSY-MK-163T*
 - Switch bauds rate to any supported speed live at runtime
 - Remote support with [UDP sender](#remote-jsy)
 
+Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
+
 ## Metrics
 
 Metric depend on the model and they are all read.
-Here are below the metrics for the JSY-MK-194T and JSY-MK-194G:
 
-```c++
-    // tore or first clamp
-    volatile float current1 = 0; // A
-    volatile float energy1 = 0; // kWh
-    volatile float energyReturned1 = 0; // kWh
-    volatile float power1 = 0; // W
-    volatile float powerFactor1 = 0;
-    volatile float voltage1 = 0; // V
+**Please have a look at the header file MycilaJSY.h and documentation inside.**
 
-    // clamp (or second clamp)
-    volatile float current2 = 0; // A
-    volatile float energy2 = 0; // kWh
-    volatile float energyReturned2 = 0; // kWh
-    volatile float power2 = 0; // W
-    volatile float powerFactor2 = 0;
-    volatile float voltage2 = 0; // V
+### JSY-MK-163
 
-    volatile uint8_t frequency = 0; // Hz
-```
+- `frequency`
+- `voltage`
+- `current`
+- `activePower`
+- `powerFactor`
+- `apparentPower` (calculated)
+- `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
+- `activeEnergy` (sum of `activeEnergyImported` and `activeEnergyReturned`)
+- `activeEnergyImported`
+- `activeEnergyReturned`
 
-Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
+### JSY-MK-194
+
+- `frequency`
+
+For each channel (1 and 2):
+
+- `voltage`
+- `current`
+- `activePower`
+- `powerFactor`
+- `apparentPower` (calculated)
+- `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
+- `activeEnergy` (sum of `activeEnergyImported` and `activeEnergyReturned`)
+- `activeEnergyImported`
+- `activeEnergyReturned`
+
+### JSY-MK-333
+
+- `frequency`
+
+For each phase (A, B and C):
+
+- `voltage`
+- `current`
+- `activePower`
+- `powerFactor`
+- `apparentPower`
+- `reactivePower`
+- `activeEnergy`
+- `activeEnergyImported`
+- `activeEnergyReturned`
+- `reactiveEnergy`
+- `reactiveEnergyImported`
+- `reactiveEnergyReturned`
+- `apparentEnergy`
 
 ## Remote JSY
 

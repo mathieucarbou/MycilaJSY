@@ -39,7 +39,7 @@ void setup() {
         Serial.printf(" - %" PRId64 " EVT_READ\n", now);
         break;
       case Mycila::JSY::EventType::EVT_CHANGE:
-        Serial.printf(" - %" PRId64 " EVT_CHANGE: %f W\n", now, jsy.getActivePower2());
+        Serial.printf(" - %" PRId64 " EVT_CHANGE: %f W\n", now, jsy.data.aggregate.activePower);
         break;
       default:
         Serial.printf(" - %" PRId64 " ERR\n", now);

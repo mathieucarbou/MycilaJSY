@@ -541,7 +541,7 @@ void Mycila::JSY::end() {
     _baudRate = BaudRate::UNKNOWN;
     _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
     _model = MYCILA_JSY_MK_UNKNOWN;
-    _clear();
+    data.clear();
     _serial->end();
   }
 }
@@ -603,7 +603,7 @@ bool Mycila::JSY::read(const uint8_t address) {
 
   if (result == ReadResult::READ_TIMEOUT) {
     // reset live values in case of read timeout
-    _clear();
+    data.clear();
     _mutex.unlock();
     if (_callback) {
       _callback(EventType::EVT_READ_TIMEOUT);
@@ -613,7 +613,7 @@ bool Mycila::JSY::read(const uint8_t address) {
 
   if (result == ReadResult::READ_ERROR_COUNT || result == ReadResult::READ_ERROR_CRC) {
     // reset live values in case of read failure
-    _clear();
+    data.clear();
     _mutex.unlock();
     if (_callback) {
       _callback(EventType::EVT_READ_ERROR);
@@ -632,52 +632,69 @@ bool Mycila::JSY::read(const uint8_t address) {
 
   assert(result == ReadResult::READ_SUCCESS);
 
-  float voltage1 = 0;
-  float current1 = 0;
-  float power1 = 0;
-  float energy1 = 0;
-  float powerFactor1 = 0;
-  float energyReturned1 = 0;
-  float frequency = 0;
-  float voltage2 = 0;
-  float current2 = 0;
-  float power2 = 0;
-  float energy2 = 0;
-  float powerFactor2 = 0;
-  float energyReturned2 = 0;
+  Data parsed;
+  parsed.address = _buffer[JSY_RESPONSE_ADDRESS];
+  parsed.model = _model;
 
   switch (_model) {
-    case MYCILA_JSY_MK_163:
-      voltage1 = ((_buffer[3] << 8) + _buffer[4]) / 100.0;
-      current1 = ((_buffer[5] << 8) + _buffer[6]) / 100.0;
-      power1 = ((_buffer[7] << 8) + _buffer[8]) / (_buffer[20] == 1 ? -1.0 : 1.0);
-      energy1 = ((_buffer[9] << 24) + (_buffer[10] << 16) + (_buffer[11] << 8) + _buffer[12]) / 3200.0;
-      powerFactor1 = ((_buffer[13] << 8) + _buffer[14]) / 1000.0;
-      energyReturned1 = ((_buffer[15] << 24) + (_buffer[16] << 16) + (_buffer[17] << 8) + _buffer[18]) / 3200.0;
+    case MYCILA_JSY_MK_163: {
       // _buffer[19] unused
       // _buffer[20] is the sign of power1
-      frequency = ((_buffer[21] << 8) + _buffer[22]);
+      parsed.frequency = ((_buffer[21] << 8) + _buffer[22]);
+      // measurements
+      parsed._metrics[0].voltage = ((_buffer[3] << 8) + _buffer[4]) / 100.0;
+      parsed._metrics[0].current = ((_buffer[5] << 8) + _buffer[6]) / 100.0;
+      parsed._metrics[0].activePower = ((_buffer[7] << 8) + _buffer[8]) / (_buffer[20] == 1 ? -1.0 : 1.0);
+      parsed._metrics[0].activeEnergyImported = ((_buffer[9] << 24) + (_buffer[10] << 16) + (_buffer[11] << 8) + _buffer[12]) / 3200.0;
+      parsed._metrics[0].powerFactor = ((_buffer[13] << 8) + _buffer[14]) / 1000.0;
+      parsed._metrics[0].activeEnergyReturned = ((_buffer[15] << 24) + (_buffer[16] << 16) + (_buffer[17] << 8) + _buffer[18]) / 3200.0;
+      // calculate remaining metrics
+      // S = P / PF
+      parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : parsed._metrics[0].activePower / parsed._metrics[0].powerFactor;
+      // Q = sqrt(S^2 - P^2)
+      parsed._metrics[0].reactivePower = sqrt(parsed._metrics[0].apparentPower * parsed._metrics[0].apparentPower - parsed._metrics[0].activePower * parsed._metrics[0].activePower);
+      // E = Ei + Er
+      parsed._metrics[0].activeEnergy = parsed._metrics[0].activeEnergyImported + parsed._metrics[0].activeEnergyReturned;
+      // aggregate
+      parsed.aggregate = parsed._metrics[0];
       break;
+    }
 
-    case MYCILA_JSY_MK_194:
-      voltage1 = ((_buffer[3] << 24) + (_buffer[4] << 16) + (_buffer[5] << 8) + _buffer[6]) / 10000.0;
-      current1 = ((_buffer[7] << 24) + (_buffer[8] << 16) + (_buffer[9] << 8) + _buffer[10]) / 10000.0;
-      power1 = ((_buffer[11] << 24) + (_buffer[12] << 16) + (_buffer[13] << 8) + _buffer[14]) / (_buffer[27] == 1 ? -10000.0 : 10000.0);
-      energy1 = ((_buffer[15] << 24) + (_buffer[16] << 16) + (_buffer[17] << 8) + _buffer[18]) / 10000.0;
-      powerFactor1 = ((_buffer[19] << 24) + (_buffer[20] << 16) + (_buffer[21] << 8) + _buffer[22]) / 1000.0;
-      energyReturned1 = ((_buffer[23] << 24) + (_buffer[24] << 16) + (_buffer[25] << 8) + _buffer[26]) / 10000.0;
+    case MYCILA_JSY_MK_194: {
       // _buffer[27] is the sign of power1
       // _buffer[28] is the sign of power2
       // _buffer[29] unused
       // _buffer[30] unused
-      frequency = ((_buffer[31] << 24) + (_buffer[32] << 16) + (_buffer[33] << 8) + _buffer[34]) / 100.0;
-      voltage2 = ((_buffer[35] << 24) + (_buffer[36] << 16) + (_buffer[37] << 8) + _buffer[38]) / 10000.0;
-      current2 = ((_buffer[39] << 24) + (_buffer[40] << 16) + (_buffer[41] << 8) + _buffer[42]) / 10000.0;
-      power2 = ((_buffer[43] << 24) + (_buffer[44] << 16) + (_buffer[45] << 8) + _buffer[46]) / (_buffer[28] == 1 ? -10000.0 : 10000.0);
-      energy2 = ((_buffer[47] << 24) + (_buffer[48] << 16) + (_buffer[49] << 8) + _buffer[50]) / 10000.0;
-      powerFactor2 = ((_buffer[51] << 24) + (_buffer[52] << 16) + (_buffer[53] << 8) + _buffer[54]) / 1000.0;
-      energyReturned2 = ((_buffer[55] << 24) + (_buffer[56] << 16) + (_buffer[57] << 8) + _buffer[58]) / 10000.0;
+      parsed.frequency = ((_buffer[31] << 24) + (_buffer[32] << 16) + (_buffer[33] << 8) + _buffer[34]) / 100.0;
+      // measurements
+      parsed._metrics[0].voltage = ((_buffer[3] << 24) + (_buffer[4] << 16) + (_buffer[5] << 8) + _buffer[6]) / 10000.0;
+      parsed._metrics[0].current = ((_buffer[7] << 24) + (_buffer[8] << 16) + (_buffer[9] << 8) + _buffer[10]) / 10000.0;
+      parsed._metrics[0].activePower = ((_buffer[11] << 24) + (_buffer[12] << 16) + (_buffer[13] << 8) + _buffer[14]) / (_buffer[27] == 1 ? -10000.0 : 10000.0);
+      parsed._metrics[0].activeEnergyImported = ((_buffer[15] << 24) + (_buffer[16] << 16) + (_buffer[17] << 8) + _buffer[18]) / 10000.0;
+      parsed._metrics[0].powerFactor = ((_buffer[19] << 24) + (_buffer[20] << 16) + (_buffer[21] << 8) + _buffer[22]) / 1000.0;
+      parsed._metrics[0].activeEnergyReturned = ((_buffer[23] << 24) + (_buffer[24] << 16) + (_buffer[25] << 8) + _buffer[26]) / 10000.0;
+      parsed._metrics[1].voltage = ((_buffer[35] << 24) + (_buffer[36] << 16) + (_buffer[37] << 8) + _buffer[38]) / 10000.0;
+      parsed._metrics[1].current = ((_buffer[39] << 24) + (_buffer[40] << 16) + (_buffer[41] << 8) + _buffer[42]) / 10000.0;
+      parsed._metrics[1].activePower = ((_buffer[43] << 24) + (_buffer[44] << 16) + (_buffer[45] << 8) + _buffer[46]) / (_buffer[28] == 1 ? -10000.0 : 10000.0);
+      parsed._metrics[1].activeEnergyImported = ((_buffer[47] << 24) + (_buffer[48] << 16) + (_buffer[49] << 8) + _buffer[50]) / 10000.0;
+      parsed._metrics[1].powerFactor = ((_buffer[51] << 24) + (_buffer[52] << 16) + (_buffer[53] << 8) + _buffer[54]) / 1000.0;
+      parsed._metrics[1].activeEnergyReturned = ((_buffer[55] << 24) + (_buffer[56] << 16) + (_buffer[57] << 8) + _buffer[58]) / 10000.0;
+      // calculate remaining metrics
+      // S = P / PF
+      parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : abs(parsed._metrics[0].activePower / parsed._metrics[0].powerFactor);
+      parsed._metrics[1].apparentPower = parsed._metrics[1].powerFactor == 0 ? 0 : abs(parsed._metrics[1].activePower / parsed._metrics[1].powerFactor);
+      // Q = sqrt(S^2 - P^2)
+      parsed._metrics[0].reactivePower = sqrt(parsed._metrics[0].apparentPower * parsed._metrics[0].apparentPower - parsed._metrics[0].activePower * parsed._metrics[0].activePower);
+      parsed._metrics[1].reactivePower = sqrt(parsed._metrics[1].apparentPower * parsed._metrics[1].apparentPower - parsed._metrics[1].activePower * parsed._metrics[1].activePower);
+      // E = Ei + Er
+      parsed._metrics[0].activeEnergy = parsed._metrics[0].activeEnergyImported + parsed._metrics[0].activeEnergyReturned;
+      parsed._metrics[1].activeEnergy = parsed._metrics[1].activeEnergyImported + parsed._metrics[1].activeEnergyReturned;
+      // aggregate
+      parsed.aggregate = parsed._metrics[0];
+      parsed.aggregate += parsed._metrics[1];
+      String s;
       break;
+    }
 
     case MYCILA_JSY_MK_333:
       assert(false);
@@ -688,39 +705,12 @@ bool Mycila::JSY::read(const uint8_t address) {
       break;
   }
 
-  bool changed = _buffer[JSY_RESPONSE_ADDRESS] != _data.address ||
-                 voltage1 != _data.voltage1 ||
-                 current1 != _data.current1 ||
-                 power1 != _data.power1 ||
-                 energy1 != _data.energy1 ||
-                 powerFactor1 != _data.powerFactor1 ||
-                 energyReturned1 != _data.energyReturned1 ||
-                 frequency != _data.frequency ||
-                 voltage2 != _data.voltage2 ||
-                 current2 != _data.current2 ||
-                 power2 != _data.power2 ||
-                 energy2 != _data.energy2 ||
-                 powerFactor2 != _data.powerFactor2 ||
-                 energyReturned2 != _data.energyReturned2;
+  bool changed = data != parsed;
 
-  if (changed) {
-    _data.address = _buffer[JSY_RESPONSE_ADDRESS];
-    _data.voltage1 = voltage1;
-    _data.current1 = current1;
-    _data.power1 = power1;
-    _data.energy1 = energy1;
-    _data.powerFactor1 = powerFactor1;
-    _data.energyReturned1 = energyReturned1;
-    _data.frequency = frequency;
-    _data.voltage2 = voltage2;
-    _data.current2 = current2;
-    _data.power2 = power2;
-    _data.energy2 = energy2;
-    _data.powerFactor2 = powerFactor2;
-    _data.energyReturned2 = energyReturned2;
-  }
+  if (changed)
+    data = parsed;
 
-  _lastReadSuccess = millis();
+  _time = millis();
 
   _mutex.unlock();
 
@@ -913,23 +903,9 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
 #ifdef MYCILA_JSON_SUPPORT
 void Mycila::JSY::toJson(const JsonObject& root) const {
   root["enabled"] = _enabled;
-  root["address"] = _data.address;
+  root["time"] = _time;
   root["speed"] = static_cast<uint32_t>(_baudRate);
-  root["model"] = getModelName();
-  root["time"] = _lastReadSuccess;
-  root["current1"] = _data.current1;
-  root["current2"] = _data.current2;
-  root["energy_returned1"] = _data.energyReturned1;
-  root["energy_returned2"] = _data.energyReturned2;
-  root["energy1"] = _data.energy1;
-  root["energy2"] = _data.energy2;
-  root["frequency"] = _data.frequency;
-  root["power_factor1"] = _data.powerFactor1;
-  root["power_factor2"] = _data.powerFactor2;
-  root["power1"] = _data.power1;
-  root["power2"] = _data.power2;
-  root["voltage1"] = _data.voltage1;
-  root["voltage2"] = _data.voltage2;
+  data.toJson(root);
 }
 #endif
 
@@ -1080,22 +1056,22 @@ uint16_t Mycila::JSY::_crc16(const uint8_t* data, size_t len) {
   return crc;
 }
 
-void Mycila::JSY::_clear() {
-  _data.address = MYCILA_JSY_ADDRESS_UNKNOWN;
-  _data.current1 = 0;
-  _data.current2 = 0;
-  _data.frequency = 0;
-  _data.power1 = 0;
-  _data.power2 = 0;
-  _data.powerFactor1 = 0;
-  _data.powerFactor2 = 0;
-  _data.voltage1 = 0;
-  _data.voltage2 = 0;
-}
+///////////////////////////////////////////////////////////////////////////////
+// static: Async / getModelName
+///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// Async
-///////////////////////////////////////////////////////////////////////////////
+const char* Mycila::JSY::getModelName(uint16_t model) {
+  switch (model) {
+    case MYCILA_JSY_MK_163:
+      return MYCILA_JSY_MK_163_NAME;
+    case MYCILA_JSY_MK_194:
+      return MYCILA_JSY_MK_194_NAME;
+    case MYCILA_JSY_MK_333:
+      return MYCILA_JSY_MK_333_NAME;
+    default:
+      return emptyString.c_str();
+  }
+}
 
 void Mycila::JSY::_jsyTask(void* params) {
   JSY* jsy = reinterpret_cast<JSY*>(params);

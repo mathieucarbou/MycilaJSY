@@ -44,7 +44,7 @@ void setup() {
 
   JsonDocument doc;
   jsy.toJson(doc.to<JsonObject>());
-  serializeJson(doc, Serial);
+  serializeJsonPretty(doc, Serial);
   Serial.println();
 
   jsy.end();

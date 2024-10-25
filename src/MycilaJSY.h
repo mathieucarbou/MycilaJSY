@@ -35,16 +35,20 @@
 // Model value for JSY-MK-333 family
 #define MYCILA_JSY_MK_333 0x0333
 
+#define MYCILA_JSY_MK_163_NAME "JSY-MK-163"
+#define MYCILA_JSY_MK_194_NAME "JSY-MK-194"
+#define MYCILA_JSY_MK_333_NAME "JSY-MK-333"
+
 #ifndef MYCILA_JSY_ASYNC_CORE
-  #define MYCILA_JSY_ASYNC_CORE 0
+  #define MYCILA_JSY_ASYNC_CORE 1
 #endif
 
 #ifndef MYCILA_JSY_ASYNC_PRIORITY
-  #define MYCILA_JSY_ASYNC_PRIORITY 1
+  #define MYCILA_JSY_ASYNC_PRIORITY 5
 #endif
 
 #ifndef MYCILA_JSY_ASYNC_STACK_SIZE
-  #define MYCILA_JSY_ASYNC_STACK_SIZE 2048
+  #define MYCILA_JSY_ASYNC_STACK_SIZE 3072 // 512 * 6
 #endif
 
 // time in milliseconds to wait between each read in async mode
@@ -82,22 +86,179 @@ namespace Mycila {
         EVT_READ_PEER
       };
 
-      typedef struct {
+      class Metrics {
+        public:
+          /**
+           * @brief Voltage in volts (V).
+           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333
+           */
+          float voltage = NAN;
+
+          /**
+           * @brief Current in amperes (A).
+           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333
+           */
+          float current = NAN;
+
+          /**
+           * @brief Active power in watts (W).
+           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333
+           */
+          float activePower = NAN;
+
+          /**
+           * @brief Power factor
+           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333
+           */
+          float powerFactor = NAN;
+
+          /**
+           * @brief Apparent power in volt-amperes (VA).
+           * @note JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-194: computed
+           */
+          float apparentPower = NAN;
+
+          /**
+           * @brief Reactive power in volt-amperes reactive (VAr).
+           * @note JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-194: computed and always be positive since we do not know the phase shift angle (inductive or capacitive load)
+           */
+          float reactivePower = NAN;
+
+          /**
+           * @brief Active energy in kilowatt-hours (kWh).
+           * @note JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-194: computed, sum of activeEnergyImported and activeEnergyReturned
+           */
+          float activeEnergy = NAN;
+
+          /**
+           * @brief Active energy imported in kilowatt-hours (kWh), going to the load, when activePower > 0
+           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333: measured
+           */
+          float activeEnergyImported = NAN;
+
+          /**
+           * @brief Active energy returned in kilowatt-hours (kWh), coming from the load, when activePower < 0
+           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333: measured
+           */
+          float activeEnergyReturned = NAN;
+
+          /**
+           * @brief Reactive energy in kilovolt-amperes reactive-hours (kVArh).
+           * @note JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-194: not available
+           */
+          float reactiveEnergy = NAN;
+
+          /**
+           * @brief Reactive energy imported in kilovolt-amperes reactive-hours (kVArh), going to the load, when reactivePower > 0
+           * @note JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-194: not available
+           */
+          float reactiveEnergyImported = NAN;
+
+          /**
+           * @brief Reactive energy returned in kilovolt-amperes reactive-hours (kVArh), coming from the load, when reactivePower < 0
+           * @note JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-194: not available
+           */
+          float reactiveEnergyReturned = NAN;
+
+          /**
+           * @brief Apparent energy in kilovolt-amperes-hours (kVAh).
+           * @note JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-194: not available
+           */
+          float apparentEnergy = NAN;
+
+          /**
+           * @brief Compute the total harmonic distortion of current (THDi).
+           * See: https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance
+           * @param phi The phase shift angle in radians (1 for resistive load)
+           * @return The total harmonic distortion of current (THDi)
+           */
+          float thdi(float phi = 1) const { return powerFactor == 0 ? NAN : sqrt(pow(cos(phi), 2) / pow(powerFactor, 2) - 1); }
+
+          /**
+           * @brief Compute the resistance of the load in ohms (R = P / I^2).
+           */
+          float resistance() const { return current == 0 ? NAN : abs(activePower / (current * current)); }
+
+          /**
+           * @brief Compute the dimmed voltage (V = P / I).
+           * @note The dimmed voltage is the voltage that would be measured at the output of a TRIAC, SSR or voltage regulator device.
+           */
+          float dimmedVoltage() const { return current == 0 ? NAN : abs(activePower / current); }
+
+          /**
+           * @brief Compute the nominal power of the load in watts (P = V^2 / R).
+           * @note The voltage is the nominal voltage measured by the JSY and R is the measured resistance of the load, which can be regulated by a TRIAC, SSR or voltage regulator.
+           */
+          float nominalPower() const { return activePower == 0 ? NAN : abs(voltage * voltage * current * current / activePower); }
+
+          // clear all values
+          void clear();
+
+          // compare two metrics
+          bool operator==(const Metrics& other) const;
+          // compare two metrics
+          bool operator!=(const Metrics& other) const { return !(*this == other); }
+          // add two metrics, averaging the voltage
+          Metrics& operator+=(const Metrics& other);
+          // copy a metric
+          void operator=(const Metrics& other);
+
+#ifdef MYCILA_JSON_SUPPORT
+          void toJson(const JsonObject& root) const;
+#endif
+      };
+
+      class Data {
+        public:
           uint8_t address = MYCILA_JSY_ADDRESS_UNKNOWN; // device address
-          float current1 = 0;                           // A
-          float current2 = 0;                           // A
-          float energy1 = 0;                            // kWh
-          float energy2 = 0;                            // kWh
-          float energyReturned1 = 0;                    // kWh
-          float energyReturned2 = 0;                    // kWh
+          uint16_t model = MYCILA_JSY_MK_UNKNOWN;       // device model
           float frequency = 0;                          // Hz
-          float power1 = 0;                             // W
-          float power2 = 0;                             // W
-          float powerFactor1 = 0;
-          float powerFactor2 = 0;
-          float voltage1 = 0; // V
-          float voltage2 = 0; // V
-      } Data;
+
+          // For JSY-MK-163: aggregate == single()
+          // For JSY-MK-194: aggregate == channel1() + channel2()
+          // For JSY-MK-333: aggregate == phaseA() + phaseB() + phaseC()
+          Metrics aggregate;
+
+          // JSY-MK-163
+          const Metrics& single() const { return _metrics[0]; }
+
+          // JSY-MK-194 (channel 1)
+          const Metrics& channel1() const { return _metrics[0]; }
+          // JSY-MK-194 (channel 2)
+          const Metrics& channel2() const { return _metrics[1]; }
+
+          // JSY-MK-333 (phase A)
+          const Metrics& phaseA() const { return _metrics[0]; }
+          // JSY-MK-333 (phase B)
+          const Metrics& phaseB() const { return _metrics[1]; }
+          // JSY-MK-333 (phase C)
+          const Metrics& phaseC() const { return _metrics[2]; }
+
+          // clear all values
+          void clear();
+
+          // compare two data
+          bool operator==(const Data& other) const;
+          // compare two data
+          bool operator!=(const Data& other) const { return !(*this == other); }
+          // copy a data
+          void operator=(const Data& other);
+
+#ifdef MYCILA_JSON_SUPPORT
+          void toJson(const JsonObject& root) const;
+#endif
+
+        private:
+          friend class JSY;
+          Metrics _metrics[3];
+      };
 
       typedef std::function<void(const EventType eventType)> Callback;
 
@@ -201,14 +362,14 @@ namespace Mycila {
        */
       uint16_t getModel() const { return _model; }
 
-      String getModelName() const { return getModelName(_model); }
-      static String getModelName(uint16_t model) {
-        if (!model)
-          return emptyString;
-        String name;
-        name.reserve(10);
-        return model ? (String("JSY-MK-") + String(model, HEX)) : emptyString;
-      }
+      const char* getModelName() const { return getModelName(_model); }
+
+      /**
+       * @brief Get the name of the JSY model
+       * @param model The JSY model
+       * @return The name of the JSY model (MYCILA_JSY_MK_163_NAME, MYCILA_JSY_MK_194_NAME, MYCILA_JSY_MK_333_NAME) or an empty string if the model is unknown
+       */
+      static const char* getModelName(uint16_t model);
 
       /**
        * @brief Read the JSY values.
@@ -276,197 +437,29 @@ namespace Mycila {
       uint8_t getLastAddress() const { return _lastAddress; }
 
       /**
-       * @brief Get device address from which the last data was read.
-       * @return The address of the device from which the last data was read (1-255)
-       */
-      uint8_t getAddress() const { return _data.address; }
-
-      /**
-       * @return Current in amperes (A) of channel 1
-       * @note Only for: JSY-MK-194
-       */
-      float getCurrent1() const { return _data.current1; }
-
-      /**
-       * @return Current in amperes (A) of channel 2
-       * @note Only for: JSY-MK-194
-       */
-      float getCurrent2() const { return _data.current2; }
-
-      /**
-       * @return Energy in kilowatt-hours (kWh) of channel 1
-       * @note Only for: JSY-MK-194
-       */
-      float getEnergy1() const { return _data.energy1; }
-
-      /**
-       * @return Energy in kilowatt-hours (kWh) of channel 2
-       * @note Only for: JSY-MK-194
-       */
-      float getEnergy2() const { return _data.energy2; }
-
-      /**
-       * @return Energy returned in kilowatt-hours (kWh) of channel 1
-       * @note Only for: JSY-MK-194
-       */
-      float getEnergyReturned1() const { return _data.energyReturned1; }
-
-      /**
-       * @return Energy returned in kilowatt-hours (kWh) of channel 2
-       * @note Only for: JSY-MK-194
-       */
-      float getEnergyReturned2() const { return _data.energyReturned2; }
-
-      /**
-       * @return Frequency in hertz (Hz)
-       * @note Only for: JSY-MK-194
-       */
-      float getFrequency() const { return _data.frequency; }
-
-      /**
-       * @return Active power in watts (W) of channel 1
-       * @note Only for: JSY-MK-194
-       */
-      float getActivePower1() const { return _data.power1; }
-
-      /**
-       * @return Active power in watts (W) of channel 2
-       * @note Only for: JSY-MK-194
-       */
-      float getActivePower2() const { return _data.power2; }
-
-      /**
-       * @return Power factor of channel 1
-       * @note Only for: JSY-MK-194
-       */
-      float getPowerFactor1() const { return _data.powerFactor1; }
-
-      /**
-       * @return Power factor of channel 2
-       * @note Only for: JSY-MK-194
-       */
-      float getPowerFactor2() const { return _data.powerFactor2; }
-
-      /**
-       * @return Resistance in ohms (Ω) of channel 1
-       * @note Only for: JSY-MK-194
-       */
-      float getResistance1() const { return _data.current1 == 0 ? 0 : abs(_data.power1 / (_data.current1 * _data.current1)); }
-
-      /**
-       * @return Resistance in ohms (Ω) of channel 2
-       * @note Only for: JSY-MK-194
-       */
-      float getResistance2() const { return _data.current2 == 0 ? 0 : abs(_data.power2 / (_data.current2 * _data.current2)); }
-
-      /**
-       * @return Voltage in volts (V) of channel 1
-       * @note Only for: JSY-MK-194
-       */
-      float getVoltage1() const { return _data.voltage1; }
-
-      /**
-       * @return Voltage in volts (V) of channel 2
-       * @note Only for: JSY-MK-194
-       */
-      float getVoltage2() const { return _data.voltage2; }
-
-      /**
-       * @return Dimmed voltage in volts (V) of channel 1, based on the current and power
-       * @note Only for: JSY-MK-194
-       */
-      float getDimmedVoltage1() const { return _data.current1 == 0 || _data.power1 < 0 ? 0 : _data.power1 / _data.current1; }
-
-      /**
-       * @return Dimmed voltage in volts (V) of channel 2, based on the current and power
-       * @note Only for: JSY-MK-194
-       */
-      float getDimmedVoltage2() const { return _data.current2 == 0 || _data.power2 < 0 ? 0 : _data.power2 / _data.current2; }
-
-      /**
-       * @return Nominal power in watts (W) of channel 1, based on the voltage and resistance
-       * @note Only for: JSY-MK-194
-       */
-      float getNominalPower1() const {
-        float r1 = getResistance1();
-        return r1 == 0 ? 0 : _data.voltage1 * _data.voltage1 / r1;
-      }
-
-      /**
-       * @return Nominal power in watts (W) of channel 2, based on the voltage and resistance
-       * @note Only for: JSY-MK-194
-       */
-      float getNominalPower2() const {
-        float r2 = getResistance2();
-        return r2 == 0 ? 0 : _data.voltage2 * _data.voltage2 / r2;
-      }
-
-      /**
-       * @return Apparent power in volt-amperes (VA) of channel 1
-       * @note Only for: JSY-MK-194
-       */
-      float getApparentPower1() const { return _data.powerFactor1 == 0 ? 0 : _data.power1 / _data.powerFactor1; }
-
-      /**
-       * @return Apparent power in volt-amperes (VA) of channel 2
-       * @note Only for: JSY-MK-194
-       */
-      float getApparentPower2() const { return _data.powerFactor2 == 0 ? 0 : _data.power2 / _data.powerFactor2; }
-
-      /**
-       * @brief Compute the total harmonic distortion of current (THDi) of channel 1.
-       * See: https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance
-       * @param phi The phase shift angle in radians (1 for resistive load)
-       * @return The total harmonic distortion of current (THDi) of channel 1
-       * @note Only for: JSY-MK-194
-       */
-      float getTHDi1(float phi = 1) const { return _data.powerFactor1 == 0 ? 0 : sqrt(pow(cos(phi), 2) / pow(_data.powerFactor1, 2) - 1); }
-
-      /**
-       * @brief Compute the total harmonic distortion of current (THDi) of channel 2.
-       * See: https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance
-       * @param phi The phase shift angle in radians (1 for resistive load)
-       * @return The total harmonic distortion of current (THDi) of channel 2
-       * @note Only for: JSY-MK-194
-       */
-      float getTHDi2(float phi = 1) const { return _data.powerFactor2 == 0 ? 0 : sqrt(pow(cos(phi), 2) / pow(_data.powerFactor2, 2) - 1); }
-
-      /**
        * @return The time in milliseconds of the last successful read
        */
-      uint32_t getTime() const { return _lastReadSuccess; }
+      uint32_t getTime() const { return _time; }
 
       // check if the device is connected to the grid, meaning if last read was successful
-      bool isConnected() const { return _data.frequency > 0; }
+      bool isConnected() const { return data.frequency > 0; }
 
       void setCallback(Callback callback) { _callback = callback; }
 
-      void getData(Data& data) const { // NOLINT
-        data.address = _data.address;
-        data.current1 = _data.current1;
-        data.current2 = _data.current2;
-        data.energy1 = _data.energy1;
-        data.energy2 = _data.energy2;
-        data.energyReturned1 = _data.energyReturned1;
-        data.energyReturned2 = _data.energyReturned2;
-        data.frequency = _data.frequency;
-        data.power1 = _data.power1;
-        data.power2 = _data.power2;
-        data.powerFactor1 = _data.powerFactor1;
-        data.powerFactor2 = _data.powerFactor2;
-        data.voltage1 = _data.voltage1;
-        data.voltage2 = _data.voltage2;
-      }
+    public:
+      /**
+       * @brief Access the runtime JSY data.
+       */
+      Data data;
 
     private:
-      volatile Data _data;
       Callback _callback = nullptr;
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
       HardwareSerial* _serial = nullptr;
       std::timed_mutex _mutex;
       TaskHandle_t _taskHandle;
-      uint32_t _lastReadSuccess = 0;
+      uint32_t _time = 0;
       uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS;
       uint8_t _buffer[64];
       uint8_t _destinationAddress = MYCILA_JSY_ADDRESS_BROADCAST;
@@ -494,7 +487,6 @@ namespace Mycila {
       BaudRate _detectBauds(const uint8_t address);
 
       uint16_t _crc16(const uint8_t* buffer, size_t len);
-      void _clear();
 
       static void _jsyTask(void* pvParameters);
   };

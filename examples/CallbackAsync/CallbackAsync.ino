@@ -22,7 +22,7 @@ void setup() {
 
   jsy.setCallback([](const Mycila::JSY::EventType eventType) {
     if (eventType == Mycila::JSY::EventType::EVT_CHANGE) {
-      Serial.printf(" - %" PRIu32 " EVT_CHANGE: %f V, %f A, %f W\n", (uint32_t)millis(), jsy.getVoltage2(), jsy.getCurrent2(), jsy.getActivePower2());
+      Serial.printf(" - %" PRIu32 " EVT_CHANGE: %f V, %f A, %f W\n", (uint32_t)millis(), jsy.data.channel2().voltage, jsy.data.channel2().current, jsy.data.channel2().activePower);
     }
   });
 

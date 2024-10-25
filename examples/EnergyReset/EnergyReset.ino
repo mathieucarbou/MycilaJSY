@@ -25,7 +25,7 @@ void loop() {
   if (jsy.read()) {
     JsonDocument doc;
     jsy.toJson(doc.to<JsonObject>());
-    serializeJson(doc, Serial);
+    serializeJsonPretty(doc, Serial);
     Serial.println();
   }
 

@@ -28,10 +28,10 @@ void loop() {
 
     JsonDocument doc;
     jsy.toJson(doc.to<JsonObject>());
-    serializeJson(doc, Serial);
+    serializeJsonPretty(doc, Serial);
     Serial.println();
 
-    if (jsy.getEnergy1() > 0 || jsy.getEnergy2() > 0 || jsy.getEnergyReturned1() > 0 || jsy.getEnergyReturned2() > 0)
+    if (jsy.data.aggregate.activeEnergyImported > 0 || jsy.data.aggregate.activeEnergyReturned > 0)
       jsy.resetEnergy();
   }
 }

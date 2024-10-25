@@ -41,7 +41,7 @@ void loop() {
     
     JsonDocument doc;
     jsy.toJson(doc.to<JsonObject>());
-    serializeJson(doc, Serial);
+    serializeJsonPretty(doc, Serial);
     Serial.println();
   }
   delay(1000);

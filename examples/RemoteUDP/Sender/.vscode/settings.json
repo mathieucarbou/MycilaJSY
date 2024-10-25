@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.cps": "javascript",
+    "*.config": "cpp",
+    "cmath": "cpp"
+  }
+}

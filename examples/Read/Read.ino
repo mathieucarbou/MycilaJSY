@@ -39,7 +39,7 @@ void loop() {
     Serial.printf("JSY read in %" PRIu32 " ms\n", (uint32_t)(millis() - now));
     JsonDocument doc;
     jsy.toJson(doc.to<JsonObject>());
-    serializeJson(doc, Serial);
+    serializeJsonPretty(doc, Serial);
     Serial.println();
   } else {
     Serial.printf("Failed to read JSY. Elapsed time: %" PRIu32 " ms\n", (uint32_t)(millis() - now));
