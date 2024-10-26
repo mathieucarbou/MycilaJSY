@@ -251,6 +251,7 @@ Mycila::Task networkUpTask("Network UP", Mycila::TaskType::ONCE, [](void* params
 
 Mycila::Task otaTask("OTA", Mycila::TaskType::ONCE, [](void* params) {
   logger.info(TAG, "Preparing OTA update...");
+  udpSendEnabled = false;
   jsy.end();
 });
 

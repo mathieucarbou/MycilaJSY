@@ -585,11 +585,9 @@ bool Mycila::JSY::read(const uint8_t address) {
       break;
 
     case MYCILA_JSY_MK_333:
-      assert(false);
       break;
 
     default:
-      assert(false);
       break;
   }
 
@@ -697,11 +695,9 @@ bool Mycila::JSY::read(const uint8_t address) {
     }
 
     case MYCILA_JSY_MK_333:
-      assert(false);
       break;
 
     default:
-      assert(false);
       break;
   }
 
