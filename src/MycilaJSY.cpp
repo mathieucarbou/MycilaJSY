@@ -648,7 +648,7 @@ bool Mycila::JSY::read(const uint8_t address) {
       parsed._metrics[0].activeEnergyReturned = ((_buffer[15] << 24) + (_buffer[16] << 16) + (_buffer[17] << 8) + _buffer[18]) / 3200.0;
       // calculate remaining metrics
       // S = P / PF
-      parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : parsed._metrics[0].activePower / parsed._metrics[0].powerFactor;
+      parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : abs(parsed._metrics[0].activePower / parsed._metrics[0].powerFactor);
       // Q = sqrt(S^2 - P^2)
       parsed._metrics[0].reactivePower = sqrt(parsed._metrics[0].apparentPower * parsed._metrics[0].apparentPower - parsed._metrics[0].activePower * parsed._metrics[0].activePower);
       // E = Ei + Er
