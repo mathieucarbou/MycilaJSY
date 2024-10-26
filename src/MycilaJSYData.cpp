@@ -37,7 +37,8 @@ void Mycila::JSY::Data::operator=(const Mycila::JSY::Data& other) {
 #ifdef MYCILA_JSON_SUPPORT
 void Mycila::JSY::Data::toJson(const JsonObject& root) const {
   root["address"] = address;
-  root["model"] = Mycila::JSY::getModelName(model);
+  root["model"] = model;
+  root["model_name"] = Mycila::JSY::getModelName(model);
 
   if (!isnan(frequency))
     root["frequency"] = frequency;
