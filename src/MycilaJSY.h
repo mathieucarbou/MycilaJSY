@@ -12,9 +12,9 @@
   #include <ArduinoJson.h>
 #endif
 
-#define MYCILA_JSY_VERSION          "10.1.0"
-#define MYCILA_JSY_VERSION_MAJOR    10
-#define MYCILA_JSY_VERSION_MINOR    1
+#define MYCILA_JSY_VERSION          "11.0.0"
+#define MYCILA_JSY_VERSION_MAJOR    11
+#define MYCILA_JSY_VERSION_MINOR    0
 #define MYCILA_JSY_VERSION_REVISION 0
 
 // #define MYCILA_JSY_DEBUG 1
