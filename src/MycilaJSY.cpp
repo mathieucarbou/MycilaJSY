@@ -690,7 +690,6 @@ bool Mycila::JSY::read(const uint8_t address) {
       // aggregate
       parsed.aggregate = parsed._metrics[0];
       parsed.aggregate += parsed._metrics[1];
-      String s;
       break;
     }
 
