@@ -85,19 +85,24 @@ To update the firmware through OTA, please follow these steps:
 
 After the application is flashed, it will restart and you will see a log line in the Serial console telling you the RX and TX pins used for the JSY.
 
-The default pins are:
+The default GPIO for `Serial2` are:
 
-| Board               | Serial RX (JSY TX) | Serial TX (JSY RX) |
-| :------------------ | :----------------: | :----------------: |
-| esp32dev            |         4          |         25         |
-| esp32-c3-devkitc-02 |         18         |         19         |
-| esp32-c6-devkitc-1  |         4          |         5          |
-| esp32-poe           |         35         |         33         |
-| esp32-s2-saola-1    |         4          |         5          |
-| esp32-s3-devkitc-1  |         19         |         20         |
-| esp32s3box          |         19         |         20         |
-| nodemcu-32s         |         4          |         25         |
-| wt32-eth01          |         4          |         25         |
+| Board               | Serial2 RX (JSY TX) | Serial2 TX (JSY RX) |
+| :------------------ | :-----------------: | :-----------------: |
+| esp32-c3-devkitc-02 |         18          |         19          |
+| esp32-c6-devkitc-1  |          4          |          5          |
+| esp32-poe           |         35          |         33          |
+| esp32-s2-saola-1    |          4          |          5          |
+| esp32-s3-devkitc-1  |         19          |         20          |
+| esp32dev            |          4          |         25          |
+| esp32s3box          |         19          |         20          |
+| nodemcu-32s         |          4          |         25          |
+| wt32-eth01          |          4          |         25          |
+| esp32-poe           |         35          |         33          |
+| esp32-gateway       |          4          |         25          |
+| wipy3               |          4          |         25          |
+| tinypico            |          4          |         25          |
+| denky_d4            |          4          |         25          |
 
 ## Usage
 
