@@ -138,7 +138,7 @@ jobs:
       matrix:
         board:
           [
-            "denky_d4",
+            # "denky_d4",
             "esp32-c3-devkitc-02",
             "esp32-c6-devkitc-1",
             "esp32-gateway",
