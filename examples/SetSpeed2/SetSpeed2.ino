@@ -7,8 +7,8 @@
 #endif
 #if SOC_UART_HP_NUM < 3
   #define Serial2 Serial1
-  #define RX2 RX1
-  #define TX2 TX1
+  #define RX2     RX1
+  #define TX2     TX1
 #endif
 
 Mycila::JSY jsy;
@@ -41,7 +41,7 @@ void loop() {
   }
 
   if (counts % 7 == 0) {
-    if (jsy.setBaudRate(jsy.getBaudRate() == Mycila::JSY::BaudRate::BAUD_38400 ? Mycila::JSY::BaudRate::BAUD_1200 : Mycila::JSY::BaudRate::BAUD_38400)) {
+    if (jsy.setBaudRate(jsy.getBaudRate() == jsy.getMaxAvailableBaudRate() ? jsy.getMinAvailableBaudRate() : jsy.getMaxAvailableBaudRate())) {
       Serial.printf("JSY baud rate updated to %d\n", static_cast<int>(jsy.getBaudRate()));
     } else {
       Serial.println("JSY baud rate update failed");

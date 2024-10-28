@@ -585,7 +585,7 @@ void Mycila::JSY::begin(HardwareSerial& serial,
   _model = readModel(_destinationAddress);
   LOGI(TAG, "Detected JSY-MK-%s @ 0x%02X with speed %" PRIu32 " bauds", String(_model, HEX).c_str(), _lastAddress, static_cast<uint32_t>(_baudRate));
 
-  if (_model != MYCILA_JSY_MK_194 && _model != MYCILA_JSY_MK_163) {
+  if (_model != MYCILA_JSY_MK_194 && _model != MYCILA_JSY_MK_163 && _model != MYCILA_JSY_MK_333) {
     LOGE(TAG, "Unsupported JSY model: JSY-MK-%s", String(_model, HEX).c_str());
     // unsupported
     _enabled = false;
@@ -968,8 +968,56 @@ bool Mycila::JSY::resetEnergy(const uint8_t address) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setBaudRate
+// settings
 ///////////////////////////////////////////////////////////////////////////////
+
+Mycila::JSY::BaudRate Mycila::JSY::getMinAvailableBaudRate() const {
+  if (!_enabled)
+    return BaudRate::UNKNOWN;
+  return getMinAvailableBaudRate(_model);
+}
+
+Mycila::JSY::BaudRate Mycila::JSY::getMinAvailableBaudRate(uint16_t model) {
+  switch (model) {
+    case MYCILA_JSY_MK_163:
+      return BaudRate::BAUD_1200;
+    case MYCILA_JSY_MK_194:
+      return BaudRate::BAUD_1200;
+    case MYCILA_JSY_MK_333:
+      return BaudRate::BAUD_4800;
+    default:
+      return BaudRate::UNKNOWN;
+  }
+}
+
+Mycila::JSY::BaudRate Mycila::JSY::getMaxAvailableBaudRate() const {
+  if (!_enabled)
+    return BaudRate::UNKNOWN;
+  return getMaxAvailableBaudRate(_model);
+}
+
+Mycila::JSY::BaudRate Mycila::JSY::getMaxAvailableBaudRate(uint16_t model) {
+  switch (model) {
+    case MYCILA_JSY_MK_163:
+      return BaudRate::BAUD_9600;
+    case MYCILA_JSY_MK_194:
+      return BaudRate::BAUD_38400;
+    case MYCILA_JSY_MK_333:
+      return BaudRate::BAUD_19200;
+    default:
+      return BaudRate::UNKNOWN;
+  }
+}
+
+bool Mycila::JSY::isBaudRateSupported(Mycila::JSY::BaudRate baudRate) const {
+  if (!_enabled)
+    return false;
+  return isBaudRateSupported(_model, baudRate);
+}
+
+bool Mycila::JSY::isBaudRateSupported(uint16_t model, Mycila::JSY::BaudRate baudRate) {
+  return getMinAvailableBaudRate(model) <= baudRate && baudRate <= getMaxAvailableBaudRate(model);
+}
 
 bool Mycila::JSY::setBaudRate(const uint8_t address, const BaudRate baudRate) {
   return _set(address, address ? address : (_lastAddress ? _lastAddress : MYCILA_JSY_ADDRESS_DEFAULT), baudRate);
@@ -1198,7 +1246,7 @@ size_t Mycila::JSY::_drop() {
 void Mycila::JSY::_openSerial(BaudRate baudRate) {
   LOGD(TAG, "openSerial(%" PRIu32 ")", static_cast<uint32_t>(baudRate));
   _serial->begin(static_cast<uint32_t>(baudRate), SERIAL_8N1, _pinRX, _pinTX);
-  _serial->setTimeout(200);
+  _serial->setTimeout(500);
   while (!_serial)
     yield();
   while (!_serial->availableForWrite())

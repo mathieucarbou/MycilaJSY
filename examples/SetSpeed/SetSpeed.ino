@@ -7,11 +7,9 @@
 #endif
 #if SOC_UART_HP_NUM < 3
   #define Serial2 Serial1
-  #define RX2 RX1
-  #define TX2 TX1
+  #define RX2     RX1
+  #define TX2     TX1
 #endif
-
-Mycila::JSY::BaudRate target = Mycila::JSY::BaudRate::BAUD_38400;
 
 Mycila::JSY jsy;
 
@@ -24,7 +22,8 @@ void setup() {
   jsy.begin(Serial2, RX2, TX2);
 
   if (jsy.isEnabled()) {
-    if (jsy.setBaudRate(target)) {
+    Mycila::JSY::BaudRate max = jsy.getMaxAvailableBaudRate();
+    if (jsy.setBaudRate(max)) {
       Serial.println("JSY baud rate updated");
     } else {
       Serial.println("JSY baud rate update failed");
@@ -40,7 +39,7 @@ void loop() {
     Serial.print("JSY read in ");
     Serial.print(millis() - now);
     Serial.print(" ms\n");
-    
+
     JsonDocument doc;
     jsy.toJson(doc.to<JsonObject>());
     serializeJsonPretty(doc, Serial);

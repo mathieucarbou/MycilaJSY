@@ -65,11 +65,19 @@ namespace Mycila {
     public:
       enum class BaudRate {
         UNKNOWN = 0,
+        // Supported by: JSY-MK-163, JSY-MK-194
         BAUD_1200 = 1200,
+        // Supported by: JSY-MK-163, JSY-MK-194
         BAUD_2400 = 2400,
+        // Default for: JSY-MK-163, JSY-MK-194
+        // Supported by: JSY-MK-163, JSY-MK-194, JSY-MK-333
         BAUD_4800 = 4800,
+        // Default for: JSY-MK-333
+        // Supported by: JSY-MK-163, JSY-MK-194, JSY-MK-333
         BAUD_9600 = 9600,
+        // Supported by: JSY-MK-194, JSY-MK-333
         BAUD_19200 = 19200,
+        // Supported by: JSY-MK-194
         BAUD_38400 = 38400,
       };
 
@@ -429,6 +437,23 @@ namespace Mycila {
       gpio_num_t getTXPin() const { return _pinTX; }
       bool isEnabled() const { return _enabled; }
       BaudRate getBaudRate() const { return _baudRate; }
+
+      BaudRate getMinAvailableBaudRate() const;
+      static BaudRate getMinAvailableBaudRate(uint16_t model);
+
+      /**
+       * @brief Get the maximum available baud rate supported by the current JSY model connected
+       * @return The maximum available baud rate or BaudRate::UNKNOWN if no supported JSY connected
+       */
+      BaudRate getMaxAvailableBaudRate() const;
+      static BaudRate getMaxAvailableBaudRate(uint16_t model);
+
+      /**
+       * @brief Check if a baud rate is supported by the current JSY model connected
+       * @return true if the baud rate is supported, false if not or if no supported JSY connected
+       */
+      bool isBaudRateSupported(BaudRate baudRate) const;
+      static bool isBaudRateSupported(uint16_t model, BaudRate baudRate);
 
       /**
        * @brief Get the address of the last device's response.
