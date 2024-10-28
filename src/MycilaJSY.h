@@ -260,7 +260,7 @@ namespace Mycila {
           Metrics _metrics[3];
       };
 
-      typedef std::function<void(const EventType eventType)> Callback;
+      typedef std::function<void(EventType eventType)> Callback;
 
       ~JSY() { end(); }
 
@@ -268,7 +268,7 @@ namespace Mycila {
        * @brief Set the address used to send requests (1-255).
        * Default value is MYCILA_JSY_ADDRESS_BROADCAST (0), which means every device will receive the request.
        */
-      void setDestinationAddress(const uint8_t address) { _destinationAddress = address; }
+      void setDestinationAddress(uint8_t address) { _destinationAddress = address; }
 
       /**
        * @brief Get the address used to send requests.
@@ -288,12 +288,12 @@ namespace Mycila {
        * @note The baud rate is automatically detected.
        */
       void begin(HardwareSerial& serial, // NOLINT
-                 const int8_t rxPin,
-                 const int8_t txPin,
-                 const bool async = false,
-                 const uint8_t core = MYCILA_JSY_ASYNC_CORE,
-                 const uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
-                 const uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS) {
+                 int8_t rxPin,
+                 int8_t txPin,
+                 bool async = false,
+                 uint8_t core = MYCILA_JSY_ASYNC_CORE,
+                 uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
+                 uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS) {
         begin(serial, rxPin, txPin, BaudRate::UNKNOWN, async, core, stackSize, pause);
       }
 
@@ -309,13 +309,13 @@ namespace Mycila {
        * @param pause Time in milliseconds to wait between each read in async mode
        */
       void begin(HardwareSerial& serial, // NOLINT
-                 const int8_t rxPin,
-                 const int8_t txPin,
-                 const BaudRate baudRate,
-                 const bool async = false,
-                 const uint8_t core = MYCILA_JSY_ASYNC_CORE,
-                 const uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
-                 const uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS);
+                 int8_t rxPin,
+                 int8_t txPin,
+                 BaudRate baudRate,
+                 bool async = false,
+                 uint8_t core = MYCILA_JSY_ASYNC_CORE,
+                 uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
+                 uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS);
 
       /**
        * @brief Ends the JSY communication.
@@ -329,7 +329,7 @@ namespace Mycila {
        * @note The destination address is updated by this function if it was set to the old address.
        * @note This function is blocking until the address is changed or the timeout is reached.
        */
-      bool setDeviceAddress(const uint8_t newAddress) { return setDeviceAddress(_destinationAddress, newAddress); }
+      bool setDeviceAddress(uint8_t newAddress) { return setDeviceAddress(_destinationAddress, newAddress); }
 
       /**
        * @brief Set a new address for a device.
@@ -339,7 +339,7 @@ namespace Mycila {
        * @note The destination address is updated by this function if it was set to the old address.
        * @note This function is blocking until the address is changed or the timeout is reached.
        */
-      bool setDeviceAddress(const uint8_t address, const uint8_t newAddress);
+      bool setDeviceAddress(uint8_t address, uint8_t newAddress);
 
       /**
        * @brief Reads the JSY model.
@@ -354,7 +354,7 @@ namespace Mycila {
        * @return The JSY model or MYCILA_JSY_MK_UNKNOWN if the model cannot be read.
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      uint16_t readModel(const uint8_t address);
+      uint16_t readModel(uint8_t address);
 
       /**
        * @brief Get the cached JSY model that was read during begin()
@@ -384,7 +384,7 @@ namespace Mycila {
        * @return true if the read was successful
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      bool read(const uint8_t address);
+      bool read(uint8_t address);
 
       /**
        * @brief Reset the energy counters of the JSY.
@@ -399,7 +399,7 @@ namespace Mycila {
        * @return true if the reset was successful
        * @note This function is blocking until the reset is confirmed or the timeout is reached.
        */
-      bool resetEnergy(const uint8_t address);
+      bool resetEnergy(uint8_t address);
 
       // Try to change the baud rate of the JSY. Returns true if the baud rate was changed.
       // This function is blocking until the change is confirmed or the timeout is reached.
@@ -410,7 +410,7 @@ namespace Mycila {
        * @return true if the baud rate was changed
        * @note This function is blocking until the change is confirmed or the timeout is reached.
        */
-      bool setBaudRate(const BaudRate baudRate) { return setBaudRate(_destinationAddress, baudRate); }
+      bool setBaudRate(BaudRate baudRate) { return setBaudRate(_destinationAddress, baudRate); }
 
       /**
        * @brief Change the baud rate of the JSY.
@@ -419,7 +419,7 @@ namespace Mycila {
        * @return true if the baud rate was changed
        * @note This function is blocking until the change is confirmed or the timeout is reached.
        */
-      bool setBaudRate(const uint8_t address, const BaudRate baudRate);
+      bool setBaudRate(uint8_t address, BaudRate baudRate);
 
 #ifdef MYCILA_JSON_SUPPORT
       void toJson(const JsonObject& root) const;
@@ -477,17 +477,19 @@ namespace Mycila {
         READ_ERROR_ADDRESS,
       };
 
-      bool _set(const uint8_t address, const uint8_t newAddress, const BaudRate newBaudRate);
+      bool _set(uint8_t address, uint8_t newAddress, BaudRate newBaudRate);
 
-      bool _canRead(const uint8_t address, BaudRate baudRate);
-      ReadResult _timedRead(const uint8_t expectedAddress, const size_t expectedLen, const BaudRate baudRate);
-      void _send(const uint8_t address, const size_t len);
+      bool _canRead(uint8_t address, BaudRate baudRate);
+      ReadResult _timedRead(uint8_t expectedAddress, size_t expectedLen, BaudRate baudRate);
+      void _send(uint8_t address, size_t len);
       size_t _drop();
       void _openSerial(BaudRate baudRate);
-      BaudRate _detectBauds(const uint8_t address);
+      BaudRate _detectBauds(uint8_t address);
 
-      uint16_t _crc16(const uint8_t* buffer, size_t len);
-
+      static uint16_t _crc16(const uint8_t* buffer, size_t len);
+      static uint8_t _register8(const uint8_t* buffer, uint16_t registerStart, uint16_t registerSize, uint16_t registerAddress, uint8_t index = 0);
+      static uint16_t _register16(const uint8_t* buffer, uint16_t registerStart, uint16_t registerSize, uint16_t registerAddress, uint8_t index = 0);
+      static uint32_t _register32(const uint8_t* buffer, uint16_t registerStart, uint16_t registerSize, uint16_t registerAddress, uint8_t index = 0);
       static void _jsyTask(void* pvParameters);
   };
 } // namespace Mycila
