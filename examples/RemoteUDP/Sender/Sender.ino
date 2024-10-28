@@ -603,8 +603,8 @@ void setup() {
     }
   });
   jsy.begin(MYCILA_JSY_SERIAL, MYCILA_JSY_RX, MYCILA_JSY_TX);
-  if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSY::BaudRate::BAUD_38400)
-    jsy.setBaudRate(Mycila::JSY::BaudRate::BAUD_38400);
+  if (jsy.isEnabled() && jsy.getBaudRate() != jsy.getMaxAvailableBaudRate())
+    jsy.setBaudRate(jsy.getMaxAvailableBaudRate());
 
   jsyModel = jsy.getModel();
 
