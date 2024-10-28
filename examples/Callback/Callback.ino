@@ -6,6 +6,8 @@
 #endif
 #if SOC_UART_HP_NUM < 3
   #define Serial2 Serial1
+  #define RX2 RX1
+  #define TX2 TX1
 #endif
 
 // Pin: RX (ESP32) -> TX (JSY)
@@ -47,7 +49,7 @@ void setup() {
     }
   });
 
-  jsy.begin(Serial2, 16, 17);
+  jsy.begin(Serial2, RX2, TX2);
 
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);
@@ -66,7 +68,7 @@ void setup() {
 
     jsy.setBaudRate(rates[i]);
     jsy.end();
-    jsy.begin(Serial2, 16, 17);
+    jsy.begin(Serial2, RX2, TX2);
 
     Serial.printf("\njsy.read() at %d bauds:\n", static_cast<int>(rates[i]));
 

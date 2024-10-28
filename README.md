@@ -136,13 +136,13 @@ There is a getter for each metric.
 
 ```c++
 // Will try to detect the baud rate
-jsy.begin(Serial2, 16, 17);
+jsy.begin(Serial2, RX2, TX2);
 
 // equivalent as above
-jsy.begin(Serial2, 16, 17, Mycila::JSY::BaudRate::UNKNOWN);
+jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN);
 
 // Skips baud rate detection and use the given baud rate
-jsy.begin(Serial2, 16, 17, Mycila::JSY::BaudRate::BAUD_38400);
+jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::BAUD_38400);
 ```
 
 ### Blocking mode
@@ -151,7 +151,7 @@ jsy.begin(Serial2, 16, 17, Mycila::JSY::BaudRate::BAUD_38400);
 Mycila::JSY jsy;
 
 void setup() {
-  jsy.begin(Serial2, 16, 17);
+  jsy.begin(Serial2, RX2, TX2);
 }
 
 void loop() {
@@ -169,7 +169,7 @@ void loop() {
 Mycila::JSY jsy;
 
 void setup() {
-  jsy.begin(Serial2, 16, 17, true, 0);
+  jsy.begin(Serial2, RX2, TX2, true, 0);
 }
 
 void loop() {

@@ -8,6 +8,8 @@
 #endif
 #if SOC_UART_HP_NUM < 3
   #define Serial2 Serial1
+  #define RX2 RX1
+  #define TX2 TX1
 #endif
 
 void setup() {
@@ -19,10 +21,10 @@ void setup() {
   Mycila::JSY jsy;
 
   // With auto-detection
-  jsy.begin(Serial2, 16, 17);
+  jsy.begin(Serial2, RX2, TX2);
 
   // By forcing a baud rate you know you have set to JSY
-  // jsy.begin(Serial2, 16, 17, Mycila::JSY::BaudRate::BAUD_38400);
+  // jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::BAUD_38400);
 
   // Try change speed until success
   uint32_t start = millis();

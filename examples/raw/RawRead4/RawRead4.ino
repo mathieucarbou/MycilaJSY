@@ -9,7 +9,7 @@ void setup() {
   while (!Serial)
     yield();
 
-  Serial2.begin(38400, SERIAL_8N1, 16, 17);
+  Serial2.begin(38400, SERIAL_8N1, RX2, TX2);
 }
 
 void loop() {

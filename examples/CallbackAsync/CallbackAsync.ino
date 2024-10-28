@@ -7,6 +7,8 @@
 #endif
 #if SOC_UART_HP_NUM < 3
   #define Serial2 Serial1
+  #define RX2 RX1
+  #define TX2 TX1
 #endif
 
 // Pin: Relay  (ESP32)
@@ -26,14 +28,14 @@ void setup() {
     }
   });
 
-  jsy.begin(Serial2, 16, 17);
+  jsy.begin(Serial2, RX2, TX2);
   if (jsy.getBaudRate() != Mycila::JSY::BaudRate::BAUD_38400) {
     jsy.setBaudRate(Mycila::JSY::BaudRate::BAUD_38400);
   }
   jsy.end();
 
   // read JSY on pins 17 (JSY RX / Serial TX) and 16 (JSY TX / Serial RX)
-  jsy.begin(Serial2, 16, 17, true, 0, 4096);
+  jsy.begin(Serial2, RX2, TX2, true, 0, 4096);
 
   pinMode(RELAY_PIN, OUTPUT);
 }

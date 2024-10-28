@@ -7,6 +7,8 @@
 #endif
 #if SOC_UART_HP_NUM < 3
   #define Serial2 Serial1
+  #define RX2 RX1
+  #define TX2 TX1
 #endif
 
 Mycila::JSY::BaudRate target = Mycila::JSY::BaudRate::BAUD_38400;
@@ -19,7 +21,7 @@ void setup() {
     continue;
 
   // read JSY on pins 17 (JSY RX / Serial TX) and 16 (JSY TX / Serial RX)// read JSY on pins 17 (JSY RX) and 16 (JSY TX)
-  jsy.begin(Serial2, 16, 17);
+  jsy.begin(Serial2, RX2, TX2);
 
   if (jsy.isEnabled()) {
     if (jsy.setBaudRate(target)) {
