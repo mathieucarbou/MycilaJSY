@@ -72,12 +72,15 @@
   #define MYCILA_ADMIN_PASSWORD ""
 #endif
 
+#ifndef MYCILA_UDP_PORT
+  #define MYCILA_UDP_PORT 53964
+#endif
+
 #define MYCILA_ADMIN_USERNAME "admin"
 #define MYCILA_APP_NAME       "JSY Remote UDP Sender"
 #define MYCILA_GRAPH_POINTS   120
 // #define MYCILA_UDP_MSG_TYPE_JSY_DATA 0x01 // old json format
 #define MYCILA_UDP_MSG_TYPE_JSY_DATA 0x02 // supports all JSY models
-#define MYCILA_UDP_PORT              53964
 #define MYCILA_UDP_SEND_INTERVAL_MS  200
 #define MYCILA_UDP_SEND_RATE_WINDOW  50
 #define TAG                          "JSY-UDP"

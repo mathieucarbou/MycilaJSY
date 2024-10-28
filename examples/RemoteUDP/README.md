@@ -124,10 +124,14 @@ And follow the instructions to flash the firmware shown at the end of the build.
 
 `esp32dev` can be replaced with any board type
 
-If you need to specify your own pin, you can do:
+If you need to specify your own pin, or change the port, you can do:
 
 ```bash
-PIO_BOARD=esp32dev PLATFORMIO_BUILD_SRC_FLAGS="-DMYCILA_JSY_SERIAL=Serial2 -DMYCILA_JSY_RX=4 -DMYCILA_JSY_TX=25" pio run -e ci -d examples/RemoteUDP/Sender
+# use default mapping in code
+PIO_BOARD=esp32dev PLATFORMIO_BUILD_SRC_FLAGS="-DMYCILA_JSY_SERIAL=Serial2 -DMYCILA_JSY_RX=RX2 -DMYCILA_JSY_TX=TX2 -DMYCILA_UDP_PORT=53964" pio run -e ci -d examples/RemoteUDP/Sender
+
+# use custom mapping in code
+PIO_BOARD=esp32dev PLATFORMIO_BUILD_SRC_FLAGS="-DMYCILA_JSY_SERIAL=Serial2 -DMYCILA_JSY_RX=4 -DMYCILA_JSY_TX=25 -DMYCILA_UDP_PORT=53964" pio run -e ci -d examples/RemoteUDP/Sender
 ```
 
 ## Usage
