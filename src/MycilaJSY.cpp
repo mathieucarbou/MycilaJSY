@@ -4,6 +4,8 @@
  */
 #include "MycilaJSY.h"
 
+#include <algorithm>
+
 #ifdef MYCILA_LOGGER_SUPPORT
   #include <MycilaLogger.h>
 extern Mycila::Logger logger;
