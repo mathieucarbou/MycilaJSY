@@ -461,12 +461,15 @@ namespace Mycila {
       TaskHandle_t _taskHandle;
       uint32_t _time = 0;
       uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS;
-      uint8_t _buffer[64];
       uint8_t _destinationAddress = MYCILA_JSY_ADDRESS_BROADCAST;
       uint8_t _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
       BaudRate _baudRate = BaudRate::UNKNOWN;
       bool _enabled = false;
       uint16_t _model = MYCILA_JSY_MK_UNKNOWN;
+      // buffer to read/write data
+      // biggest need is for JSY-MK-333: 84 registers of 2 bytes each + 5 bytes for the response: 173 bytes
+      // we use 11 blocks of 16 bytes: 176 bytes
+      uint8_t _buffer[176];
 
     private:
       enum class ReadResult {
@@ -488,8 +491,8 @@ namespace Mycila {
 
       static uint16_t _crc16(const uint8_t* buffer, size_t len);
       static uint8_t _register8(const uint8_t* buffer, uint16_t registerStart, uint16_t registerSize, uint16_t registerAddress, uint8_t index = 0);
-      static uint16_t _register16(const uint8_t* buffer, uint16_t registerStart, uint16_t registerSize, uint16_t registerAddress, uint8_t index = 0);
-      static uint32_t _register32(const uint8_t* buffer, uint16_t registerStart, uint16_t registerSize, uint16_t registerAddress, uint8_t index = 0);
+      static uint16_t _register16(const uint8_t* buffer, uint16_t registerStart, uint16_t registerSize, uint16_t registerAddress);
+      static uint32_t _register32(const uint8_t* buffer, uint16_t registerStart, uint16_t registerSize, uint16_t registerAddress);
       static void _jsyTask(void* pvParameters);
   };
 } // namespace Mycila
