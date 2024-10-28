@@ -33,6 +33,7 @@ void setup() {
   // jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::BAUD_9600);
   // jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::BAUD_19200);
   // jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::BAUD_38400);
+  jsy.setBaudRate(jsy.getMaxAvailableBaudRate());
 }
 
 void loop() {
@@ -46,5 +47,5 @@ void loop() {
   } else {
     Serial.printf("Failed to read JSY. Elapsed time: %" PRIu32 " ms\n", (uint32_t)(millis() - now));
   }
-  delay(1000);
+  delay(4000);
 }

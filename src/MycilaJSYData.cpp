@@ -5,6 +5,7 @@
 #include "MycilaJSY.h"
 
 void Mycila::JSY::Data::clear() {
+  std::unique_lock lock(_mutexData);
   address = MYCILA_JSY_ADDRESS_UNKNOWN;
   model = MYCILA_JSY_MK_UNKNOWN;
   frequency = NAN;
@@ -15,6 +16,8 @@ void Mycila::JSY::Data::clear() {
 }
 
 bool Mycila::JSY::Data::operator==(const Mycila::JSY::Data& other) const {
+  std::shared_lock lock(_mutexData);
+  std::shared_lock lockOther(other._mutexData);
   return address == other.address &&
          model == other.model &&
          (isnanf(frequency) ? isnanf(other.frequency) : frequency == other.frequency) &&
@@ -25,6 +28,8 @@ bool Mycila::JSY::Data::operator==(const Mycila::JSY::Data& other) const {
 }
 
 void Mycila::JSY::Data::operator=(const Mycila::JSY::Data& other) {
+  std::unique_lock lock(_mutexData);
+  std::shared_lock lockOther(other._mutexData);
   address = other.address;
   model = other.model;
   frequency = other.frequency;
@@ -36,6 +41,8 @@ void Mycila::JSY::Data::operator=(const Mycila::JSY::Data& other) {
 
 #ifdef MYCILA_JSON_SUPPORT
 void Mycila::JSY::Data::toJson(const JsonObject& root) const {
+  std::shared_lock lock(_mutexData);
+
   root["address"] = address;
   root["model"] = model;
   root["model_name"] = Mycila::JSY::getModelName(model);

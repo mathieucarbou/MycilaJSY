@@ -7,8 +7,8 @@
 #endif
 #if SOC_UART_HP_NUM < 3
   #define Serial2 Serial1
-  #define RX2 RX1
-  #define TX2 TX1
+  #define RX2     RX1
+  #define TX2     TX1
 #endif
 
 Mycila::JSY jsy;
@@ -22,22 +22,16 @@ void setup() {
   jsy.begin(Serial2, RX2, TX2, true);
 }
 
-Mycila::JSY::BaudRate target = Mycila::JSY::BaudRate::BAUD_38400;
+uint32_t lastTime = 0;
 
 void loop() {
-  if (!jsy.isEnabled()) {
-    delay(1000);
-    return;
+  if (millis() - lastTime > 3000) {
+    JsonDocument doc;
+    jsy.toJson(doc.to<JsonObject>());
+    serializeJsonPretty(doc, Serial);
+    Serial.println();
+    lastTime = millis();
   }
 
   delay(1000);
-
-  JsonDocument doc;
-  jsy.toJson(doc.to<JsonObject>());
-  serializeJsonPretty(doc, Serial);
-  Serial.println();
-
-  if (jsy.getBaudRate() != target) {
-    jsy.setBaudRate(target);
-  }
 }

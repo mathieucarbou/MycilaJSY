@@ -620,7 +620,7 @@ bool Mycila::JSY::read(const uint8_t address) {
   if (!_enabled)
     return false;
 
-  if (!_mutex.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
+  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
     LOGW(TAG, "Unable to read @ 0x%02X: Serial is busy!", address);
     return false;
   }
@@ -671,7 +671,7 @@ bool Mycila::JSY::read(const uint8_t address) {
   if (result == ReadResult::READ_TIMEOUT) {
     // reset live values in case of read timeout
     data.clear();
-    _mutex.unlock();
+    _mutexOp.unlock();
     if (_callback) {
       _callback(EventType::EVT_READ_TIMEOUT);
     }
@@ -681,7 +681,7 @@ bool Mycila::JSY::read(const uint8_t address) {
   if (result == ReadResult::READ_ERROR_COUNT || result == ReadResult::READ_ERROR_CRC) {
     // reset live values in case of read failure
     data.clear();
-    _mutex.unlock();
+    _mutexOp.unlock();
     if (_callback) {
       _callback(EventType::EVT_READ_ERROR);
     }
@@ -690,7 +690,7 @@ bool Mycila::JSY::read(const uint8_t address) {
 
   if (result == ReadResult::READ_ERROR_ADDRESS) {
     // we have set a destination address, but we read another device
-    _mutex.unlock();
+    _mutexOp.unlock();
     if (_callback) {
       _callback(EventType::EVT_READ_ERROR);
     }
@@ -876,7 +876,7 @@ bool Mycila::JSY::read(const uint8_t address) {
       parsed.aggregate.reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY_RETURNED) / 100.0;
 
       parsed.aggregate.current = parsed._metrics[0].current + parsed._metrics[1].current + parsed._metrics[2].current;
-      parsed.aggregate.voltage = parsed.aggregate.current == 0 ? NAN : parsed.aggregate.activePower / parsed.aggregate.current;
+      parsed.aggregate.voltage = parsed.aggregate.current == 0 ? NAN : parsed.aggregate.apparentPower / parsed.aggregate.current;
 
       break;
     }
@@ -892,7 +892,7 @@ bool Mycila::JSY::read(const uint8_t address) {
 
   _time = millis();
 
-  _mutex.unlock();
+  _mutexOp.unlock();
 
   if (_callback) {
     _callback(EventType::EVT_READ);
@@ -914,7 +914,7 @@ uint16_t Mycila::JSY::readModel(const uint8_t address) {
 
   LOGD(TAG, "readModel(0x%02X)", address);
 
-  if (!_mutex.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
+  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
     LOGW(TAG, "Unable to read model @ 0x%02X: Serial is busy!", address);
     return MYCILA_JSY_MK_UNKNOWN;
   }
@@ -928,13 +928,13 @@ uint16_t Mycila::JSY::readModel(const uint8_t address) {
   ReadResult result = _timedRead(address, JSY_RESPONSE_SIZE_READ_MODEL, _baudRate);
 
   if (result != ReadResult::READ_SUCCESS) {
-    _mutex.unlock();
+    _mutexOp.unlock();
     return MYCILA_JSY_MK_UNKNOWN;
   }
 
   uint16_t model = (_buffer[JSY_RESPONSE_DATA] << 8) + _buffer[JSY_RESPONSE_DATA + 1];
 
-  _mutex.unlock();
+  _mutexOp.unlock();
 
   return model;
 }
@@ -949,7 +949,7 @@ bool Mycila::JSY::resetEnergy(const uint8_t address) {
 
   LOGD(TAG, "resetEnergy(0x%02X)", address);
 
-  if (!_mutex.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
+  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
     LOGW(TAG, "Unable to reset @ 0x%02X: Serial is busy!", address);
     return false;
   }
@@ -962,7 +962,7 @@ bool Mycila::JSY::resetEnergy(const uint8_t address) {
   _send(address, JSY_REQUEST_RESET_ENERGY_LEN);
   ReadResult result = _timedRead(address, JSY_RESPONSE_SIZE_RESET_ENERGY, _baudRate);
 
-  _mutex.unlock();
+  _mutexOp.unlock();
 
   return result == ReadResult::READ_SUCCESS;
 }
@@ -1039,7 +1039,7 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
 
   LOGD(TAG, "set(0x%02X) address=0x%02X, bauds=%" PRIu32, address, newAddress, static_cast<uint32_t>(newBaudRate));
 
-  if (!_mutex.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
+  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
     LOGW(TAG, "Unable to set @ 0x%02X: Serial is busy!", address);
     return false;
   }
@@ -1083,13 +1083,13 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
 
   // unexpected error ?
   if (result != ReadResult::READ_SUCCESS && result != ReadResult::READ_ERROR_ADDRESS) {
-    _mutex.unlock();
+    _mutexOp.unlock();
     return false;
   }
 
   // response from unexpected address ?
   if (result == ReadResult::READ_ERROR_ADDRESS && _lastAddress != newAddress) {
-    _mutex.unlock();
+    _mutexOp.unlock();
     return false;
   }
 
@@ -1119,7 +1119,7 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
     }
   }
 
-  _mutex.unlock();
+  _mutexOp.unlock();
 
   return success;
 }

@@ -7,6 +7,7 @@
 #include <HardwareSerial.h>
 
 #include <mutex>
+#include <shared_mutex>
 
 #ifdef MYCILA_JSON_SUPPORT
   #include <ArduinoJson.h>
@@ -187,24 +188,24 @@ namespace Mycila {
            * @param phi The phase shift angle in radians (1 for resistive load)
            * @return The total harmonic distortion of current (THDi)
            */
-          float thdi(float phi = 1) const { return powerFactor == 0 ? NAN : sqrt(pow(cos(phi), 2) / pow(powerFactor, 2) - 1); }
+          float thdi(float phi = 1) const;
 
           /**
            * @brief Compute the resistance of the load in ohms (R = P / I^2).
            */
-          float resistance() const { return current == 0 ? NAN : abs(activePower / (current * current)); }
+          float resistance() const;
 
           /**
            * @brief Compute the dimmed voltage (V = P / I).
            * @note The dimmed voltage is the voltage that would be measured at the output of a TRIAC, SSR or voltage regulator device.
            */
-          float dimmedVoltage() const { return current == 0 ? NAN : abs(activePower / current); }
+          float dimmedVoltage() const;
 
           /**
            * @brief Compute the nominal power of the load in watts (P = V^2 / R).
            * @note The voltage is the nominal voltage measured by the JSY and R is the measured resistance of the load, which can be regulated by a TRIAC, SSR or voltage regulator.
            */
-          float nominalPower() const { return activePower == 0 ? NAN : abs(voltage * voltage * current * current / activePower); }
+          float nominalPower() const;
 
           // clear all values
           void clear();
@@ -266,6 +267,7 @@ namespace Mycila {
         private:
           friend class JSY;
           Metrics _metrics[3];
+          mutable std::shared_mutex _mutexData;
       };
 
       typedef std::function<void(EventType eventType)> Callback;
@@ -289,10 +291,10 @@ namespace Mycila {
        * @param serial The serial port to use
        * @param rxPin RX board pin connected to the TX of the JSY
        * @param txPin TX board pin connected to the RX of the JSY
-       * @param async If true, the JSY will be read in a separate task
-       * @param core The core to use for the async task
-       * @param stackSize The stack size of the async task
-       * @param pause Time in milliseconds to wait between each read in async mode
+       * @param async If true, the JSY will be read in a separate task (default: false)
+       * @param core The core to use for the async task (default: MYCILA_JSY_ASYNC_CORE)
+       * @param stackSize The stack size of the async task (default: MYCILA_JSY_ASYNC_STACK_SIZE)
+       * @param pause Time in milliseconds to wait between each read in async mode (default: MYCILA_JSY_ASYNC_READ_PAUSE_MS)
        * @note The baud rate is automatically detected.
        */
       void begin(HardwareSerial& serial, // NOLINT
@@ -311,10 +313,10 @@ namespace Mycila {
        * @param rxPin RX board pin connected to the TX of the JSY
        * @param txPin TX board pin connected to the RX of the JSY
        * @param baudRate The baud rate of the JSY. If set to BaudRate::UNKNOWN, the baud rate is automatically detected
-       * @param async If true, the JSY will be read in a separate task
-       * @param core The core to use for the async task
-       * @param stackSize The stack size of the async task
-       * @param pause Time in milliseconds to wait between each read in async mode
+       * @param async If true, the JSY will be read in a separate task (default: false)
+       * @param core The core to use for the async task (default: MYCILA_JSY_ASYNC_CORE)
+       * @param stackSize The stack size of the async task (default: MYCILA_JSY_ASYNC_STACK_SIZE)
+       * @param pause Time in milliseconds to wait between each read in async mode (default: MYCILA_JSY_ASYNC_READ_PAUSE_MS)
        */
       void begin(HardwareSerial& serial, // NOLINT
                  int8_t rxPin,
@@ -482,7 +484,7 @@ namespace Mycila {
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
       HardwareSerial* _serial = nullptr;
-      std::timed_mutex _mutex;
+      std::timed_mutex _mutexOp;
       TaskHandle_t _taskHandle;
       uint32_t _time = 0;
       uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS;

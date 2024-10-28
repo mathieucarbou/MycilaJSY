@@ -4,6 +4,19 @@
  */
 #include "MycilaJSY.h"
 
+float Mycila::JSY::Metrics::thdi(float phi) const {
+  if (powerFactor == 0)
+    return NAN;
+  const float cosPhi = phi == 1 ? 1 : cos(phi);
+  return sqrt((cosPhi * cosPhi) / (powerFactor * powerFactor) - 1);
+}
+
+float Mycila::JSY::Metrics::resistance() const { return current == 0 ? NAN : abs(activePower / (current * current)); }
+
+float Mycila::JSY::Metrics::dimmedVoltage() const { return current == 0 ? NAN : abs(activePower / current); }
+
+float Mycila::JSY::Metrics::nominalPower() const { return activePower == 0 ? NAN : abs(voltage * voltage * current * current / activePower); }
+
 void Mycila::JSY::Metrics::clear() {
   voltage = NAN;
   current = NAN;
@@ -19,7 +32,7 @@ void Mycila::JSY::Metrics::clear() {
   reactiveEnergyReturned = NAN;
   apparentEnergy = NAN;
 }
-// (isnanf(frequency) ? isnanf(other.frequency) : frequency == other.frequency) &&
+
 bool Mycila::JSY::Metrics::operator==(const Mycila::JSY::Metrics& other) const {
   return (isnanf(voltage) ? isnanf(other.voltage) : voltage == other.voltage) &&
          (isnanf(current) ? isnanf(other.current) : current == other.current) &&
@@ -37,16 +50,9 @@ bool Mycila::JSY::Metrics::operator==(const Mycila::JSY::Metrics& other) const {
 }
 
 Mycila::JSY::Metrics& Mycila::JSY::Metrics::operator+=(const Mycila::JSY::Metrics& other) {
-  // it works because:
-  // For JSY-MK-163: aggregate == single()
-  // For JSY-MK-194: aggregate == channel1() + channel2() and we have the same voltage for both channels
-  // For JSY-MK-333: aggregate is not calculated with +=
-  voltage = (voltage + other.voltage) / 2;
   current += other.current;
   activePower += other.activePower;
   apparentPower += other.apparentPower;
-  powerFactor = apparentPower == 0 ? NAN : abs(activePower / apparentPower);
-  reactivePower = sqrt(apparentPower * apparentPower - activePower * activePower);
   activeEnergy += other.activeEnergy;
   activeEnergyImported += other.activeEnergyImported;
   activeEnergyReturned += other.activeEnergyReturned;
@@ -54,6 +60,9 @@ Mycila::JSY::Metrics& Mycila::JSY::Metrics::operator+=(const Mycila::JSY::Metric
   reactiveEnergyImported += other.reactiveEnergyImported;
   reactiveEnergyReturned += other.reactiveEnergyReturned;
   apparentEnergy += other.apparentEnergy;
+  powerFactor = apparentPower == 0 ? NAN : abs(activePower / apparentPower);
+  reactivePower = sqrt(apparentPower * apparentPower - activePower * activePower);
+  voltage = current == 0 ? NAN : apparentPower / current;
   return *this;
 }
 
