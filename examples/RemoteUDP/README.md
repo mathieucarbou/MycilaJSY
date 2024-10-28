@@ -5,6 +5,7 @@
   - [Firmware First Time Installation](#firmware-first-time-installation)
   - [Firmware Update](#firmware-update)
 - [Wiring](#wiring)
+- [How to build your own version](#how-to-build-your-own-version)
 - [Usage](#usage)
 - [For developers](#for-developers)
   - [Compilation with PlatformIO](#compilation-with-platformio)
@@ -110,6 +111,24 @@ The default GPIO for `Serial2` are:
 | wipy3               |          4          |         25          |
 | tinypico            |          4          |         25          |
 | denky_d4            |          4          |         25          |
+
+## How to build your own version
+
+Run at the root of the project:
+
+```bash
+PIO_BOARD=esp32dev pio run -e ci -d examples/RemoteUDP/Sender
+```
+
+And follow the instructions to flash the firmware shown at the end of the build.
+
+`esp32dev` can be replaced with any board type
+
+If you need to specify your own pin, you can do:
+
+```bash
+PIO_BOARD=esp32dev PLATFORMIO_BUILD_SRC_FLAGS="-DMYCILA_JSY_SERIAL=Serial2 -DMYCILA_JSY_RX=4 -DMYCILA_JSY_TX=25" pio run -e ci -d examples/RemoteUDP/Sender
+```
 
 ## Usage
 

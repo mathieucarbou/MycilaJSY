@@ -5,9 +5,15 @@
 #endif
 
 #if SOC_UART_HP_NUM < 3
-  #define Serial2 Serial1
-  #define RX2     RX1
-  #define TX2     TX1
+  #ifndef Serial2
+    #define Serial2 Serial1
+  #endif
+  #ifndef RX2
+    #define RX2 RX1
+  #endif
+  #ifndef TX2
+    #define TX2 TX1
+  #endif
 #endif
 
 #ifndef CONFIG_ASYNC_TCP_MAX_ACK_TIME
