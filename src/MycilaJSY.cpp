@@ -787,6 +787,7 @@ bool Mycila::JSY::read(const uint8_t address) {
 
       parsed.aggregate = parsed._metrics[0];
       parsed.aggregate += parsed._metrics[1];
+      parsed.aggregate.voltage = max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);
 
       break;
     }

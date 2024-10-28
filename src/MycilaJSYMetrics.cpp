@@ -50,6 +50,7 @@ bool Mycila::JSY::Metrics::operator==(const Mycila::JSY::Metrics& other) const {
 }
 
 Mycila::JSY::Metrics& Mycila::JSY::Metrics::operator+=(const Mycila::JSY::Metrics& other) {
+  // voltage is not aggregated
   current += other.current;
   activePower += other.activePower;
   apparentPower += other.apparentPower;
@@ -62,7 +63,6 @@ Mycila::JSY::Metrics& Mycila::JSY::Metrics::operator+=(const Mycila::JSY::Metric
   apparentEnergy += other.apparentEnergy;
   powerFactor = apparentPower == 0 ? NAN : abs(activePower / apparentPower);
   reactivePower = sqrt(apparentPower * apparentPower - activePower * activePower);
-  voltage = current == 0 ? NAN : apparentPower / current;
   return *this;
 }
 
