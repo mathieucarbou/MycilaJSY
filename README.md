@@ -34,10 +34,10 @@ Arduino / ESP32 library for the **JSY-MK-194**, **JSY-MK-163**, **JSY-MK-333** f
 
 ## Supported models
 
-- JSY-MK-163T _(experimental)_
+- JSY-MK-163T
 - JSY-MK-194T
 - JSY-MK-194G
-- JSY-MK-333 _(experimental)_
+- JSY-MK-333
 
 ## Features
 

@@ -10,6 +10,13 @@
   - [Compilation with PlatformIO](#compilation-with-platformio)
   - [Compilation with Arduino IDE](#compilation-with-arduino-ide)
 
+## Supported models
+
+- JSY-MK-163T
+- JSY-MK-194T
+- JSY-MK-194G
+- JSY-MK-333
+
 The JSY can be used connected to an ESP32 to send the JSY data several times per second to a remote server through UDP.
 Both devices needs to be connected to the same WiFi network and UDP packets must be allowed.
 
