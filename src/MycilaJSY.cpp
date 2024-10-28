@@ -712,16 +712,16 @@ bool Mycila::JSY::read(const uint8_t address) {
 
       // frequency
 
-      parsed.frequency = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_FREQUENCY);
+      parsed.frequency = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_FREQUENCY) / 100.0;
 
       // single channel
 
       parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_VOLTAGE) / 100.0;
       parsed._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_CURRENT) / 100.0;
-      parsed._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_POWER) / (sign == 1 ? -1.0 : 1.0);
-      parsed._metrics[0].activeEnergyImported = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_ENERGY) / 3200.0;
+      parsed._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_POWER) / (sign ? -1.0 : 1.0);
+      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_ENERGY) / 3200.0;
       parsed._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_POWER_FACTOR) / 1000.0;
-      parsed._metrics[0].activeEnergyReturned = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_ENERGY_RETURNED) / 3200.0;
+      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ENERGY_RETURNED) / 3200.0;
 
       // calculate remaining metrics
 
