@@ -228,7 +228,8 @@ namespace Mycila {
         public:
           uint8_t address = MYCILA_JSY_ADDRESS_UNKNOWN; // device address
           uint16_t model = MYCILA_JSY_MK_UNKNOWN;       // device model
-          float frequency = 0;                          // Hz
+
+          float frequency = NAN; // Hz
 
           // For JSY-MK-163: aggregate == single()
           // For JSY-MK-194: aggregate == channel1() + channel2()
