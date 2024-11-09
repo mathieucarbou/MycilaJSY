@@ -54,6 +54,15 @@ Arduino / ESP32 library for the **JSY-MK-194**, **JSY-MK-163**, **JSY-MK-333** f
 
 Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
 
+### Zero-Cross detection
+
+The JSY-MK-194G has a zero-cross detection feature which signals on the Zx pin when the current crosses zero.
+This feature is really useful to create Solr Routers like [YaSolR](https://yasolr.carbou.me).
+
+The [MycilaPulseAnalyzer](https://github.com/mathieucarbou/MycilaPulseAnalyzer) library supports many ZC detection methods including the JSY-MK-194G.
+
+[![](https://mathieu.carbou.me/MycilaPulseAnalyzer/assets/Oscillo_JSY-MK-194G_ZC_5ms.png)](https://mathieu.carbou.me/MycilaPulseAnalyzer/assets/Oscillo_JSY-MK-194G_ZC_5ms.png)
+
 ## Metrics
 
 Metric depend on the model and they are all read.
