@@ -489,6 +489,11 @@ void setup() {
     request->send(response);
   });
 
+  webServer.on("/api/restart", HTTP_GET, [](AsyncWebServerRequest* request) {
+    request->send(200);
+    ESP.restart();
+  });
+
   version.set(MYCILA_JSY_VERSION);
 
   restart.attachCallback([](int32_t value) { restartTask.resume(); });
