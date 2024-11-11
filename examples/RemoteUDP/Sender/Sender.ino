@@ -745,11 +745,15 @@ void setup() {
   espConnect.begin(hostname.c_str(), ssid.c_str(), MYCILA_ADMIN_PASSWORD);
 
   // start tasks
-  assert(coreTaskManager.asyncStart(1024 * 4, 1, 1, 100, true)); // NOLINT
-  assert(jsyTaskManager.asyncStart(1024 * 3, 1, 1, 100, true));  // NOLINT
+  // assert(coreTaskManager.asyncStart(1024 * 4, 1, 1, 100, true)); // NOLINT
+  // assert(jsyTaskManager.asyncStart(1024 * 3, 1, 1, 100, true));  // NOLINT
 
   logger.info(TAG, "Started " MYCILA_APP_NAME "!");
 }
 
 // Destroy default Arduino async task
-void loop() { vTaskDelete(NULL); }
+void loop() { 
+  // vTaskDelete(NULL); 
+  coreTaskManager.loop();
+  jsyTaskManager.loop();
+}
