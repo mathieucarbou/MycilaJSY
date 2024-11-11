@@ -746,7 +746,7 @@ void setup() {
 
   // start tasks
   assert(coreTaskManager.asyncStart(1024 * 4, 1, 1, 100, true)); // NOLINT
-  assert(jsyTaskManager.asyncStart(1024 * 3, 1, 0, 100, true));  // NOLINT
+  assert(jsyTaskManager.asyncStart(1024 * 3, 1, 1, 100, true));  // NOLINT
 
   logger.info(TAG, "Started " MYCILA_APP_NAME "!");
 }
