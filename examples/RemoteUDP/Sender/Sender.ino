@@ -429,9 +429,9 @@ void setup() {
 #endif
 
   // hostname
-  hostname = "jsy-" + Mycila::System::getChipIDStr();
+  hostname = String("jsy-") + Mycila::System::getChipIDStr().c_str();
   hostname.toLowerCase();
-  ssid = "JSY-" + Mycila::System::getChipIDStr();
+  ssid = String("JSY-") + Mycila::System::getChipIDStr().c_str();
 
   // logging
   esp_log_level_set("*", static_cast<esp_log_level_t>(ARDUHAL_LOG_LEVEL_DEBUG));
