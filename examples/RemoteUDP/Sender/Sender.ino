@@ -529,7 +529,7 @@ void setup() {
       logger.debug(TAG, "Dashboard refresh requested");
       jsyModelCard.update(jsyModel == MYCILA_JSY_MK_UNKNOWN ? "Unknown" : jsy.getModelName());
       networkAPMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::AP).c_str());
-      networkEthMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH).isEmpty() ? "N/A" : espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH).c_str());
+      networkEthMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH).empty() ? "N/A" : espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH).c_str());
       networkHostname.set(hostname.c_str());
       networkWiFiMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::STA).c_str());
     }
