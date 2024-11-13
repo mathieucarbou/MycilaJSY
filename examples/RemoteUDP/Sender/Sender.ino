@@ -104,6 +104,8 @@
 #include <MycilaTime.h>           // https://github.com/mathieucarbou/MycilaUtilities
 #include <MycilaWebSerial.h>      // https://github.com/mathieucarbou/MycilaWebSerial
 
+#include <string>
+
 AsyncUDP udp;
 AsyncWebServer webServer(80);
 Mycila::ESPConnect espConnect(webServer);
@@ -220,8 +222,8 @@ int power1HistoryY[MYCILA_GRAPH_POINTS] = {0};
 int power2HistoryY[MYCILA_GRAPH_POINTS] = {0};
 int power3HistoryY[MYCILA_GRAPH_POINTS] = {0};
 
-String hostname;
-String ssid;
+std::string hostname;
+std::string ssid;
 
 bool udpSendEnabled = true;
 uint16_t jsyModel = MYCILA_JSY_MK_UNKNOWN;
@@ -276,8 +278,8 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   networkEthIP.set(espConnect.getIPAddress(Mycila::ESPConnect::Mode::ETH).toString().c_str());
   networkInterface.set(mode == Mycila::ESPConnect::Mode::AP ? "AP" : (mode == Mycila::ESPConnect::Mode::STA ? "WiFi" : (mode == Mycila::ESPConnect::Mode::ETH ? "Ethernet" : "")));
   networkWiFiIP.set(espConnect.getIPAddress(Mycila::ESPConnect::Mode::STA).toString().c_str());
-  networkWiFiRSSI.set((String(espConnect.getWiFiRSSI()) + " dBm").c_str());
-  networkWiFiSignal.set((String(espConnect.getWiFiSignalQuality()) + " %").c_str());
+  networkWiFiRSSI.set((std::to_string(espConnect.getWiFiRSSI()) + " dBm").c_str());
+  networkWiFiSignal.set((std::to_string(espConnect.getWiFiSignalQuality()) + " %").c_str());
   networkWiFiSSID.set(espConnect.getWiFiSSID().c_str());
   uptime.set(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()).c_str());
 
@@ -429,9 +431,9 @@ void setup() {
 #endif
 
   // hostname
-  hostname = String("jsy-") + Mycila::System::getChipIDStr().c_str();
-  hostname.toLowerCase();
-  ssid = String("JSY-") + Mycila::System::getChipIDStr().c_str();
+  hostname = std::string("jsy-") + Mycila::System::getChipIDStr();
+  std::transform(hostname.begin(), hostname.end(), hostname.begin(), ::tolower);
+  ssid = std::string("JSY-") + Mycila::System::getChipIDStr();
 
   // logging
   esp_log_level_set("*", static_cast<esp_log_level_t>(ARDUHAL_LOG_LEVEL_DEBUG));
