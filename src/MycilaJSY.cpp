@@ -583,17 +583,17 @@ void Mycila::JSY::begin(HardwareSerial& serial,
   }
 
   _enabled = true;
-
   _model = readModel(_destinationAddress);
-  LOGI(TAG, "Detected JSY-MK-%s @ 0x%02X with speed %" PRIu32 " bauds", String(_model, HEX).c_str(), _lastAddress, static_cast<uint32_t>(_baudRate));
 
   if (_model != MYCILA_JSY_MK_194 && _model != MYCILA_JSY_MK_163 && _model != MYCILA_JSY_MK_333) {
-    LOGE(TAG, "Unsupported JSY model: JSY-MK-%s", String(_model, HEX).c_str());
+    LOGE(TAG, "Unsupported JSY model: JSY-MK-%X", _model);
     // unsupported
     _enabled = false;
     _serial->end();
     return;
   }
+
+  LOGI(TAG, "Detected JSY-MK-%X @ 0x%02X with speed %" PRIu32 " bauds", _model, _lastAddress, static_cast<uint32_t>(_baudRate));
 
   assert(!async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, MYCILA_JSY_ASYNC_PRIORITY, &_taskHandle, core) == pdPASS);
 }
