@@ -76,6 +76,8 @@
   #define MYCILA_UDP_PORT 53964
 #endif
 
+#define DASH_USE_STL_STRING 1
+
 #define MYCILA_ADMIN_USERNAME "admin"
 #define MYCILA_APP_NAME       "JSY Remote UDP Sender"
 #define MYCILA_GRAPH_POINTS   120
@@ -278,10 +280,10 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   networkEthIP.set(espConnect.getIPAddress(Mycila::ESPConnect::Mode::ETH).toString().c_str());
   networkInterface.set(mode == Mycila::ESPConnect::Mode::AP ? "AP" : (mode == Mycila::ESPConnect::Mode::STA ? "WiFi" : (mode == Mycila::ESPConnect::Mode::ETH ? "Ethernet" : "")));
   networkWiFiIP.set(espConnect.getIPAddress(Mycila::ESPConnect::Mode::STA).toString().c_str());
-  networkWiFiRSSI.set((std::to_string(espConnect.getWiFiRSSI()) + " dBm").c_str());
-  networkWiFiSignal.set((std::to_string(espConnect.getWiFiSignalQuality()) + " %").c_str());
-  networkWiFiSSID.set(espConnect.getWiFiSSID().c_str());
-  uptime.set(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()).c_str());
+  networkWiFiRSSI.set((std::to_string(espConnect.getWiFiRSSI()) + " dBm"));
+  networkWiFiSignal.set((std::to_string(espConnect.getWiFiSignalQuality()) + " %"));
+  networkWiFiSSID.set(espConnect.getWiFiSSID());
+  uptime.set(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()));
 
   messageRateCard.update(messageRate);
   dataRateCard.update(static_cast<int>(dataRate));
@@ -530,10 +532,10 @@ void setup() {
     if (!changes_only) {
       logger.debug(TAG, "Dashboard refresh requested");
       jsyModelCard.update(jsyModel == MYCILA_JSY_MK_UNKNOWN ? "Unknown" : jsy.getModelName());
-      networkAPMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::AP).c_str());
-      networkEthMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH).empty() ? "N/A" : espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH).c_str());
-      networkHostname.set(hostname.c_str());
-      networkWiFiMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::STA).c_str());
+      networkAPMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::AP));
+      networkEthMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH).empty() ? std::string("N/A") : espConnect.getMACAddress(Mycila::ESPConnect::Mode::ETH));
+      networkHostname.set(hostname);
+      networkWiFiMAC.set(espConnect.getMACAddress(Mycila::ESPConnect::Mode::STA));
     }
   });
   dashboard.setAuthentication(MYCILA_ADMIN_USERNAME, MYCILA_ADMIN_PASSWORD);
