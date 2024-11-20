@@ -50,44 +50,114 @@ extern Mycila::Logger logger;
 #define JSY_REGISTER_ID_AND_BAUDS 0x0004 // RW - ID (high byte) and Bauds Rate (low byte)
 
 ///////////////////////////////////////////////////////////////////////////////
+// JSY-MK-1031 REGISTERS
+///////////////////////////////////////////////////////////////////////////////
+
+#define JSY_1031_REGISTER_VOLTAGE        0x0048 // RO
+#define JSY_1031_REGISTER_CURRENT        0x0049 // RO, + 0x004A
+#define JSY_1031_REGISTER_ACTIVE_POWER   0x004B // RO, + 0x004C
+#define JSY_1031_REGISTER_ACTIVE_ENERGY  0x004D // RO, + 0x004E
+#define JSY_1031_REGISTER_POWER_FACTOR   0x004F // RO
+#define JSY_1031_REGISTER_FREQUENCY      0x0050 // RO
+#define JSY_1031_REGISTER_CO2            0x0051 // RO, + 0x0052
+#define JSY_1031_REGISTER_RESERVED       0x0053 // RO, + 0x0054, + 0x0055, + 0x0056
+#define JSY_1031_REGISTER_APPARENT_POWER 0x0057 // RO. + 0x0058
+#define JSY_1031_REGISTER_REACTIVE_POWER 0x0059 // RO, + 0x005A
+#define JSY_1031_REGISTER_PHASE_ANGLE    0x005B // RO
+
+#define JSY_1031_REGISTER_LEN   2  // 2 bytes per register
+#define JSY_1031_REGISTER_COUNT 19 // 19 registers
+#define JSY_1031_REGISTER_START JSY_1031_REGISTER_VOLTAGE
+
+///////////////////////////////////////////////////////////////////////////////
 // JSY-MK-163 REGISTERS
 ///////////////////////////////////////////////////////////////////////////////
 
-#define JSY_163_REGISTER_VOLTAGE         0x0048 // RO
-#define JSY_163_REGISTER_CURRENT         0x0049 // RO
-#define JSY_163_REGISTER_ACTIVE_POWER    0x004A // RO
-#define JSY_163_REGISTER_ACTIVE_ENERGY   0x004B // RO, + 0x004C
-#define JSY_163_REGISTER_POWER_FACTOR    0x004D // RO
-#define JSY_163_REGISTER_ENERGY_RETURNED 0x004E // RO, + 0x004F
-#define JSY_163_REGISTER_POWER_SIGN      0x0050 // RO
-#define JSY_163_REGISTER_FREQUENCY       0x0051 // RO
+#define JSY_163_REGISTER_VOLTAGE                0x0048 // RO
+#define JSY_163_REGISTER_CURRENT                0x0049 // RO
+#define JSY_163_REGISTER_ACTIVE_POWER           0x004A // RO
+#define JSY_163_REGISTER_ACTIVE_ENERGY_IMPORTED 0x004B // RO, + 0x004C
+#define JSY_163_REGISTER_POWER_FACTOR           0x004D // RO
+#define JSY_163_REGISTER_ACTIVE_ENERGY_RETURNED 0x004E // RO, + 0x004F
+#define JSY_163_REGISTER_ACTIVE_POWER_SIGN      0x0050 // RO
+#define JSY_163_REGISTER_FREQUENCY              0x0051 // RO
 
 #define JSY_163_REGISTER_LEN   2  // 2 bytes per register
 #define JSY_163_REGISTER_COUNT 10 // 10 registers
 #define JSY_163_REGISTER_START JSY_163_REGISTER_VOLTAGE
 
 ///////////////////////////////////////////////////////////////////////////////
+// JSY-MK-193 REGISTERS
+///////////////////////////////////////////////////////////////////////////////
+
+#define JSY_193_REGISTER_CH1_VOLTAGE                0x0100 // RO
+#define JSY_193_REGISTER_CH1_CURRENT                0x0101 // RO
+#define JSY_193_REGISTER_CH1_ACTIVE_POWER           0x0102 // RO
+#define JSY_193_REGISTER_CH1_ACTIVE_POWER_SIGN      0x0103 // RO
+#define JSY_193_REGISTER_CH1_ACTIVE_ENERGY_POSITIVE 0x0104 // RO, + 0x0105
+#define JSY_193_REGISTER_CH1_ACTIVE_ENERGY_NEGATIVE 0x0106 // RO, + 0x0107
+#define JSY_193_REGISTER_CH1_POWER_FACTOR           0x0108 // RO
+#define JSY_193_REGISTER_CH1_FREQUENCY              0x0109 // RO
+#define JSY_193_REGISTER_CH2_VOLTAGE                0x010A // RO
+#define JSY_193_REGISTER_CH2_CURRENT                0x010B // RO
+#define JSY_193_REGISTER_CH2_ACTIVE_POWER           0x010C // RO
+#define JSY_193_REGISTER_CH2_ACTIVE_POWER_SIGN      0x010D // RO
+#define JSY_193_REGISTER_CH2_ACTIVE_ENERGY_POSITIVE 0x010E // RO, + 0x010F
+#define JSY_193_REGISTER_CH2_ACTIVE_ENERGY_NEGATIVE 0x0110 // RO, + 0x0111
+#define JSY_193_REGISTER_CH2_POWER_FACTOR           0x0112 // RO
+#define JSY_193_REGISTER_CH2_FREQUENCY              0x0113 // RO
+
+#define JSY_193_REGISTER_LEN   2  // 2 bytes per register
+#define JSY_193_REGISTER_COUNT 20 // 20 registers
+#define JSY_193_REGISTER_START JSY_193_REGISTER_CH1_VOLTAGE
+
+///////////////////////////////////////////////////////////////////////////////
 // JSY-MK-194 REGISTERS
 ///////////////////////////////////////////////////////////////////////////////
 
-#define JSY_194_REGISTER_CH1_VOLTAGE         0x0048 // RO
-#define JSY_194_REGISTER_CH1_CURRENT         0x0049 // RO
-#define JSY_194_REGISTER_CH1_ACTIVE_POWER    0x004A // RO
-#define JSY_194_REGISTER_CH1_ACTIVE_ENERGY   0x004B // RO
-#define JSY_194_REGISTER_CH1_POWER_FACTOR    0x004C // RO
-#define JSY_194_REGISTER_CH1_ENERGY_RETURNED 0x004D // RO
-#define JSY_194_REGISTER_POWER_SIGN          0x004E // RO
-#define JSY_194_REGISTER_FREQUENCY           0x004F // RO
-#define JSY_194_REGISTER_CH2_VOLTAGE         0x0050 // RO
-#define JSY_194_REGISTER_CH2_CURRENT         0x0051 // RO
-#define JSY_194_REGISTER_CH2_ACTIVE_POWER    0x0052 // RO
-#define JSY_194_REGISTER_CH2_ACTIVE_ENERGY   0x0053 // RO
-#define JSY_194_REGISTER_CH2_POWER_FACTOR    0x0054 // RO
-#define JSY_194_REGISTER_CH2_ENERGY_RETURNED 0x0055 // RO
+#define JSY_194_REGISTER_CH1_VOLTAGE                0x0048 // RO
+#define JSY_194_REGISTER_CH1_CURRENT                0x0049 // RO
+#define JSY_194_REGISTER_CH1_ACTIVE_POWER           0x004A // RO
+#define JSY_194_REGISTER_CH1_ACTIVE_ENERGY_IMPORTED 0x004B // RO
+#define JSY_194_REGISTER_CH1_POWER_FACTOR           0x004C // RO
+#define JSY_194_REGISTER_CH1_ACTIVE_ENERGY_RETURNED 0x004D // RO
+#define JSY_194_REGISTER_ACTIVE_POWER_SIGNS         0x004E // RO
+#define JSY_194_REGISTER_FREQUENCY                  0x004F // RO
+#define JSY_194_REGISTER_CH2_VOLTAGE                0x0050 // RO
+#define JSY_194_REGISTER_CH2_CURRENT                0x0051 // RO
+#define JSY_194_REGISTER_CH2_ACTIVE_POWER           0x0052 // RO
+#define JSY_194_REGISTER_CH2_ACTIVE_ENERGY_IMPORTED 0x0053 // RO
+#define JSY_194_REGISTER_CH2_POWER_FACTOR           0x0054 // RO
+#define JSY_194_REGISTER_CH2_ACTIVE_ENERGY_RETURNED 0x0055 // RO
 
 #define JSY_194_REGISTER_LEN   4  // 4 bytes per register
 #define JSY_194_REGISTER_COUNT 14 // 14 registers
 #define JSY_194_REGISTER_START JSY_194_REGISTER_CH1_VOLTAGE
+
+///////////////////////////////////////////////////////////////////////////////
+// JSY-MK-22x REGISTERS (227, 229)
+///////////////////////////////////////////////////////////////////////////////
+
+#define JSY_22x_REGISTER_VOLTAGE                  0x0100 // RO, + 0x0101
+#define JSY_22x_REGISTER_CURRENT                  0x0102 // RO, + 0x0103
+#define JSY_22x_REGISTER_ACTIVE_POWER             0x0104 // RO, + 0x0105
+#define JSY_22x_REGISTER_REACTIVE_POWER           0x0106 // RO, + 0x0107
+#define JSY_22x_REGISTER_APPARENT_POWER           0x0108 // RO, + 0x0109
+#define JSY_22x_REGISTER_POWER_FACTOR             0x010A // RO, + 0x010B
+#define JSY_22x_REGISTER_FREQUENCY                0x010C // RO, + 0x010D
+#define JSY_22x_REGISTER_ACTIVE_ENERGY            0x010E // RO, + 0x010F
+#define JSY_22x_REGISTER_REACTIVE_ENERGY          0x0110 // RO, + 0x0111
+#define JSY_22x_REGISTER_POWER_SUPPLY             0x0112 // RO, + 0x0113
+#define JSY_22x_REGISTER_ACTIVE_POWER_SIGN        0x0114 // RO
+#define JSY_22x_REGISTER_REACTIVE_POWER_SIGN      0x0115 // RO
+#define JSY_22x_REGISTER_ACTIVE_ENERGY_POSITIVE   0x0116 // RO, + 0x0117
+#define JSY_22x_REGISTER_ACTIVE_ENERGY_NEGATIVE   0x0118 // RO, + 0x0119
+#define JSY_22x_REGISTER_REACTIVE_ENERGY_POSITIVE 0x011A // RO, + 0x011B
+#define JSY_22x_REGISTER_REACTIVE_ENERGY_NEGATIVE 0x011C // RO, + 0x011D
+
+#define JSY_22x_REGISTER_LEN   2  // 2 bytes per register
+#define JSY_22x_REGISTER_COUNT 30 // 20 registers
+#define JSY_22x_REGISTER_START JSY_22x_REGISTER_VOLTAGE
 
 ///////////////////////////////////////////////////////////////////////////////
 // JSY-MK-333 REGISTERS
@@ -128,7 +198,7 @@ extern Mycila::Logger logger;
 #define JSY_333_REGISTER_PHASE_B_APPARENT_ENERGY          0x012C // RO + 0x012D
 #define JSY_333_REGISTER_PHASE_C_APPARENT_ENERGY          0x012E // RO + 0x012F
 #define JSY_333_REGISTER_TOTAL_APPARENT_ENERGY            0x0130 // RO + 0x0131
-#define JSY_333_REGISTER_POWER_SIGN                       0x0132 // RO
+#define JSY_333_REGISTER_POWER_SIGNS                      0x0132 // RO
 #define JSY_333_REGISTER_ALARMS                           0x0133 // RO
 #define JSY_333_REGISTER_PHASE_A_ACTIVE_ENERGY_IMPORTED   0x0134 // RO + 0x0135
 #define JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY_IMPORTED   0x0136 // RO + 0x0137
@@ -522,6 +592,7 @@ void Mycila::JSY::begin(HardwareSerial& serial,
                         const int8_t rxPin,
                         const int8_t txPin,
                         const BaudRate baudRate,
+                        const uint16_t model,
                         const bool async,
                         const uint8_t core,
                         const uint32_t stackSize,
@@ -583,9 +654,15 @@ void Mycila::JSY::begin(HardwareSerial& serial,
   }
 
   _enabled = true;
-  _model = readModel(_destinationAddress);
+  _model = model ? model : readModel(_destinationAddress);
 
-  if (_model != MYCILA_JSY_MK_194 && _model != MYCILA_JSY_MK_163 && _model != MYCILA_JSY_MK_333) {
+  if (_model != MYCILA_JSY_MK_1031 &&
+      _model != MYCILA_JSY_MK_163 &&
+      _model != MYCILA_JSY_MK_193 &&
+      _model != MYCILA_JSY_MK_194 &&
+      _model != MYCILA_JSY_MK_227 &&
+      _model != MYCILA_JSY_MK_229 &&
+      _model != MYCILA_JSY_MK_333) {
     LOGE(TAG, "Unsupported JSY model: JSY-MK-%X", _model);
     // unsupported
     _enabled = false;
@@ -640,16 +717,35 @@ bool Mycila::JSY::read(const uint8_t address) {
   uint8_t registerSize = 0;
 
   switch (_model) {
+    case MYCILA_JSY_MK_1031:
+      registerSize = JSY_1031_REGISTER_LEN;
+      registerStart = JSY_1031_REGISTER_START;
+      registerCount = JSY_1031_REGISTER_COUNT;
+      break;
+
     case MYCILA_JSY_MK_163:
       registerSize = JSY_163_REGISTER_LEN;
       registerStart = JSY_163_REGISTER_START;
       registerCount = JSY_163_REGISTER_COUNT;
       break;
 
+    case MYCILA_JSY_MK_193:
+      registerSize = JSY_193_REGISTER_LEN;
+      registerStart = JSY_193_REGISTER_START;
+      registerCount = JSY_193_REGISTER_COUNT;
+      break;
+
     case MYCILA_JSY_MK_194:
       registerSize = JSY_194_REGISTER_LEN;
       registerStart = JSY_194_REGISTER_START;
       registerCount = JSY_194_REGISTER_COUNT;
+      break;
+
+    case MYCILA_JSY_MK_227:
+    case MYCILA_JSY_MK_229:
+      registerSize = JSY_22x_REGISTER_LEN;
+      registerStart = JSY_22x_REGISTER_START;
+      registerCount = JSY_22x_REGISTER_COUNT;
       break;
 
     case MYCILA_JSY_MK_333:
@@ -706,27 +802,39 @@ bool Mycila::JSY::read(const uint8_t address) {
   parsed.model = _model;
 
   switch (_model) {
+    case MYCILA_JSY_MK_1031: {
+      // single channel
+      parsed._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_FREQUENCY) / 100.0;
+      parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_VOLTAGE) / 100.0;
+      parsed._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_CURRENT) / 10000.0;
+      parsed._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_ACTIVE_POWER) / 100.0;
+      parsed._metrics[0].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_ACTIVE_ENERGY) / 100.0;
+      parsed._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_POWER_FACTOR) / 1000.0;
+      parsed._metrics[0].apparentPower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_APPARENT_POWER) / 100.0;
+      parsed._metrics[0].reactivePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_REACTIVE_POWER) / 100.0;
+
+      // aggregate
+      parsed.aggregate = parsed._metrics[0];
+
+      break;
+    }
+
     case MYCILA_JSY_MK_163: {
       // signs
       // _buffer[19] unused
       // _buffer[20] is the sign of power
-      uint8_t sign = _register8(_buffer, registerStart, registerSize, JSY_163_REGISTER_POWER_SIGN, 1);
-
-      // frequency
-
-      parsed.frequency = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_FREQUENCY) / 100.0;
+      uint8_t sign = _register8(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_POWER_SIGN, 1);
 
       // single channel
-
+      parsed._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_FREQUENCY) / 100.0;
       parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_VOLTAGE) / 100.0;
       parsed._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_CURRENT) / 100.0;
       parsed._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_POWER) / (sign ? -1.0 : 1.0);
-      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_ENERGY) / 3200.0;
+      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_ENERGY_IMPORTED) / 3200.0;
       parsed._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_POWER_FACTOR) / 1000.0;
-      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ENERGY_RETURNED) / 3200.0;
+      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_ENERGY_RETURNED) / 3200.0;
 
       // calculate remaining metrics
-
       // S = P / PF
       parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : abs(parsed._metrics[0].activePower / parsed._metrics[0].powerFactor);
       // Q = sqrt(S^2 - P^2)
@@ -735,46 +843,31 @@ bool Mycila::JSY::read(const uint8_t address) {
       parsed._metrics[0].activeEnergy = parsed._metrics[0].activeEnergyImported + parsed._metrics[0].activeEnergyReturned;
 
       // aggregate
-
       parsed.aggregate = parsed._metrics[0];
 
       break;
     }
 
-    case MYCILA_JSY_MK_194: {
-      // signs
-      // _buffer[27] is the sign of power1
-      // _buffer[28] is the sign of power2
-      // _buffer[29] unused
-      // _buffer[30] unused
-
-      uint8_t sign0 = _register8(_buffer, registerStart, registerSize, JSY_194_REGISTER_POWER_SIGN, 0);
-      uint8_t sign1 = _register8(_buffer, registerStart, registerSize, JSY_194_REGISTER_POWER_SIGN, 1);
-
-      // frequency
-
-      parsed.frequency = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_FREQUENCY) / 100.0;
-
+    case MYCILA_JSY_MK_193: {
       // channel 1
-
-      parsed._metrics[0].voltage = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_VOLTAGE) / 10000.0;
-      parsed._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_CURRENT) / 10000.0;
-      parsed._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_POWER) / (sign0 ? -10000.0 : 10000.0);
-      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_ENERGY) / 10000.0;
-      parsed._metrics[0].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_POWER_FACTOR) / 1000.0;
-      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ENERGY_RETURNED) / 10000.0;
+      parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_VOLTAGE) / 100.0;
+      parsed._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_CURRENT) / 100.0;
+      parsed._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_POWER) / (_register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_POWER_SIGN) ? -1.0 : 1.0);
+      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_ENERGY_POSITIVE) / 100.0;
+      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_ENERGY_NEGATIVE) / 100.0;
+      parsed._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_POWER_FACTOR) / 1000.0;
+      parsed._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_FREQUENCY) / 100.0;
 
       // channel 2
-
-      parsed._metrics[1].voltage = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_VOLTAGE) / 10000.0;
-      parsed._metrics[1].current = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_CURRENT) / 10000.0;
-      parsed._metrics[1].activePower = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_POWER) / (sign1 ? -10000.0 : 10000.0);
-      parsed._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_ENERGY) / 10000.0;
-      parsed._metrics[1].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_POWER_FACTOR) / 1000.0;
-      parsed._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ENERGY_RETURNED) / 10000.0;
+      parsed._metrics[1].voltage = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_VOLTAGE) / 100.0;
+      parsed._metrics[1].current = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_CURRENT) / 100.0;
+      parsed._metrics[1].activePower = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_POWER) / (_register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_POWER_SIGN) ? -1.0 : 1.0);
+      parsed._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_ENERGY_POSITIVE) / 100.0;
+      parsed._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_ENERGY_NEGATIVE) / 100.0;
+      parsed._metrics[1].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_POWER_FACTOR) / 1000.0;
+      parsed._metrics[1].frequency = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_FREQUENCY) / 100.0;
 
       // calculate remaining metrics
-
       // S = P / PF
       parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : abs(parsed._metrics[0].activePower / parsed._metrics[0].powerFactor);
       parsed._metrics[1].apparentPower = parsed._metrics[1].powerFactor == 0 ? 0 : abs(parsed._metrics[1].activePower / parsed._metrics[1].powerFactor);
@@ -786,10 +879,83 @@ bool Mycila::JSY::read(const uint8_t address) {
       parsed._metrics[1].activeEnergy = parsed._metrics[1].activeEnergyImported + parsed._metrics[1].activeEnergyReturned;
 
       // aggregate
-
       parsed.aggregate = parsed._metrics[0];
       parsed.aggregate += parsed._metrics[1];
       parsed.aggregate.voltage = max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);
+      parsed.aggregate.frequency = max(parsed._metrics[0].frequency, parsed._metrics[1].frequency);
+
+      break;
+    }
+
+    case MYCILA_JSY_MK_194: {
+      // signs
+      // _buffer[27] is the sign of power1
+      // _buffer[28] is the sign of power2
+      // _buffer[29] unused
+      // _buffer[30] unused
+      uint8_t sign0 = _register8(_buffer, registerStart, registerSize, JSY_194_REGISTER_ACTIVE_POWER_SIGNS, 0);
+      uint8_t sign1 = _register8(_buffer, registerStart, registerSize, JSY_194_REGISTER_ACTIVE_POWER_SIGNS, 1);
+
+      // frequency
+      float frequency = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_FREQUENCY) / 100.0;
+
+      // channel 1
+      parsed._metrics[0].frequency = frequency;
+      parsed._metrics[0].voltage = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_VOLTAGE) / 10000.0;
+      parsed._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_CURRENT) / 10000.0;
+      parsed._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_POWER) / (sign0 ? -10000.0 : 10000.0);
+      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_ENERGY_IMPORTED) / 10000.0;
+      parsed._metrics[0].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_POWER_FACTOR) / 1000.0;
+      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_ENERGY_RETURNED) / 10000.0;
+
+      // channel 2
+      parsed._metrics[1].frequency = frequency;
+      parsed._metrics[1].voltage = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_VOLTAGE) / 10000.0;
+      parsed._metrics[1].current = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_CURRENT) / 10000.0;
+      parsed._metrics[1].activePower = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_POWER) / (sign1 ? -10000.0 : 10000.0);
+      parsed._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_ENERGY_IMPORTED) / 10000.0;
+      parsed._metrics[1].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_POWER_FACTOR) / 1000.0;
+      parsed._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_ENERGY_RETURNED) / 10000.0;
+
+      // calculate remaining metrics
+      // S = P / PF
+      parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : abs(parsed._metrics[0].activePower / parsed._metrics[0].powerFactor);
+      parsed._metrics[1].apparentPower = parsed._metrics[1].powerFactor == 0 ? 0 : abs(parsed._metrics[1].activePower / parsed._metrics[1].powerFactor);
+      // Q = sqrt(S^2 - P^2)
+      parsed._metrics[0].reactivePower = sqrt(parsed._metrics[0].apparentPower * parsed._metrics[0].apparentPower - parsed._metrics[0].activePower * parsed._metrics[0].activePower);
+      parsed._metrics[1].reactivePower = sqrt(parsed._metrics[1].apparentPower * parsed._metrics[1].apparentPower - parsed._metrics[1].activePower * parsed._metrics[1].activePower);
+      // E = Ei + Er
+      parsed._metrics[0].activeEnergy = parsed._metrics[0].activeEnergyImported + parsed._metrics[0].activeEnergyReturned;
+      parsed._metrics[1].activeEnergy = parsed._metrics[1].activeEnergyImported + parsed._metrics[1].activeEnergyReturned;
+
+      // aggregate
+      parsed.aggregate = parsed._metrics[0];
+      parsed.aggregate += parsed._metrics[1];
+      parsed.aggregate.frequency = frequency;
+      parsed.aggregate.voltage = max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);
+
+      break;
+    }
+
+    case MYCILA_JSY_MK_227:
+    case MYCILA_JSY_MK_229: {
+      // single channel
+      parsed._metrics[0].voltage = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_VOLTAGE) / 10000.0;
+      parsed._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_CURRENT) / 10000.0;
+      parsed._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_POWER) / (_register16(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_POWER_SIGN) ? -10000.0 : 10000.0);
+      parsed._metrics[0].reactivePower = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_POWER) / (_register16(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_POWER_SIGN) ? -10000.0 : 10000.0);
+      parsed._metrics[0].apparentPower = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_APPARENT_POWER) / 10000.0;
+      parsed._metrics[0].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_POWER_FACTOR) / 1000.0;
+      parsed._metrics[0].frequency = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_FREQUENCY) / 100.0;
+      parsed._metrics[0].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_ENERGY) / 1000.0;
+      parsed._metrics[0].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_ENERGY) / 1000.0;
+      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_ENERGY_POSITIVE) / 1000.0;
+      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_ENERGY_NEGATIVE) / 1000.0;
+      parsed._metrics[0].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_ENERGY_POSITIVE) / 1000.0;
+      parsed._metrics[0].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_ENERGY_NEGATIVE) / 1000.0;
+
+      // aggregate
+      parsed.aggregate = parsed._metrics[0];
 
       break;
     }
@@ -805,19 +971,20 @@ bool Mycila::JSY::read(const uint8_t address) {
       // _buffer[204] bit 2: sign of phase C active power
       // _buffer[204] bit 1: sign of phase B active power
       // _buffer[204] bit 0: sign of phase A active power
-      uint8_t sign7 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGN, 1) & 0x80;
-      uint8_t sign6 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGN, 1) & 0x40;
-      uint8_t sign5 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGN, 1) & 0x20;
-      uint8_t sign4 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGN, 1) & 0x10;
-      uint8_t sign3 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGN, 1) & 0x08;
-      uint8_t sign2 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGN, 1) & 0x04;
-      uint8_t sign1 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGN, 1) & 0x02;
-      uint8_t sign0 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGN, 1) & 0x01;
+      uint8_t sign7 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x80;
+      uint8_t sign6 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x40;
+      uint8_t sign5 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x20;
+      uint8_t sign4 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x10;
+      uint8_t sign3 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x08;
+      uint8_t sign2 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x04;
+      uint8_t sign1 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x02;
+      uint8_t sign0 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x01;
 
-      parsed.frequency = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_FREQUENCY) / 100.0;
+      // frequency
+      float frequency = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_FREQUENCY) / 100.0;
 
       // phase A
-
+      parsed._metrics[0].frequency = frequency;
       parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_VOLTAGE) / 100.0;
       parsed._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_CURRENT) / 100.0;
       parsed._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_POWER) / (sign0 ? -1.0 : 1.0);
@@ -833,7 +1000,7 @@ bool Mycila::JSY::read(const uint8_t address) {
       parsed._metrics[0].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_ENERGY_RETURNED) / 100.0;
 
       // phase B
-
+      parsed._metrics[1].frequency = frequency;
       parsed._metrics[1].voltage = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_VOLTAGE) / 100.0;
       parsed._metrics[1].current = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_CURRENT) / 100.0;
       parsed._metrics[1].activePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_POWER) / (sign1 ? -1.0 : 1.0);
@@ -849,7 +1016,7 @@ bool Mycila::JSY::read(const uint8_t address) {
       parsed._metrics[1].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY_RETURNED) / 100.0;
 
       // phase C
-
+      parsed._metrics[2].frequency = frequency;
       parsed._metrics[2].voltage = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_VOLTAGE) / 100.0;
       parsed._metrics[2].current = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_CURRENT) / 100.0;
       parsed._metrics[2].activePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_POWER) / (sign2 ? -1.0 : 1.0);
@@ -865,7 +1032,7 @@ bool Mycila::JSY::read(const uint8_t address) {
       parsed._metrics[2].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY_RETURNED) / 100.0;
 
       // aggregate
-
+      parsed.aggregate.frequency = frequency;
       parsed.aggregate.activePower = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_POWER) / (sign3 ? -1.0 : 1.0);
       parsed.aggregate.reactivePower = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_POWER) / (sign7 ? -1.0 : 1.0);
       parsed.aggregate.apparentPower = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_APPARENT_POWER);
@@ -877,7 +1044,6 @@ bool Mycila::JSY::read(const uint8_t address) {
       parsed.aggregate.activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_ENERGY_RETURNED) / 100.0;
       parsed.aggregate.reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY_IMPORTED) / 100.0;
       parsed.aggregate.reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY_RETURNED) / 100.0;
-
       parsed.aggregate.current = parsed._metrics[0].current + parsed._metrics[1].current + parsed._metrics[2].current;
       parsed.aggregate.voltage = parsed.aggregate.current == 0 ? NAN : parsed.aggregate.apparentPower / parsed.aggregate.current;
 
@@ -983,9 +1149,13 @@ Mycila::JSY::BaudRate Mycila::JSY::getMinAvailableBaudRate() const {
 Mycila::JSY::BaudRate Mycila::JSY::getMinAvailableBaudRate(uint16_t model) {
   switch (model) {
     case MYCILA_JSY_MK_163:
-      return BaudRate::BAUD_1200;
+    case MYCILA_JSY_MK_193:
     case MYCILA_JSY_MK_194:
+    case MYCILA_JSY_MK_227:
+    case MYCILA_JSY_MK_229:
       return BaudRate::BAUD_1200;
+      return BaudRate::BAUD_1200;
+    case MYCILA_JSY_MK_1031:
     case MYCILA_JSY_MK_333:
       return BaudRate::BAUD_4800;
     default:
@@ -1002,11 +1172,15 @@ Mycila::JSY::BaudRate Mycila::JSY::getMaxAvailableBaudRate() const {
 Mycila::JSY::BaudRate Mycila::JSY::getMaxAvailableBaudRate(uint16_t model) {
   switch (model) {
     case MYCILA_JSY_MK_163:
+    case MYCILA_JSY_MK_227:
+    case MYCILA_JSY_MK_229:
       return BaudRate::BAUD_9600;
-    case MYCILA_JSY_MK_194:
-      return BaudRate::BAUD_38400;
+    case MYCILA_JSY_MK_1031:
     case MYCILA_JSY_MK_333:
       return BaudRate::BAUD_19200;
+    case MYCILA_JSY_MK_193:
+    case MYCILA_JSY_MK_194:
+      return BaudRate::BAUD_38400;
     default:
       return BaudRate::UNKNOWN;
   }
@@ -1306,10 +1480,18 @@ uint32_t Mycila::JSY::_register32(const uint8_t* buffer, const uint16_t register
 
 const char* Mycila::JSY::getModelName(uint16_t model) {
   switch (model) {
+    case MYCILA_JSY_MK_1031:
+      return MYCILA_JSY_MK_1031_NAME;
     case MYCILA_JSY_MK_163:
       return MYCILA_JSY_MK_163_NAME;
+    case MYCILA_JSY_MK_193:
+      return MYCILA_JSY_MK_193_NAME;
     case MYCILA_JSY_MK_194:
       return MYCILA_JSY_MK_194_NAME;
+    case MYCILA_JSY_MK_227:
+      return MYCILA_JSY_MK_227_NAME;
+    case MYCILA_JSY_MK_229:
+      return MYCILA_JSY_MK_229_NAME;
     case MYCILA_JSY_MK_333:
       return MYCILA_JSY_MK_333_NAME;
     default:

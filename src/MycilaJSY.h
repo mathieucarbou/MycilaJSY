@@ -13,10 +13,10 @@
   #include <ArduinoJson.h>
 #endif
 
-#define MYCILA_JSY_VERSION          "11.1.4"
-#define MYCILA_JSY_VERSION_MAJOR    11
-#define MYCILA_JSY_VERSION_MINOR    1
-#define MYCILA_JSY_VERSION_REVISION 4
+#define MYCILA_JSY_VERSION          "12.0.0"
+#define MYCILA_JSY_VERSION_MAJOR    12
+#define MYCILA_JSY_VERSION_MINOR    0
+#define MYCILA_JSY_VERSION_REVISION 0
 
 // #define MYCILA_JSY_DEBUG 1
 
@@ -29,16 +29,28 @@
 
 // Model value for unknown JSY device
 #define MYCILA_JSY_MK_UNKNOWN 0x0000
+// Model value for JSY1031 family
+#define MYCILA_JSY_MK_1031 0x1031
 // Model value for JSY-MK-163 family
 #define MYCILA_JSY_MK_163 0x0163
+// Model value for JSY-MK-193 family
+#define MYCILA_JSY_MK_193 0x0193
 // Model value for JSY-MK-194 family
 #define MYCILA_JSY_MK_194 0x0194
+// Model value for JSY-MK-227 family
+#define MYCILA_JSY_MK_227 0x0227
+// Model value for JSY-MK-229 family
+#define MYCILA_JSY_MK_229 0x0229
 // Model value for JSY-MK-333 family
 #define MYCILA_JSY_MK_333 0x0333
 
-#define MYCILA_JSY_MK_163_NAME "JSY-MK-163"
-#define MYCILA_JSY_MK_194_NAME "JSY-MK-194"
-#define MYCILA_JSY_MK_333_NAME "JSY-MK-333"
+#define MYCILA_JSY_MK_1031_NAME "JSY1031"
+#define MYCILA_JSY_MK_163_NAME  "JSY-MK-163"
+#define MYCILA_JSY_MK_193_NAME  "JSY-MK-193"
+#define MYCILA_JSY_MK_194_NAME  "JSY-MK-194"
+#define MYCILA_JSY_MK_227_NAME  "JSY-MK-227"
+#define MYCILA_JSY_MK_229_NAME  "JSY-MK-229"
+#define MYCILA_JSY_MK_333_NAME  "JSY-MK-333"
 
 #ifndef MYCILA_JSY_ASYNC_CORE
   #define MYCILA_JSY_ASYNC_CORE 1
@@ -66,19 +78,19 @@ namespace Mycila {
     public:
       enum class BaudRate {
         UNKNOWN = 0,
-        // Supported by: JSY-MK-163, JSY-MK-194
+        // Supported by: JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229
         BAUD_1200 = 1200,
-        // Supported by: JSY-MK-163, JSY-MK-194
+        // Supported by: JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229
         BAUD_2400 = 2400,
         // Default for: JSY-MK-163, JSY-MK-194
-        // Supported by: JSY-MK-163, JSY-MK-194, JSY-MK-333
+        // Supported by: JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333
         BAUD_4800 = 4800,
-        // Default for: JSY-MK-333
-        // Supported by: JSY-MK-163, JSY-MK-194, JSY-MK-333
+        // Default for: JSY1031, JSY-MK-193, JSY-MK-227, JSY-MK-229, JSY-MK-333
+        // Supported by: JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333
         BAUD_9600 = 9600,
-        // Supported by: JSY-MK-194, JSY-MK-333
+        // Supported by: JSY1031, JSY-MK-193, JSY-MK-194, JSY-MK-333
         BAUD_19200 = 19200,
-        // Supported by: JSY-MK-194
+        // Supported by: JSY-MK-193, JSY-MK-194
         BAUD_38400 = 38400,
       };
 
@@ -98,87 +110,93 @@ namespace Mycila {
       class Metrics {
         public:
           /**
+           * @brief Frequency in hertz (Hz).
+           * @note JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333
+           */
+          float frequency = NAN; // Hz
+
+          /**
            * @brief Voltage in volts (V).
-           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333
+           * @note JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333
            */
           float voltage = NAN;
 
           /**
            * @brief Current in amperes (A).
-           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333
+           * @note JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333
            */
           float current = NAN;
 
           /**
            * @brief Active power in watts (W).
-           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333
+           * @note JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333
            */
           float activePower = NAN;
 
           /**
            * @brief Power factor
-           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333
+           * @note JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333
            */
           float powerFactor = NAN;
 
           /**
            * @brief Apparent power in volt-amperes (VA).
-           * @note JSY-MK-333: measured
-           * @note JSY-MK-163, JSY-MK-194: computed
+           * @note JSY1031, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-193, JSY-MK-194: computed
            */
           float apparentPower = NAN;
 
           /**
            * @brief Reactive power in volt-amperes reactive (VAr).
-           * @note JSY-MK-333: measured
-           * @note JSY-MK-163, JSY-MK-194: computed and always be positive since we do not know the phase shift angle (inductive or capacitive load)
+           * @note JSY1031, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-193, JSY-MK-194: computed and always be positive since we do not know the phase shift angle (inductive or capacitive load)
            */
           float reactivePower = NAN;
 
           /**
            * @brief Active energy in kilowatt-hours (kWh).
-           * @note JSY-MK-333: measured
-           * @note JSY-MK-163, JSY-MK-194: computed, sum of activeEnergyImported and activeEnergyReturned
+           * @note JSY1031, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-193, JSY-MK-194: computed, sum of activeEnergyImported and activeEnergyReturned
            */
           float activeEnergy = NAN;
 
           /**
            * @brief Active energy imported in kilowatt-hours (kWh), going to the load, when activePower > 0
-           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
+           * @note: For DC boards, matches the positive energy
            */
           float activeEnergyImported = NAN;
 
           /**
            * @brief Active energy returned in kilowatt-hours (kWh), coming from the load, when activePower < 0
-           * @note JSY-MK-163, JSY-MK-194, JSY-MK-333: measured
+           * @note JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
+           * @note: For DC boards, matches the negative energy
            */
           float activeEnergyReturned = NAN;
 
           /**
            * @brief Reactive energy in kilovolt-amperes reactive-hours (kVArh).
-           * @note JSY-MK-333: measured
-           * @note JSY-MK-163, JSY-MK-194: not available
+           * @note JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
            */
           float reactiveEnergy = NAN;
 
           /**
            * @brief Reactive energy imported in kilovolt-amperes reactive-hours (kVArh), going to the load, when reactivePower > 0
-           * @note JSY-MK-333: measured
-           * @note JSY-MK-163, JSY-MK-194: not available
+           * @note JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
+           * @note: For DC boards, matches the positive energy
            */
           float reactiveEnergyImported = NAN;
 
           /**
            * @brief Reactive energy returned in kilovolt-amperes reactive-hours (kVArh), coming from the load, when reactivePower < 0
-           * @note JSY-MK-333: measured
-           * @note JSY-MK-163, JSY-MK-194: not available
+           * @note JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
+           * @note: For DC boards, matches the negative energy
            */
           float reactiveEnergyReturned = NAN;
 
           /**
            * @brief Apparent energy in kilovolt-amperes-hours (kVAh).
            * @note JSY-MK-333: measured
-           * @note JSY-MK-163, JSY-MK-194: not available
            */
           float apparentEnergy = NAN;
 
@@ -229,14 +247,13 @@ namespace Mycila {
           uint8_t address = MYCILA_JSY_ADDRESS_UNKNOWN; // device address
           uint16_t model = MYCILA_JSY_MK_UNKNOWN;       // device model
 
-          float frequency = NAN; // Hz
-
+          // For JSY1031: aggregate == single()
           // For JSY-MK-163: aggregate == single()
           // For JSY-MK-194: aggregate == channel1() + channel2()
           // For JSY-MK-333: aggregate == phaseA() + phaseB() + phaseC()
           Metrics aggregate;
 
-          // JSY-MK-163
+          // JSY-MK-163 and JSY1031
           const Metrics& single() const { return _metrics[0]; }
 
           // JSY-MK-194 (channel 1)
@@ -296,7 +313,7 @@ namespace Mycila {
        * @param core The core to use for the async task (default: MYCILA_JSY_ASYNC_CORE)
        * @param stackSize The stack size of the async task (default: MYCILA_JSY_ASYNC_STACK_SIZE)
        * @param pause Time in milliseconds to wait between each read in async mode (default: MYCILA_JSY_ASYNC_READ_PAUSE_MS)
-       * @note The baud rate is automatically detected.
+       * @note The baud rate and model is automatically detected.
        */
       void begin(HardwareSerial& serial, // NOLINT
                  int8_t rxPin,
@@ -305,7 +322,7 @@ namespace Mycila {
                  uint8_t core = MYCILA_JSY_ASYNC_CORE,
                  uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
                  uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS) {
-        begin(serial, rxPin, txPin, BaudRate::UNKNOWN, async, core, stackSize, pause);
+        begin(serial, rxPin, txPin, BaudRate::UNKNOWN, MYCILA_JSY_MK_UNKNOWN, async, core, stackSize, pause);
       }
 
       /**
@@ -314,6 +331,7 @@ namespace Mycila {
        * @param rxPin RX board pin connected to the TX of the JSY
        * @param txPin TX board pin connected to the RX of the JSY
        * @param baudRate The baud rate of the JSY. If set to BaudRate::UNKNOWN, the baud rate is automatically detected
+       * @param model The model of the JSY. If set to MYCILA_JSY_MK_UNKNOWN, the model is automatically detected
        * @param async If true, the JSY will be read in a separate task (default: false)
        * @param core The core to use for the async task (default: MYCILA_JSY_ASYNC_CORE)
        * @param stackSize The stack size of the async task (default: MYCILA_JSY_ASYNC_STACK_SIZE)
@@ -323,6 +341,7 @@ namespace Mycila {
                  int8_t rxPin,
                  int8_t txPin,
                  BaudRate baudRate,
+                 uint16_t model = MYCILA_JSY_MK_UNKNOWN,
                  bool async = false,
                  uint8_t core = MYCILA_JSY_ASYNC_CORE,
                  uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
@@ -378,7 +397,7 @@ namespace Mycila {
       /**
        * @brief Get the name of the JSY model
        * @param model The JSY model
-       * @return The name of the JSY model (MYCILA_JSY_MK_163_NAME, MYCILA_JSY_MK_194_NAME, MYCILA_JSY_MK_333_NAME) or an empty string if the model is unknown
+       * @return The name of the JSY model (MYCILA_JSY_MK_163_NAME, MYCILA_JSY_MK_194_NAME, MYCILA_JSY_MK_333_NAME, MYCILA_JSY_MK_1031_NAME) or an empty string if the model is unknown
        */
       static const char* getModelName(uint16_t model);
 
@@ -470,7 +489,7 @@ namespace Mycila {
       uint32_t getTime() const { return _time; }
 
       // check if the device is connected to the grid, meaning if last read was successful
-      bool isConnected() const { return data.frequency > 0; }
+      bool isConnected() const { return data.aggregate.frequency > 0; }
 
       void setCallback(Callback callback) { _callback = callback; }
 

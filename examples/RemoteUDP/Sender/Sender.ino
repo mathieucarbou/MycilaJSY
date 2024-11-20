@@ -288,7 +288,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   messageRateCard.update(messageRate);
   dataRateCard.update(static_cast<int>(dataRate));
   udpSendEnabledCard.update(udpSendEnabled);
-  frequency.update(jsy.data.frequency);
+  frequency.update(jsy.data.aggregate.frequency);
 
   switch (jsyModel) {
     case MYCILA_JSY_MK_163: {

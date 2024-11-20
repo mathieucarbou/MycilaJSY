@@ -8,7 +8,6 @@ void Mycila::JSY::Data::clear() {
   std::unique_lock lock(_mutexData);
   address = MYCILA_JSY_ADDRESS_UNKNOWN;
   model = MYCILA_JSY_MK_UNKNOWN;
-  frequency = NAN;
   _metrics[0].clear();
   _metrics[1].clear();
   _metrics[2].clear();
@@ -20,7 +19,6 @@ bool Mycila::JSY::Data::operator==(const Mycila::JSY::Data& other) const {
   std::shared_lock lockOther(other._mutexData);
   return address == other.address &&
          model == other.model &&
-         (isnanf(frequency) ? isnanf(other.frequency) : frequency == other.frequency) &&
          _metrics[0] == other._metrics[0] &&
          _metrics[1] == other._metrics[1] &&
          _metrics[2] == other._metrics[2] &&
@@ -32,7 +30,6 @@ void Mycila::JSY::Data::operator=(const Mycila::JSY::Data& other) {
   std::shared_lock lockOther(other._mutexData);
   address = other.address;
   model = other.model;
-  frequency = other.frequency;
   _metrics[0] = other._metrics[0];
   _metrics[1] = other._metrics[1];
   _metrics[2] = other._metrics[2];
@@ -47,15 +44,16 @@ void Mycila::JSY::Data::toJson(const JsonObject& root) const {
   root["model"] = model;
   root["model_name"] = Mycila::JSY::getModelName(model);
 
-  if (!isnan(frequency))
-    root["frequency"] = frequency;
-
   switch (model) {
     {
+      case MYCILA_JSY_MK_1031:
       case MYCILA_JSY_MK_163:
+      case MYCILA_JSY_MK_227:
+      case MYCILA_JSY_MK_229:
         _metrics[0].toJson(root);
         break;
 
+      case MYCILA_JSY_MK_193:
       case MYCILA_JSY_MK_194:
         aggregate.toJson(root["aggregate"].to<JsonObject>());
         _metrics[0].toJson(root["channel1"].to<JsonObject>());

@@ -10,17 +10,22 @@
 [![GitHub latest commit](https://badgen.net/github/last-commit/mathieucarbou/MycilaJSY)](https://GitHub.com/mathieucarbou/MycilaJSY/commit/)
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mathieucarbou/MycilaJSY)
 
-Arduino / ESP32 library for the **JSY-MK-194**, **JSY-MK-163**, **JSY-MK-333** families single-phase and three-phase AC bidirectional meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
+Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333 families single-phase and three-phase AC bidirectional meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
 
 - [Supported models](#supported-models)
 - [Features](#features)
 - [Metrics](#metrics)
+  - [JSY1031](#jsy1031)
   - [JSY-MK-163](#jsy-mk-163)
+  - [JSY-MK-193](#jsy-mk-193)
   - [JSY-MK-194](#jsy-mk-194)
+  - [JSY-MK-227](#jsy-mk-227)
+  - [JSY-MK-229](#jsy-mk-229)
   - [JSY-MK-333](#jsy-mk-333)
 - [Remote JSY](#remote-jsy)
 - [Tested boards](#tested-boards)
 - [Usage](#usage)
+  - [Model detection / forcing a Model](#model-detection--forcing-a-model)
   - [Blocking mode](#blocking-mode)
   - [Non-Blocking mode (async)](#non-blocking-mode-async)
   - [Energy reset](#energy-reset)
@@ -34,9 +39,13 @@ Arduino / ESP32 library for the **JSY-MK-194**, **JSY-MK-163**, **JSY-MK-333** f
 
 ## Supported models
 
+- JSY1031
 - JSY-MK-163T
+- JSY-MK-193
 - JSY-MK-194T
 - JSY-MK-194G
+- JSY-MK-227
+- JSY-MK-229
 - JSY-MK-333
 
 ## Features
@@ -69,34 +78,93 @@ Metric depend on the model and they are all read.
 
 **Please have a look at the header file MycilaJSY.h and documentation inside.**
 
+## JSY1031
+
+- `activeEnergy`
+- `activePower`
+- `apparentPower`
+- `current`
+- `frequency`
+- `powerFactor`
+- `reactivePower`
+- `voltage`
+
+Note: Unlike other JEY, JSY1031 also exposes the phase angle in degree (positive), but not its sign (to know if it is lagging or not). MycilaJSY does not read this value.
+
 ### JSY-MK-163
 
-- `frequency`
-- `voltage`
-- `current`
-- `activePower`
-- `powerFactor`
-- `apparentPower` (calculated)
-- `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `activeEnergy` (sum of `activeEnergyImported` and `activeEnergyReturned`)
 - `activeEnergyImported`
 - `activeEnergyReturned`
-
-### JSY-MK-194
-
+- `activePower`
+- `apparentPower` (calculated)
+- `current`
 - `frequency`
+- `powerFactor`
+- `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
+- `voltage`
+
+### JSY-MK-193
 
 For each channel (1 and 2):
 
-- `voltage`
-- `current`
-- `activePower`
-- `powerFactor`
-- `apparentPower` (calculated)
-- `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `activeEnergy` (sum of `activeEnergyImported` and `activeEnergyReturned`)
 - `activeEnergyImported`
 - `activeEnergyReturned`
+- `activePower`
+- `apparentPower` (calculated)
+- `current`
+- `frequency`
+- `powerFactor`
+- `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
+- `voltage`
+
+### JSY-MK-194
+
+For each channel (1 and 2):
+
+- `activeEnergy` (sum of `activeEnergyImported` and `activeEnergyReturned`)
+- `activeEnergyImported`
+- `activeEnergyReturned`
+- `activePower`
+- `apparentPower` (calculated)
+- `current`
+- `frequency`
+- `powerFactor`
+- `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
+- `voltage`
+
+### JSY-MK-227
+
+- `activeEnergy`
+- `activeEnergyImported` (positive energy)
+- `activeEnergyReturned` (negative energy)
+- `activePower`
+- `apparentPower`
+- `current`
+- `frequency`
+- `powerFactor`
+- `reactiveEnergy`
+- `reactivePower`
+- `reactiveEnergyImported` (positive energy)
+- `reactiveEnergyReturned` (negative energy)
+- `voltage`
+
+### JSY-MK-229
+
+- `activeEnergy`
+- `activeEnergyImported` (positive energy)
+- `activeEnergyReturned` (negative energy)
+- `activePower`
+- `apparentPower`
+- `current`
+- `frequency`
+- `powerFactor`
+- `reactiveEnergy`
+- `reactivePower`
+- `reactiveEnergyImported` (positive energy)
+- `reactiveEnergyReturned` (negative energy)
+- `voltage`
 
 ### JSY-MK-333
 
@@ -140,6 +208,19 @@ Screenshot of the ESP32 running the JSY app called the `Sender`:
 Have a look at all the examples in the [examples](examples) folder.
 
 There is a getter for each metric.
+
+### Model detection / forcing a Model
+
+```c++
+// Will try to detect the model
+jsy.begin(Serial2, RX2, TX2);
+
+// equivalent as above
+jsy.begin(Serial2, RX2, TX2, MYCILA_JSY_MK_UNKNOWN);
+
+// Skips model detection and use the given model
+jsy.begin(Serial2, RX2, TX2, MYCILA_JSY_MK_227);
+```
 
 ### Baud rate detection / forcing a baud rate
 
@@ -573,10 +654,14 @@ SiedWallHoleOffset_Z     = 0;
 
 ## Reference material
 
+- [JSY1031.pdf](https://mathieu.carbou.me/MycilaJSY/JSY1031.pdf)
 - [JSY-MK-163T.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-163T.pdf)
+- [JSY-MK-193.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-193.pdf)
 - [JSY-MK-194T.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T.pdf)
 - [JSY-MK-194T_Manual.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194T_Manual.pdf)
 - [JSY-MK-194G.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194G.pdf)
+- [JSY-MK-227.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-227.pdf)
+- [JSY-MK-229.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-229.pdf)
 - [JSY-MK-333.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-333.pdf)
 - [RENERGY RN8209G](https://mathieu.carbou.me/MycilaJSY/RENERGY-RN8209G.pdf)
 - [ModbusMechanic](https://github.com/SciFiDryer/ModbusMechanic) (can connect and configure JSY with a USB-TTL adapter)

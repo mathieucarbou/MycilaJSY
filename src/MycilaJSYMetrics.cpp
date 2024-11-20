@@ -18,6 +18,7 @@ float Mycila::JSY::Metrics::dimmedVoltage() const { return current == 0 ? NAN : 
 float Mycila::JSY::Metrics::nominalPower() const { return activePower == 0 ? NAN : abs(voltage * voltage * current * current / activePower); }
 
 void Mycila::JSY::Metrics::clear() {
+  frequency = NAN;
   voltage = NAN;
   current = NAN;
   activePower = NAN;
@@ -34,7 +35,8 @@ void Mycila::JSY::Metrics::clear() {
 }
 
 bool Mycila::JSY::Metrics::operator==(const Mycila::JSY::Metrics& other) const {
-  return (isnanf(voltage) ? isnanf(other.voltage) : voltage == other.voltage) &&
+  return (isnanf(frequency) ? isnanf(other.frequency) : frequency == other.frequency) &&
+         (isnanf(voltage) ? isnanf(other.voltage) : voltage == other.voltage) &&
          (isnanf(current) ? isnanf(other.current) : current == other.current) &&
          (isnanf(activePower) ? isnanf(other.activePower) : activePower == other.activePower) &&
          (isnanf(reactivePower) ? isnanf(other.reactivePower) : reactivePower == other.reactivePower) &&
@@ -50,7 +52,7 @@ bool Mycila::JSY::Metrics::operator==(const Mycila::JSY::Metrics& other) const {
 }
 
 Mycila::JSY::Metrics& Mycila::JSY::Metrics::operator+=(const Mycila::JSY::Metrics& other) {
-  // voltage is not aggregated
+  // voltage and frequency are not aggregated
   current += other.current;
   activePower += other.activePower;
   apparentPower += other.apparentPower;
@@ -67,6 +69,7 @@ Mycila::JSY::Metrics& Mycila::JSY::Metrics::operator+=(const Mycila::JSY::Metric
 }
 
 void Mycila::JSY::Metrics::operator=(const Metrics& other) {
+  frequency = other.frequency;
   voltage = other.voltage;
   current = other.current;
   activePower = other.activePower;
@@ -84,6 +87,8 @@ void Mycila::JSY::Metrics::operator=(const Metrics& other) {
 
 #ifdef MYCILA_JSON_SUPPORT
 void Mycila::JSY::Metrics::toJson(const JsonObject& root) const {
+  if (!isnan(frequency))
+    root["frequency"] = frequency;
   if (!isnan(voltage))
     root["voltage"] = voltage;
   if (!isnan(current))
