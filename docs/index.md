@@ -121,6 +121,8 @@ For each channel (1 and 2):
 
 ### JSY-MK-194
 
+- `frequency`
+
 For each channel (1 and 2):
 
 - `activeEnergy` (sum of `activeEnergyImported` and `activeEnergyReturned`)
@@ -129,7 +131,6 @@ For each channel (1 and 2):
 - `activePower`
 - `apparentPower` (calculated)
 - `current`
-- `frequency`
 - `powerFactor`
 - `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `voltage`
