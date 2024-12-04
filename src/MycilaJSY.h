@@ -76,7 +76,7 @@
 namespace Mycila {
   class JSY {
     public:
-      enum class BaudRate {
+      enum BaudRate : uint32_t {
         UNKNOWN = 0,
         // Supported by: JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229
         BAUD_1200 = 1200,
@@ -96,7 +96,7 @@ namespace Mycila {
 
       enum class EventType {
         // JSY has successfully read the data
-        EVT_READ = 0,
+        EVT_READ,
         // JSY has successfully read the data and the values have changed
         EVT_CHANGE,
         // wrong data received when reading values

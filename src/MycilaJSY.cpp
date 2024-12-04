@@ -635,7 +635,7 @@ void Mycila::JSY::begin(HardwareSerial& serial,
     }
 
   } else {
-    LOGW(TAG, "JSY @ 0x%02X bauds detection skipped, forcing baud rate: %" PRIu32, _destinationAddress, static_cast<uint32_t>(_baudRate));
+    LOGW(TAG, "JSY @ 0x%02X bauds detection skipped, forcing baud rate: %" PRIu32, _destinationAddress, _baudRate);
     _openSerial(baudRate);
 
     _baudRate = BaudRate::UNKNOWN;
@@ -647,7 +647,7 @@ void Mycila::JSY::begin(HardwareSerial& serial,
     }
 
     if (_baudRate == BaudRate::UNKNOWN) {
-      LOGE(TAG, "Unable to read any JSY @ 0x%02X at speed: %" PRIu32, _destinationAddress, static_cast<uint32_t>(baudRate));
+      LOGE(TAG, "Unable to read any JSY @ 0x%02X at speed: %" PRIu32, _destinationAddress, baudRate);
       _serial->end();
       return;
     }
@@ -670,7 +670,7 @@ void Mycila::JSY::begin(HardwareSerial& serial,
     return;
   }
 
-  LOGI(TAG, "Detected JSY-MK-%X @ 0x%02X with speed %" PRIu32 " bauds", _model, _lastAddress, static_cast<uint32_t>(_baudRate));
+  LOGI(TAG, "Detected JSY-MK-%X @ 0x%02X with speed %" PRIu32 " bauds", _model, _lastAddress, _baudRate);
 
   assert(!async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, MYCILA_JSY_ASYNC_PRIORITY, &_taskHandle, core) == pdPASS);
 }
@@ -1214,7 +1214,7 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
   if (newAddress == MYCILA_JSY_ADDRESS_UNKNOWN)
     return false;
 
-  LOGD(TAG, "set(0x%02X) address=0x%02X, bauds=%" PRIu32, address, newAddress, static_cast<uint32_t>(newBaudRate));
+  LOGD(TAG, "set(0x%02X) address=0x%02X, bauds=%" PRIu32, address, newAddress, newBaudRate);
 
   if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
     LOGW(TAG, "Unable to set @ 0x%02X: Serial is busy!", address);
@@ -1290,7 +1290,7 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
     }
 
   } else {
-    LOGE(TAG, "Unable to read JSY @ 0x%02X at speed: %" PRIu32, address, static_cast<uint32_t>(newBaudRate));
+    LOGE(TAG, "Unable to read JSY @ 0x%02X at speed: %" PRIu32, address, newBaudRate);
     if (_baudRate != BaudRate::UNKNOWN) {
       _openSerial(_baudRate);
     }
@@ -1309,7 +1309,7 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
 void Mycila::JSY::toJson(const JsonObject& root) const {
   root["enabled"] = _enabled;
   root["time"] = _time;
-  root["speed"] = static_cast<uint32_t>(_baudRate);
+  root["speed"] = _baudRate;
   data.toJson(root);
 }
 #endif
@@ -1421,8 +1421,8 @@ size_t Mycila::JSY::_drop() {
 }
 
 void Mycila::JSY::_openSerial(BaudRate baudRate) {
-  LOGD(TAG, "openSerial(%" PRIu32 ")", static_cast<uint32_t>(baudRate));
-  _serial->begin(static_cast<uint32_t>(baudRate), SERIAL_8N1, _pinRX, _pinTX);
+  LOGD(TAG, "openSerial(%" PRIu32 ")", baudRate);
+  _serial->begin(baudRate, SERIAL_8N1, _pinRX, _pinTX);
   _serial->setTimeout(500);
   while (!_serial)
     yield();
@@ -1435,7 +1435,7 @@ void Mycila::JSY::_openSerial(BaudRate baudRate) {
 Mycila::JSY::BaudRate Mycila::JSY::_detectBauds(const uint8_t address) {
   for (int i = 0; i < BAUD_RATES_COUNT * 2; i++) {
     BaudRate baudRate = BAUD_RATES[i % BAUD_RATES_COUNT];
-    LOGD(TAG, "find(0x%02X) %" PRIu32 " bauds", address, static_cast<uint32_t>(baudRate));
+    LOGD(TAG, "find(0x%02X) %" PRIu32 " bauds", address, baudRate);
     _openSerial(baudRate);
     for (int j = 0; j < MYCILA_JSY_RETRY_COUNT; j++) {
       if (_canRead(address, baudRate)) {

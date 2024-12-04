@@ -27,7 +27,7 @@ void loop() {
   uint32_t now = millis();
   counts++;
 
-  Serial.printf("JSY baud rate: %d\n", static_cast<int>(jsy.getBaudRate()));
+  Serial.printf("JSY baud rate: %" PRIu32 "\n", jsy.getBaudRate());
 
   if (jsy.read()) {
     Serial.print("JSY read in ");
@@ -42,7 +42,7 @@ void loop() {
 
   if (counts % 7 == 0) {
     if (jsy.setBaudRate(jsy.getBaudRate() == jsy.getMaxAvailableBaudRate() ? jsy.getMinAvailableBaudRate() : jsy.getMaxAvailableBaudRate())) {
-      Serial.printf("JSY baud rate updated to %d\n", static_cast<int>(jsy.getBaudRate()));
+      Serial.printf("JSY baud rate updated to %" PRIu32 "\n", sy.getBaudRate());
     } else {
       Serial.println("JSY baud rate update failed");
     }
