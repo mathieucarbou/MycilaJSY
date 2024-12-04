@@ -14,6 +14,7 @@ Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY
 
 - [Supported models](#supported-models)
 - [Features](#features)
+  - [Zero-Cross detection](#zero-cross-detection)
 - [Metrics](#metrics)
   - [JSY1031](#jsy1031)
   - [JSY-MK-163](#jsy-mk-163)
@@ -23,9 +24,10 @@ Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY
   - [JSY-MK-229](#jsy-mk-229)
   - [JSY-MK-333](#jsy-mk-333)
 - [Remote JSY](#remote-jsy)
-- [Tested boards](#tested-boards)
+- [Tested boards:](#tested-boards)
 - [Usage](#usage)
   - [Model detection / forcing a Model](#model-detection--forcing-a-model)
+  - [Baud rate detection / forcing a baud rate](#baud-rate-detection--forcing-a-baud-rate)
   - [Blocking mode](#blocking-mode)
   - [Non-Blocking mode (async)](#non-blocking-mode-async)
   - [Energy reset](#energy-reset)
@@ -78,7 +80,7 @@ Metric depend on the model and they are all read.
 
 **Please have a look at the header file MycilaJSY.h and documentation inside.**
 
-## JSY1031
+### JSY1031
 
 - `activeEnergy`
 - `activePower`
@@ -89,7 +91,7 @@ Metric depend on the model and they are all read.
 - `reactivePower`
 - `voltage`
 
-Note: Unlike other JEY, JSY1031 also exposes the phase angle in degree (positive), but not its sign (to know if it is lagging or not). MycilaJSY does not read this value.
+Note: Unlike other SY, JSY1031 also exposes the phase angle in degree (positive), but not its sign (to know if it is lagging or not). MycilaJSY does not read this value.
 
 ### JSY-MK-163
 
@@ -464,11 +466,11 @@ jsy.read() at 38400 bauds:
  - 14969706 EVT_READ
 ```
 
-## JSON Support
+### JSON Support
 
 You can activate JSON support by defining `-D MYCILA_JSON_SUPPORT` in your project and add the `ArduinoJson` library.
 
-## Debugging
+### Debugging
 
 Set the flag: `-D MYCILA_JSY_DEBUG` and you will see all the JSY requests and responses.
 
