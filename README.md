@@ -12,43 +12,37 @@
 
 Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333 families single-phase and three-phase AC bidirectional meters from [Shenzhen Jiansiyan Technologies Co, Ltd.](https://www.jsypowermeter.com)
 
-- [Supported models](#supported-models)
+- [API Documentation](#api-documentation)
 - [Features](#features)
-  - [Zero-Cross detection](#zero-cross-detection)
-- [Metrics](#metrics)
+- [Supported models](#supported-models)
   - [JSY1031](#jsy1031)
   - [JSY-MK-163](#jsy-mk-163)
   - [JSY-MK-193](#jsy-mk-193)
   - [JSY-MK-194](#jsy-mk-194)
-  - [JSY-MK-227](#jsy-mk-227)
-  - [JSY-MK-229](#jsy-mk-229)
+  - [JSY-MK-22x](#jsy-mk-22x)
   - [JSY-MK-333](#jsy-mk-333)
-- [Remote JSY](#remote-jsy)
-- [Tested boards:](#tested-boards)
 - [Usage](#usage)
-  - [Model detection / forcing a Model](#model-detection--forcing-a-model)
   - [Baud rate detection / forcing a baud rate](#baud-rate-detection--forcing-a-baud-rate)
+  - [Address broadcast / unicast](#address-broadcast--unicast)
+  - [Model detection / forcing a Model](#model-detection--forcing-a-model)
   - [Blocking mode](#blocking-mode)
   - [Non-Blocking mode (async)](#non-blocking-mode-async)
   - [Energy reset](#energy-reset)
   - [Update Baud rate (change speed)](#update-baud-rate-change-speed)
-  - [Callbacks](#callbacks)
+  - [Change device address](#change-device-address)
+  - [Switch AC/DC mode](#switch-acdc-mode)
   - [JSON Support](#json-support)
   - [Debugging](#debugging)
-- [Performance tests](#performance-tests)
+  - [Callbacks](#callbacks)
+- [Remote JSY](#remote-jsy)
+- [Zero-Cross Detection](#zero-cross-detection)
 - [Boxes and 3D models](#boxes-and-3d-models)
+- [Performance tests](#performance-tests)
 - [Reference material](#reference-material)
 
-## Supported models
+## API Documentation
 
-- JSY1031
-- JSY-MK-163T
-- JSY-MK-193
-- JSY-MK-194T
-- JSY-MK-194G
-- JSY-MK-227
-- JSY-MK-229
-- JSY-MK-333
+Go to: [https://mathieu.carbou.me/MycilaJSY/api/index.html](https://mathieu.carbou.me/MycilaJSY/api/index.html)
 
 ## Features
 
@@ -62,23 +56,18 @@ Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY
 - Focus on speed and reactivity with a callback mechanism
 - Switch bauds rate to any supported speed live at runtime
 - Remote support with [UDP sender](#remote-jsy)
+- Zero-Cross detection support with JSY-MK-194G and [MycilaPulseAnalyzer](https://github.com/mathieucarbou/MycilaPulseAnalyzer)
 
 Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
 
-### Zero-Cross detection
+## Supported models
 
-The JSY-MK-194G has a zero-cross detection feature which signals on the Zx pin when the current crosses zero.
-This feature is really useful to create Solr Routers like [YaSolR](https://yasolr.carbou.me).
-
-The [MycilaPulseAnalyzer](https://github.com/mathieucarbou/MycilaPulseAnalyzer) library supports many ZC detection methods including the JSY-MK-194G.
-
-[![](https://mathieu.carbou.me/MycilaPulseAnalyzer/assets/Oscillo_JSY-MK-194G_ZC_5ms.png)](https://mathieu.carbou.me/MycilaPulseAnalyzer/assets/Oscillo_JSY-MK-194G_ZC_5ms.png)
-
-## Metrics
-
-Metric depend on the model and they are all read.
-
-**Please have a look at the header file MycilaJSY.h and documentation inside.**
+- [JSY1031](#jsy1031)
+- [JSY-MK-163T](#jsy-mk-163)
+- [JSY-MK-193](#jsy-mk-193)
+- [JSY-MK-194T and JSY-MK-194G](#jsy-mk-194)
+- [JSY-MK-227 and JSY-MK-229](#jsy-mk-22x)
+- [JSY-MK-333](#jsy-mk-333)
 
 ### JSY1031
 
@@ -90,8 +79,6 @@ Metric depend on the model and they are all read.
 - `powerFactor`
 - `reactivePower`
 - `voltage`
-
-Note: Unlike other SY, JSY1031 also exposes the phase angle in degree (positive), but not its sign (to know if it is lagging or not). MycilaJSY does not read this value.
 
 ### JSY-MK-163
 
@@ -137,23 +124,7 @@ For each channel (1 and 2):
 - `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `voltage`
 
-### JSY-MK-227
-
-- `activeEnergy`
-- `activeEnergyImported` (positive energy)
-- `activeEnergyReturned` (negative energy)
-- `activePower`
-- `apparentPower`
-- `current`
-- `frequency`
-- `powerFactor`
-- `reactiveEnergy`
-- `reactivePower`
-- `reactiveEnergyImported` (positive energy)
-- `reactiveEnergyReturned` (negative energy)
-- `voltage`
-
-### JSY-MK-229
+### JSY-MK-22x
 
 - `activeEnergy`
 - `activeEnergyImported` (positive energy)
@@ -189,53 +160,64 @@ For each phase (A, B and C):
 - `reactiveEnergyReturned`
 - `apparentEnergy`
 
-## Remote JSY
-
-The JSY can be used connected to an ESP32 to send the JSY data several times per second to a remote server through UDP.
-Both devices needs to be connected to the same network and UDP packets must be allowed.
-
-Screenshot of the ESP32 running the JSY app called the `Sender`:
-
-![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/3066bf12-31d5-45de-9303-d810f14731d0)
-
-[Click here for the download and installation instructions of the JSY Remote UDP Sender](https://github.com/mathieucarbou/MycilaJSY/tree/main/examples/RemoteUDP)
-
-## Tested boards:
-
-- ESP32 (`esp32dev`): ESP32 NodeMCU, ESP32e, ESP32ue, etc
-- ESP32s (`nodemcu-32s`)
-- ESP32 S3 (`esp32-s3-devkitc-1`)
-
 ## Usage
 
-Have a look at all the examples in the [examples](examples) folder.
-
-There is a getter for each metric.
-
-### Model detection / forcing a Model
-
 ```c++
-// Will try to detect the model
-jsy.begin(Serial2, RX2, TX2);
+#include <MycilaJSY.h>
 
-// equivalent as above
-jsy.begin(Serial2, RX2, TX2, MYCILA_JSY_MK_UNKNOWN);
+Mycila::JSY jsy;
 
-// Skips model detection and use the given model
-jsy.begin(Serial2, RX2, TX2, MYCILA_JSY_MK_227);
+void setup() {
+  jsy.begin(Serial2, RX2, TX2);
+}
+
+void loop() {
+  if (jsy.read()) {
+    float v = jsy.data.single().voltage; // for JSY1031, JSY-163, JSY-227, JSY-229
+
+    float v1 = jsy.data.channel1().voltage; // for JSY-193 and JSY-194
+    float v2 = jsy.data.channel2().voltage; // for JSY-193 and JSY-194
+
+    float vA = jsy.data.phaseA().voltage; // for JSY-333
+    float vB = jsy.data.phaseB().voltage; // for JSY-333
+    float vC = jsy.data.phaseC().voltage; // for JSY-333
+    float p = jsy.data.aggregate().activePower; // for JSY-333
+  }
+  delay(4000);
+}
 ```
+
+- Have a look at the examples in the [examples](examples) folder
+- Read
 
 ### Baud rate detection / forcing a baud rate
 
 ```c++
-// Will try to detect the baud rate
-jsy.begin(Serial2, RX2, TX2);
-
-// equivalent as above
+// by default, will try to detect the baud rate
 jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN);
 
 // Skips baud rate detection and use the given baud rate
 jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::BAUD_38400);
+```
+
+### Address broadcast / unicast
+
+```c++
+// by default, will send to any device (broadcast)
+jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN, MYCILA_JSY_ADDRESS_BROADCAST);
+
+// Use the given address
+jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN, 0x01);
+```
+
+### Model detection / forcing a Model
+
+```c++
+// by default, will try to detect the model
+jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN, MYCILA_JSY_ADDRESS_BROADCAST, MYCILA_JSY_MK_UNKNOWN);
+
+// Skips model detection and use the given model
+jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN, MYCILA_JSY_MK_227, MYCILA_JSY_MK_194);
 ```
 
 ### Blocking mode
@@ -251,6 +233,7 @@ void loop() {
   jsy.read();
 
   // access values
+  float v = jsy.data.single().voltage;
 
   delay(1000);
 }
@@ -262,11 +245,12 @@ void loop() {
 Mycila::JSY jsy;
 
 void setup() {
-  jsy.begin(Serial2, RX2, TX2, true, 0);
+  jsy.begin(Serial2, RX2, TX2, true);
 }
 
 void loop() {
   // access values
+  float v = jsy.data.single().voltage;
 }
 ```
 
@@ -279,15 +263,30 @@ jsy.resetEnergy();
 ### Update Baud rate (change speed)
 
 ```c++
-if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSY::BaudRate::BAUD_38400) {
-  if (jsy.setBaudRate(Mycila::JSY::BaudRate::BAUD_38400)) {
-    // speed changed and switched to new speed
-  } else {
-    // speed changed failed, keeping current speed
-  }
-
-}
+jsy.setBaudRate(Mycila::JSY::BaudRate::BAUD_38400);
 ```
+
+### Change device address
+
+```c++
+jsy.setDeviceAddress(0x02);
+```
+
+### Switch AC/DC mode
+
+Only for JSY1031:
+
+```c++
+jsy.setMode(Mycila::JSY::Mode::DC);
+```
+
+### JSON Support
+
+You can activate JSON support by defining `-D MYCILA_JSON_SUPPORT` in your project and add the `ArduinoJson` library.
+
+### Debugging
+
+Set the flag: `-D MYCILA_JSY_DEBUG` and you will see all the JSY requests and responses.
 
 ### Callbacks
 
@@ -295,7 +294,7 @@ if (jsy.isEnabled() && jsy.getBaudRate() != Mycila::JSY::BaudRate::BAUD_38400) {
   This is useful to be notified exactly when required.
   You must check the event type
 
-**Callback Example**
+**Example:**
 
 Reading a load for 2 second after it is turned on:
 
@@ -315,6 +314,8 @@ Reading a load for 2 second after it is turned on:
     }
   });
 ```
+
+**Output example:**
 
 ```
 jsy.read() at 4800 bauds:
@@ -466,13 +467,75 @@ jsy.read() at 38400 bauds:
  - 14969706 EVT_READ
 ```
 
-### JSON Support
+## Remote JSY
 
-You can activate JSON support by defining `-D MYCILA_JSON_SUPPORT` in your project and add the `ArduinoJson` library.
+The JSY can be used connected to an ESP32 to send the JSY data several times per second to a remote server through UDP.
+Both devices needs to be connected to the same network and UDP packets must be allowed.
 
-### Debugging
+Screenshot of the ESP32 running the JSY app called the `Sender`:
 
-Set the flag: `-D MYCILA_JSY_DEBUG` and you will see all the JSY requests and responses.
+![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/3066bf12-31d5-45de-9303-d810f14731d0)
+
+[Click here for the download and installation instructions of the JSY Remote UDP Sender](https://github.com/mathieucarbou/MycilaJSY/tree/main/examples/RemoteUDP)
+
+## Zero-Cross Detection
+
+The JSY-MK-194G has a zero-cross detection feature which signals on the Zx pin when the current crosses zero.
+This feature is really useful to create Solr Routers like [YaSolR](https://yasolr.carbou.me).
+
+The [MycilaPulseAnalyzer](https://github.com/mathieucarbou/MycilaPulseAnalyzer) library supports many ZC detection methods including the JSY-MK-194G.
+
+[![](https://mathieu.carbou.me/MycilaPulseAnalyzer/assets/Oscillo_JSY-MK-194G_ZC_5ms.png)](https://mathieu.carbou.me/MycilaPulseAnalyzer/assets/Oscillo_JSY-MK-194G_ZC_5ms.png)
+
+## Boxes and 3D models
+
+You can make (print) a box or buy one, and then append a SSR Din Rail clip at the bottom:
+
+- [https://fr.aliexpress.com/item/1005005490499647.html](https://fr.aliexpress.com/item/1005005490499647.html)
+
+**Cases for the JSY-MK-194 T**
+
+- [https://www.thingiverse.com/thing:6003867](https://www.thingiverse.com/thing:6003867)
+
+**Cases for the JSY-MK-194 G**
+
+- [https://fr.aliexpress.com/item/1005002467813588.html](https://fr.aliexpress.com/item/1005002467813588.html)
+- [https://www.printables.com/model/72839-customizable-parametric-stable-and-waterproof-elec](https://www.printables.com/model/72839-customizable-parametric-stable-and-waterproof-elec)
+- [https://www.thingiverse.com/thing:4921568](https://www.thingiverse.com/thing:4921568)
+- [https://www.thingiverse.com/thing:2252270](https://www.thingiverse.com/thing:2252270)
+
+Here is the STL file I use for the JSY-MK-194G box mounted on a DIN rail: [JSY-MK-194G.stl](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194G.stl) which was created thanks to [this parametric model](https://www.printables.com/model/72839-customizable-parametric-stable-and-waterproof-elec) with these parameters:
+
+```ini
+ShowBottom                = true;
+ShowTop                   = true;
+DistanceBetweenObjects    = 10;
+ShowCaseAssembled         = false;
+
+Caselength                = 90;
+CaseWidth                 = 60;
+CaseHeight                = 42;
+
+BottomTopThickness        = 2.0;
+
+CountersinkScrew          = 3.0;
+
+ShowDeviceHolder         = true;
+ScrewHoleDiameter        = 2.6;
+ScrewCylinderDiameter    = 7;
+ScrewCylinderHeight      = 7.0;
+DeviceHolder_X_Distance  = 58;
+DeviceHolder_y_Distance  = 42;
+Offset_X                 = 0;
+Offset_Y                 = 0;
+ShowSideWallHoles        = true;
+SideWallHolesOn_X        = false;
+CountOfSideWallHoles     = 2;
+SideWallHoleDiameter     = 20;
+SiedWallHoleOffset_Z     = 0;
+```
+
+| [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg) |
 
 ## Performance tests
 
@@ -604,56 +667,6 @@ The "Ramp down time" is the time it takes for the JSY to return to 0W after the 
   This duration contains the duration for the load to reach its nominal power, plus the duration it takes for the JSY to stabilize its measurements (I think the JSY is using some kind of filtering or averaging).
 
 - Reading the JSY too frequently will lead to the same results, so an improvement could be to have the JSY read in a dedicated task asynchronously and use the callback mechanism to be called as soon as the JSY sees a change
-
-## Boxes and 3D models
-
-You can make (print) a box or buy one, and then append a SSR Din Rail clip at the bottom:
-
-- [https://fr.aliexpress.com/item/1005005490499647.html](https://fr.aliexpress.com/item/1005005490499647.html)
-
-**Cases for the JSY-MK-194 T**
-
-- [https://www.thingiverse.com/thing:6003867](https://www.thingiverse.com/thing:6003867)
-
-**Cases for the JSY-MK-194 G**
-
-- [https://fr.aliexpress.com/item/1005002467813588.html](https://fr.aliexpress.com/item/1005002467813588.html)
-- [https://www.printables.com/model/72839-customizable-parametric-stable-and-waterproof-elec](https://www.printables.com/model/72839-customizable-parametric-stable-and-waterproof-elec)
-- [https://www.thingiverse.com/thing:4921568](https://www.thingiverse.com/thing:4921568)
-- [https://www.thingiverse.com/thing:2252270](https://www.thingiverse.com/thing:2252270)
-
-Here is the STL file I use for the JSY-MK-194G box mounted on a DIN rail: [JSY-MK-194G.stl](https://mathieu.carbou.me/MycilaJSY/JSY-MK-194G.stl) which was created thanks to [this parametric model](https://www.printables.com/model/72839-customizable-parametric-stable-and-waterproof-elec) with these parameters:
-
-```ini
-ShowBottom                = true;
-ShowTop                   = true;
-DistanceBetweenObjects    = 10;
-ShowCaseAssembled         = false;
-
-Caselength                = 90;
-CaseWidth                 = 60;
-CaseHeight                = 42;
-
-BottomTopThickness        = 2.0;
-
-CountersinkScrew          = 3.0;
-
-ShowDeviceHolder         = true;
-ScrewHoleDiameter        = 2.6;
-ScrewCylinderDiameter    = 7;
-ScrewCylinderHeight      = 7.0;
-DeviceHolder_X_Distance  = 58;
-DeviceHolder_y_Distance  = 42;
-Offset_X                 = 0;
-Offset_Y                 = 0;
-ShowSideWallHoles        = true;
-SideWallHolesOn_X        = false;
-CountOfSideWallHoles     = 2;
-SideWallHoleDiameter     = 20;
-SiedWallHoleOffset_Z     = 0;
-```
-
-| [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-1.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-2.jpeg) | [![](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg)](https://mathieu.carbou.me/MycilaJSY/jsy-box-3.jpeg) |
 
 ## Reference material
 
