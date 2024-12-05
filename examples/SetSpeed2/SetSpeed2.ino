@@ -42,7 +42,7 @@ void loop() {
 
   if (counts % 7 == 0) {
     if (jsy.setBaudRate(jsy.getBaudRate() == jsy.getMaxAvailableBaudRate() ? jsy.getMinAvailableBaudRate() : jsy.getMaxAvailableBaudRate())) {
-      Serial.printf("JSY baud rate updated to %" PRIu32 "\n", sy.getBaudRate());
+      Serial.printf("JSY baud rate updated to %" PRIu32 "\n", jsy.getBaudRate());
     } else {
       Serial.println("JSY baud rate update failed");
     }

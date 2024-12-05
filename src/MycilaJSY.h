@@ -69,8 +69,12 @@
   #define MYCILA_JSY_ASYNC_READ_PAUSE_MS 0
 #endif
 
+#ifndef MYCILA_JSY_READ_TIMEOUT_MS
+  #define MYCILA_JSY_READ_TIMEOUT_MS 1000
+#endif
+
 #ifndef MYCILA_JSY_RETRY_COUNT
-  #define MYCILA_JSY_RETRY_COUNT 4
+  #define MYCILA_JSY_RETRY_COUNT 3
 #endif
 
 namespace Mycila {
@@ -105,6 +109,12 @@ namespace Mycila {
         EVT_READ_TIMEOUT,
         // wrong JSY device read
         EVT_READ_PEER
+      };
+
+      enum class Mode {
+        UNKNOWN,
+        AC,
+        DC
       };
 
       class Metrics {
@@ -293,18 +303,6 @@ namespace Mycila {
       ~JSY() { end(); }
 
       /**
-       * @brief Set the address used to send requests (1-255).
-       * Default value is MYCILA_JSY_ADDRESS_BROADCAST (0), which means every device will receive the request.
-       */
-      void setDestinationAddress(uint8_t address) { _destinationAddress = address; }
-
-      /**
-       * @brief Get the address used to send requests.
-       * @return The address used to send requests (1-255) or MYCILA_JSY_ADDRESS_BROADCAST (0) for all devices.
-       */
-      uint8_t getDestinationAddress() const { return _destinationAddress; }
-
-      /**
        * @brief Initialize the JSY with the given RX and TX pins.
        * @param serial The serial port to use
        * @param rxPin RX board pin connected to the TX of the JSY
@@ -318,11 +316,11 @@ namespace Mycila {
       void begin(HardwareSerial& serial, // NOLINT
                  int8_t rxPin,
                  int8_t txPin,
-                 bool async = false,
+                 bool async,
                  uint8_t core = MYCILA_JSY_ASYNC_CORE,
                  uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
                  uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS) {
-        begin(serial, rxPin, txPin, BaudRate::UNKNOWN, MYCILA_JSY_MK_UNKNOWN, async, core, stackSize, pause);
+        begin(serial, rxPin, txPin, BaudRate::UNKNOWN, MYCILA_JSY_ADDRESS_BROADCAST, MYCILA_JSY_MK_UNKNOWN, async, core, stackSize, pause);
       }
 
       /**
@@ -331,6 +329,7 @@ namespace Mycila {
        * @param rxPin RX board pin connected to the TX of the JSY
        * @param txPin TX board pin connected to the RX of the JSY
        * @param baudRate The baud rate of the JSY. If set to BaudRate::UNKNOWN, the baud rate is automatically detected
+       * @param destinationAddress The address of the device to communicate with (1-255) or MYCILA_JSY_ADDRESS_BROADCAST for all devices
        * @param model The model of the JSY. If set to MYCILA_JSY_MK_UNKNOWN, the model is automatically detected
        * @param async If true, the JSY will be read in a separate task (default: false)
        * @param core The core to use for the async task (default: MYCILA_JSY_ASYNC_CORE)
@@ -340,7 +339,8 @@ namespace Mycila {
       void begin(HardwareSerial& serial, // NOLINT
                  int8_t rxPin,
                  int8_t txPin,
-                 BaudRate baudRate,
+                 BaudRate baudRate = BaudRate::UNKNOWN,
+                 uint8_t destinationAddress = MYCILA_JSY_ADDRESS_BROADCAST,
                  uint16_t model = MYCILA_JSY_MK_UNKNOWN,
                  bool async = false,
                  uint8_t core = MYCILA_JSY_ASYNC_CORE,
@@ -402,11 +402,43 @@ namespace Mycila {
       static const char* getModelName(uint16_t model);
 
       /**
+       * @brief Reads the JSY mode (AC or DC). Some JSY are able to work with either AC or DC current.
+       * @return The mode of the JSY, or Mode::UNKNOWN if there is an error mode cannot be read.
+       * @note This function is blocking until the data is read or the timeout is reached.
+       */
+      Mode readMode() { return _readMode(_destinationAddress, _model); }
+
+      /**
+       * @brief Reads the JSY mode (AC or DC). Some JSY are able to work with either AC or DC current.
+       * @param address The address of the device to read (1-255) or MYCILA_JSY_ADDRESS_BROADCAST for all devices
+       * @return The mode of the JSY, or Mode::UNKNOWN if there is an error mode cannot be read.
+       * @note This function is blocking until the data is read or the timeout is reached.
+       */
+      Mode readMode(uint8_t address) { return _readMode(address, readModel(address)); }
+
+      /**
+       * @brief Set the JSY mode (AC or DC). Some JSY are able to work with either AC or DC current.
+       * @param mode The mode to set
+       * @return true if the mode was set
+       * @note This function is blocking until the mode is set or the timeout is reached.
+       */
+      bool setMode(Mode mode) { return _setMode(_destinationAddress, _model, mode); }
+
+      /**
+       * @brief Set the JSY mode (AC or DC). Some JSY are able to work with either AC or DC current.
+       * @param address The address of the device to set (1-255) or MYCILA_JSY_ADDRESS_BROADCAST for all devices
+       * @param mode The mode to set
+       * @return true if the mode was set
+       * @note This function is blocking until the mode is set or the timeout is reached.
+       */
+      bool setMode(uint8_t address, Mode mode) { return _setMode(address, readModel(address), mode); }
+
+      /**
        * @brief Read the JSY values.
        * @return true if the read was successful
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      bool read() { return read(_destinationAddress); }
+      bool read() { return _read(_destinationAddress, _model); }
 
       /**
        * @brief Read the JSY values.
@@ -414,7 +446,7 @@ namespace Mycila {
        * @return true if the read was successful
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      bool read(uint8_t address);
+      bool read(uint8_t address) { return _read(address, readModel(address)); }
 
       /**
        * @brief Reset the energy counters of the JSY.
@@ -459,6 +491,12 @@ namespace Mycila {
       gpio_num_t getTXPin() const { return _pinTX; }
       bool isEnabled() const { return _enabled; }
       BaudRate getBaudRate() const { return _baudRate; }
+
+      /**
+       * @brief Get the address used to send requests.
+       * @return The address used to send requests (1-255) or MYCILA_JSY_ADDRESS_BROADCAST (0) for all devices.
+       */
+      uint8_t getDestinationAddress() const { return _destinationAddress; }
 
       BaudRate getMinAvailableBaudRate() const;
       static BaudRate getMinAvailableBaudRate(uint16_t model);
@@ -528,6 +566,9 @@ namespace Mycila {
       };
 
       bool _set(uint8_t address, uint8_t newAddress, BaudRate newBaudRate);
+      bool _read(uint8_t address, uint16_t model);
+      Mode _readMode(uint8_t address, uint16_t model);
+      bool _setMode(uint8_t address, uint16_t model, Mode mode);
 
       bool _canRead(uint8_t address, BaudRate baudRate);
       ReadResult _timedRead(uint8_t expectedAddress, size_t expectedLen, BaudRate baudRate);
