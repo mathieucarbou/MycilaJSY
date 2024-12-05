@@ -842,11 +842,11 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       parsed._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_FREQUENCY) / 100.0;
       parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_VOLTAGE) / 100.0;
       parsed._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_CURRENT) / 10000.0;
-      parsed._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_ACTIVE_POWER) / 100.0;
+      parsed._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_ACTIVE_POWER) / 10000.0; // note: spec says /100 but in reality this is /10000
       parsed._metrics[0].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_ACTIVE_ENERGY) / 100.0;
       parsed._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_POWER_FACTOR) / 1000.0;
-      parsed._metrics[0].apparentPower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_APPARENT_POWER) / 100.0;
-      parsed._metrics[0].reactivePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_REACTIVE_POWER) / 100.0;
+      parsed._metrics[0].apparentPower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_APPARENT_POWER) / 10000.0; // note: spec says /100 but in reality this is /10000
+      parsed._metrics[0].reactivePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_REACTIVE_POWER) / 10000.0; // note: spec says /100 but in reality this is /10000
 
       // aggregate
       parsed.aggregate = parsed._metrics[0];

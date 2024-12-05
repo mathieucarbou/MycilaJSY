@@ -69,6 +69,11 @@
   #define MYCILA_JSY_ASYNC_READ_PAUSE_MS 0
 #endif
 
+// Maximumtime in milliseconds to wait for bytes to arrive when reading a JSY response
+// This value is conservative and work with all JSY.
+// If you happen to only use specific JSY models, you can reduce this value to speed up the read process.
+// Only JSY1031 are slow and require such a big timeout.
+// For other models, the timeout can be decreased safely to 500 ms.
 #ifndef MYCILA_JSY_READ_TIMEOUT_MS
   #define MYCILA_JSY_READ_TIMEOUT_MS 1000
 #endif

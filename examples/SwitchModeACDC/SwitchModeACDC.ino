@@ -25,49 +25,32 @@ void setup() {
 
   jsy.begin(Serial2, RX2, TX2);
 
+  Mycila::JSY::BaudRate wantedBaudRate = jsy.getMaxAvailableBaudRate();
+  // Mycila::JSY::BaudRate wantedBaudRate = Mycila::JSY::BaudRate::BAUD_9600;
+
+  Mycila::JSY::Mode wantedMode = Mycila::JSY::Mode::AC;
+  // Mycila::JSY::Mode wantedMode = Mycila::JSY::Mode::DC;
+
   // switch to fastest available speed or minimum speed
-  if (jsy.getBaudRate() != jsy.getMaxAvailableBaudRate()) {
-    jsy.setBaudRate(jsy.getMaxAvailableBaudRate());
-  } else {
-    jsy.setBaudRate(jsy.getMinAvailableBaudRate());
+  if (jsy.getBaudRate() != wantedBaudRate) {
+    Serial.printf("Switching to baud rate %" PRIu32 "...\n", wantedBaudRate);
+    jsy.setBaudRate(wantedBaudRate);
   }
 
   // switch to AC/DC mode
-  switch (jsy.readMode()) {
-    case Mycila::JSY::Mode::AC:
-      Serial.println("Current mode: AC");
-      Serial.println("Switching to DC mode...");
-      if (jsy.setMode(Mycila::JSY::Mode::DC)) {
-        Serial.println("Switched to DC mode");
-      } else {
-        Serial.println("Failed to switch to DC mode");
-      }
-      break;
-
-    case Mycila::JSY::Mode::DC:
-      Serial.println("Current mode: DC");
-      Serial.println("Switching to AC mode...");
-      if (jsy.setMode(Mycila::JSY::Mode::AC)) {
-        Serial.println("Switched to AC mode");
-      } else {
-        Serial.println("Failed to switch to AC mode");
-      }
-      break;
-
-    default:
-      Serial.println("Current mode: Unknown");
-      break;
+  if (jsy.readMode() != wantedMode) {
+    Serial.printf("Switching to mode %s...\n", wantedMode == Mycila::JSY::Mode::AC ? "AC" : "DC");
+    jsy.setMode(wantedMode);
   }
 
+  // verify mode change
   switch (jsy.readMode()) {
     case Mycila::JSY::Mode::AC:
       Serial.println("Current mode: AC");
       break;
-
     case Mycila::JSY::Mode::DC:
       Serial.println("Current mode: DC");
       break;
-
     default:
       Serial.println("Current mode: Unknown");
       break;
