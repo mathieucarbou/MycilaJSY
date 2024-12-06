@@ -23,8 +23,8 @@ Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY
   - [JSY-MK-333](#jsy-mk-333)
 - [Usage](#usage)
   - [Baud rate detection / forcing a baud rate](#baud-rate-detection--forcing-a-baud-rate)
-  - [Address broadcast / unicast](#address-broadcast--unicast)
-  - [Model detection / forcing a Model](#model-detection--forcing-a-model)
+  - [Destination Address](#destination-address)
+  - [Model detection / forcing a model](#model-detection--forcing-a-model)
   - [Blocking mode](#blocking-mode)
   - [Non-Blocking mode (async)](#non-blocking-mode-async)
   - [Energy reset](#energy-reset)
@@ -46,16 +46,17 @@ Go to: [https://mathieu.carbou.me/MycilaJSY/api/index.html](https://mathieu.carb
 
 ## Features
 
+- AC/DC mode switch (JSY1031)
 - Async and blocking mode (configurable core, stack and pause interval)
 - Automatic baud rate detection
-- Automatic JSY model detection
 - Automatic device address detection
-- Support any Serial / TTL (RX/TX port)
+- Automatic JSY model detection
 - Device address: support for multiple devices on the same bus
 - Energy reset live at runtime
 - Focus on speed and reactivity with a callback mechanism
-- Switch bauds rate to any supported speed live at runtime
 - Remote support with [UDP sender](#remote-jsy)
+- Support any Serial / TTL (RX/TX port)
+- Switch bauds rate to any supported speed live at runtime
 - Zero-Cross detection support with JSY-MK-194G and [MycilaPulseAnalyzer](https://github.com/mathieucarbou/MycilaPulseAnalyzer)
 
 Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/blog/2024-06-26)**
@@ -162,6 +163,32 @@ For each phase (A, B and C):
 
 ## Usage
 
+**PIO file:**
+
+Make sure to use that in your `platformio.ini`:
+
+```ini
+; Arduino 3.0.x
+; platform = https://github.com/pioarduino/platform-espressif32/releases/download/51.03.05/platform-espressif32.zip
+; Arduino 3.1.x
+platform = https://github.com/pioarduino/platform-espressif32/releases/download/53.03.10-rc3/platform-espressif32.zip
+
+build_flags =
+  -std=c++17
+  -std=gnu++17
+  -Wall -Wextra
+
+build_unflags =
+    -std=gnu++11
+```
+
+1. make sure to use `pioarduino` platform because PlatformIO provided platforms are not compatible with Arduino Core 3.
+2. C++ 17 is required for mutex
+
+Arduino IDE also has a place to set compilation flags.
+
+**Sample code:**
+
 ```c++
 #include <MycilaJSY.h>
 
@@ -200,7 +227,7 @@ jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN);
 jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::BAUD_38400);
 ```
 
-### Address broadcast / unicast
+### Destination Address
 
 ```c++
 // by default, will send to any device (broadcast)
@@ -210,7 +237,7 @@ jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN, MYCILA_JSY_ADDRESS_
 jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN, 0x01);
 ```
 
-### Model detection / forcing a Model
+### Model detection / forcing a model
 
 ```c++
 // by default, will try to detect the model
