@@ -15,12 +15,12 @@ Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY
 - [API Documentation](#api-documentation)
 - [Features](#features)
 - [Supported models](#supported-models)
-  - [JSY1031](#jsy1031)
-  - [JSY-MK-163](#jsy-mk-163)
-  - [JSY-MK-193](#jsy-mk-193)
-  - [JSY-MK-194](#jsy-mk-194)
-  - [JSY-MK-22x](#jsy-mk-22x)
-  - [JSY-MK-333](#jsy-mk-333)
+  - [JSY1031 (TTL)](#jsy1031-ttl)
+  - [JSY-MK-163T (TTL)](#jsy-mk-163t-ttl)
+  - [JSY-MK-193 (RS485)](#jsy-mk-193-rs485)
+  - [JSY-MK-194T (TTL) and JSY-MK-194G (TTL)](#jsy-mk-194t-ttl-and-jsy-mk-194g-ttl)
+  - [JSY-MK-227 (RS485) and JSY-MK-229 (RS485)](#jsy-mk-227-rs485-and-jsy-mk-229-rs485)
+  - [JSY-MK-333 (TTL) and JSY-MK-333G (RS485)](#jsy-mk-333-ttl-and-jsy-mk-333g-rs485)
 - [Usage](#usage)
   - [Baud rate detection / forcing a baud rate](#baud-rate-detection--forcing-a-baud-rate)
   - [Destination Address](#destination-address)
@@ -63,14 +63,14 @@ Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/bl
 
 ## Supported models
 
-- [JSY1031](#jsy1031)
-- [JSY-MK-163T](#jsy-mk-163)
-- [JSY-MK-193](#jsy-mk-193)
-- [JSY-MK-194T and JSY-MK-194G](#jsy-mk-194)
-- [JSY-MK-227 and JSY-MK-229](#jsy-mk-22x)
-- [JSY-MK-333](#jsy-mk-333)
+- [JSY1031 (TTL)](#jsy1031-ttl)
+- [JSY-MK-163T (TTL)](#jsy-mk-163t-ttl)
+- [JSY-MK-193 (RS485)](#jsy-mk-193-rs485)
+- [JSY-MK-194T (TTL) and JSY-MK-194G (TTL)](#jsy-mk-194t-ttl-and-jsy-mk-194g-ttl)
+- [JSY-MK-227 (RS485) and JSY-MK-229 (RS485)](#jsy-mk-227-rs485-and-jsy-mk-229-rs485)
+- [JSY-MK-333 (TTL) and JSY-MK-333G (RS485)](#jsy-mk-333-ttl-and-jsy-mk-333g-rs485)
 
-### JSY1031
+### JSY1031 (TTL)
 
 - `activeEnergy`
 - `activePower`
@@ -81,7 +81,7 @@ Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/bl
 - `reactivePower`
 - `voltage`
 
-### JSY-MK-163
+### JSY-MK-163T (TTL)
 
 - `activeEnergy` (sum of `activeEnergyImported` and `activeEnergyReturned`)
 - `activeEnergyImported`
@@ -94,7 +94,7 @@ Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/bl
 - `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `voltage`
 
-### JSY-MK-193
+### JSY-MK-193 (RS485)
 
 For each channel (1 and 2):
 
@@ -109,7 +109,7 @@ For each channel (1 and 2):
 - `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `voltage`
 
-### JSY-MK-194
+### JSY-MK-194T (TTL) and JSY-MK-194G (TTL)
 
 - `frequency`
 
@@ -125,7 +125,7 @@ For each channel (1 and 2):
 - `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `voltage`
 
-### JSY-MK-22x
+### JSY-MK-227 (RS485) and JSY-MK-229 (RS485)
 
 - `activeEnergy`
 - `activeEnergyImported` (positive energy)
@@ -141,7 +141,7 @@ For each channel (1 and 2):
 - `reactiveEnergyReturned` (negative energy)
 - `voltage`
 
-### JSY-MK-333
+### JSY-MK-333 (TTL) and JSY-MK-333G (RS485)
 
 - `frequency`
 
@@ -706,5 +706,6 @@ The "Ramp down time" is the time it takes for the JSY to return to 0W after the 
 - [JSY-MK-227.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-227.pdf)
 - [JSY-MK-229.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-229.pdf)
 - [JSY-MK-333.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-333.pdf)
+- [JSY-MK-333G.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-333G.pdf)
 - [RENERGY RN8209G](https://mathieu.carbou.me/MycilaJSY/RENERGY-RN8209G.pdf)
 - [ModbusMechanic](https://github.com/SciFiDryer/ModbusMechanic) (can connect and configure JSY with a USB-TTL adapter)
