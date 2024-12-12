@@ -112,8 +112,8 @@ jobs:
       - name: Build EnergyResetAsync
         run: PLATFORMIO_SRC_DIR="examples/EnergyResetAsync" PIO_BOARD=${{ matrix.board }} pio run -e ${{ matrix.env }}
 
-      - name: Build SetSpeed
-        run: PLATFORMIO_SRC_DIR="examples/SetSpeed" PIO_BOARD=${{ matrix.board }} pio run -e ${{ matrix.env }}
+      - name: Build SetMaxSpeed
+        run: PLATFORMIO_SRC_DIR="examples/SetMaxSpeed" PIO_BOARD=${{ matrix.board }} pio run -e ${{ matrix.env }}
 
       - name: Build PerfTest1
         run: PLATFORMIO_SRC_DIR="examples/PerfTest1" PIO_BOARD=${{ matrix.board }} pio run -e ${{ matrix.env }}
