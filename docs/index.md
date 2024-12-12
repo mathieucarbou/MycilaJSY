@@ -15,12 +15,12 @@ Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY
 - [API Documentation](#api-documentation)
 - [Features](#features)
 - [Supported models](#supported-models)
-  - [JSY1031 (AC and DC through TTL)](#jsy1031-ac-and-dc-through-ttl)
-  - [JSY-MK-163T (AC through TTL)](#jsy-mk-163t-ac-through-ttl)
-  - [JSY-MK-193 (RS485)](#jsy-mk-193-rs485)
-  - [JSY-MK-194T and JSY-MK-194G (AC through TTL)](#jsy-mk-194t-and-jsy-mk-194g-ac-through-ttl)
-  - [JSY-MK-227 and JSY-MK-229 (AC and DC through RS485)](#jsy-mk-227-and-jsy-mk-229-ac-and-dc-through-rs485)
-  - [JSY-MK-333 and JSY-MK-333G (AC through RS485)](#jsy-mk-333-and-jsy-mk-333g-ac-through-rs485)
+  - [JSY1031 (AC and DC, TTL interface)](#jsy1031-ac-and-dc-ttl-interface)
+  - [JSY-MK-163T (AC, TTL interface)](#jsy-mk-163t-ac-ttl-interface)
+  - [JSY-MK-193 (AC, RS485 interface)](#jsy-mk-193-ac-rs485-interface)
+  - [JSY-MK-194T and JSY-MK-194G (AC, TTL interface)](#jsy-mk-194t-and-jsy-mk-194g-ac-ttl-interface)
+  - [JSY-MK-227 and JSY-MK-229 (AC and DC, RS485 interface)](#jsy-mk-227-and-jsy-mk-229-ac-and-dc-rs485-interface)
+  - [JSY-MK-333 and JSY-MK-333G (AC, RS485 interface)](#jsy-mk-333-and-jsy-mk-333g-ac-rs485-interface)
 - [Usage](#usage)
   - [Baud rate detection / forcing a baud rate](#baud-rate-detection--forcing-a-baud-rate)
   - [Destination Address](#destination-address)
@@ -70,7 +70,7 @@ Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/bl
 - [JSY-MK-227 (RS485) and JSY-MK-229 (RS485)](#jsy-mk-227-rs485-and-jsy-mk-229-rs485)
 - [JSY-MK-333 (TTL) and JSY-MK-333G (RS485)](#jsy-mk-333-ttl-and-jsy-mk-333g-rs485)
 
-### JSY1031 (AC and DC through TTL)
+### JSY1031 (AC and DC, TTL interface)
 
 - `activeEnergy`
 - `activePower`
@@ -81,7 +81,7 @@ Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/bl
 - `reactivePower`
 - `voltage`
 
-### JSY-MK-163T (AC through TTL)
+### JSY-MK-163T (AC, TTL interface)
 
 - `activeEnergy` (sum of `activeEnergyImported` and `activeEnergyReturned`)
 - `activeEnergyImported`
@@ -94,7 +94,7 @@ Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/bl
 - `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `voltage`
 
-### JSY-MK-193 (AC through RS485)
+### JSY-MK-193 (AC, RS485 interface)
 
 For each channel (1 and 2):
 
@@ -109,7 +109,7 @@ For each channel (1 and 2):
 - `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `voltage`
 
-### JSY-MK-194T and JSY-MK-194G (AC through TTL)
+### JSY-MK-194T and JSY-MK-194G (AC, TTL interface)
 
 - `frequency`
 
@@ -125,7 +125,7 @@ For each channel (1 and 2):
 - `reactivePower` (calculate and positive since we do not know the phase shift angle: inductive or capacitive load)
 - `voltage`
 
-### JSY-MK-227 and JSY-MK-229 (AC and DC through RS485)
+### JSY-MK-227 and JSY-MK-229 (AC and DC, RS485 interface)
 
 - `activeEnergy`
 - `activeEnergyImported` (positive energy)
@@ -141,7 +141,7 @@ For each channel (1 and 2):
 - `reactiveEnergyReturned` (negative energy)
 - `voltage`
 
-### JSY-MK-333 and JSY-MK-333G (AC through RS485)
+### JSY-MK-333 and JSY-MK-333G (AC, RS485 interface)
 
 - `frequency`
 
