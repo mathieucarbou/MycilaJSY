@@ -171,7 +171,7 @@ Make sure to use that in your `platformio.ini`:
 ; Arduino 3.0.x
 ; platform = https://github.com/pioarduino/platform-espressif32/releases/download/51.03.05/platform-espressif32.zip
 ; Arduino 3.1.x
-platform = https://github.com/pioarduino/platform-espressif32/releases/download/53.03.10-rc3/platform-espressif32.zip
+platform = https://github.com/pioarduino/platform-espressif32/releases/download/53.03.10/platform-espressif32.zip
 
 build_flags =
   -std=c++17
