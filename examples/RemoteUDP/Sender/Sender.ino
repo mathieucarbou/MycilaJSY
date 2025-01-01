@@ -112,6 +112,7 @@ AsyncUDP udp;
 AsyncWebServer webServer(80);
 Mycila::ESPConnect espConnect(webServer);
 ESPDash dashboard = ESPDash(&webServer, "/dashboard", false);
+WebSerial webSerial;
 Mycila::JSY jsy;
 Mycila::Logger logger;
 Mycila::TaskManager coreTaskManager("core");
@@ -139,9 +140,9 @@ Card reset = Card(&dashboard, BUTTON_CARD, "Factory Reset");
 Card jsyModelCard = Card(&dashboard, GENERIC_CARD, "Model");
 Card messageRateCard = Card(&dashboard, GENERIC_CARD, "Message Rate", "msg/s");
 Card dataRateCard = Card(&dashboard, GENERIC_CARD, "Data Rate", "bytes/s");
-Card frequency = Card(&dashboard, GENERIC_CARD, "Frequency", "Hz");
 
 // JSY-MK-163
+Card jsy163Frequency = Card(&dashboard, GENERIC_CARD, "Frequency", "Hz");
 Card jsy163Voltage = Card(&dashboard, GENERIC_CARD, "Voltage", "V");
 Card jsy163current = Card(&dashboard, GENERIC_CARD, "Current", "A");
 Card jsy163PowerFactor = Card(&dashboard, GENERIC_CARD, "Power Factor");
@@ -154,6 +155,7 @@ Card jsy163ActiveEnergyReturned = Card(&dashboard, GENERIC_CARD, "Active Energy 
 Chart jsy163ActivePowerHistory = Chart(&dashboard, BAR_CHART, "Active Power (W)");
 
 // JSY-MK-194
+Card jsy194Channel1Frequency = Card(&dashboard, GENERIC_CARD, "Channel 1 Frequency", "Hz");
 Card jsy194Channel1Voltage = Card(&dashboard, GENERIC_CARD, "Channel 1 Voltage", "V");
 Card jsy194Channel1Current = Card(&dashboard, GENERIC_CARD, "Channel 1 Current", "A");
 Card jsy194Channel1PowerFactor = Card(&dashboard, GENERIC_CARD, "Channel 1 Power Factor");
@@ -163,6 +165,7 @@ Card jsy194Channel1ReactivePower = Card(&dashboard, GENERIC_CARD, "Channel 1 Rea
 Card jsy194Channel1ActiveEnergy = Card(&dashboard, GENERIC_CARD, "Channel 1 Active Energy", "kWh");
 Card jsy194Channel1ActiveEnergyImported = Card(&dashboard, GENERIC_CARD, "Channel 1 Active Energy Imported", "kWh");
 Card jsy194Channel1ActiveEnergyReturned = Card(&dashboard, GENERIC_CARD, "Channel 1 Active Energy Returned", "kWh");
+Card jsy194Channel2Frequency = Card(&dashboard, GENERIC_CARD, "Channel 2 Frequency", "Hz");
 Card jsy194Channel2Voltage = Card(&dashboard, GENERIC_CARD, "Channel 2 Voltage", "V");
 Card jsy194Channel2Current = Card(&dashboard, GENERIC_CARD, "Channel 2 Current", "A");
 Card jsy194Channel2PowerFactor = Card(&dashboard, GENERIC_CARD, "Channel 2 Power Factor");
@@ -176,6 +179,7 @@ Chart jsy194Channel1ActivePowerHistory = Chart(&dashboard, BAR_CHART, "Channel 1
 Chart jsy194Channel2ActivePowerHistory = Chart(&dashboard, BAR_CHART, "Channel 2 Active Power (W)");
 
 // JSY-MK-333
+Card jsy333PhaseAFrequency = Card(&dashboard, GENERIC_CARD, "Phase A Frequency", "Hz");
 Card jsy333PhaseAVoltage = Card(&dashboard, GENERIC_CARD, "Phase A Voltage", "V");
 Card jsy333PhaseACurrent = Card(&dashboard, GENERIC_CARD, "Phase A Current", "A");
 Card jsy333PhaseAPowerFactor = Card(&dashboard, GENERIC_CARD, "Phase A Power Factor");
@@ -189,6 +193,7 @@ Card jsy333PhaseAReactiveEnergy = Card(&dashboard, GENERIC_CARD, "Phase A Reacti
 Card jsy333PhaseAReactiveEnergyImported = Card(&dashboard, GENERIC_CARD, "Phase A Reactive Energy Imported", "kVArh");
 Card jsy333PhaseAReactiveEnergyReturned = Card(&dashboard, GENERIC_CARD, "Phase A Reactive Energy Returned", "kVArh");
 Card jsy333PhaseAApparentEnergy = Card(&dashboard, GENERIC_CARD, "Phase A Apparent Energy", "kVAh");
+Card jsy333PhaseBFrequency = Card(&dashboard, GENERIC_CARD, "Phase B Frequency", "Hz");
 Card jsy333PhaseBVoltage = Card(&dashboard, GENERIC_CARD, "Phase B Voltage", "V");
 Card jsy333PhaseBCurrent = Card(&dashboard, GENERIC_CARD, "Phase B Current", "A");
 Card jsy333PhaseBPowerFactor = Card(&dashboard, GENERIC_CARD, "Phase B Power Factor");
@@ -202,6 +207,7 @@ Card jsy333PhaseBReactiveEnergy = Card(&dashboard, GENERIC_CARD, "Phase B Reacti
 Card jsy333PhaseBReactiveEnergyImported = Card(&dashboard, GENERIC_CARD, "Phase B Reactive Energy Imported", "kVArh");
 Card jsy333PhaseBReactiveEnergyReturned = Card(&dashboard, GENERIC_CARD, "Phase B Reactive Energy Returned", "kVArh");
 Card jsy333PhaseBApparentEnergy = Card(&dashboard, GENERIC_CARD, "Phase B Apparent Energy", "kVAh");
+Card jsy333PhaseCFrequency = Card(&dashboard, GENERIC_CARD, "Phase C Frequency", "Hz");
 Card jsy333PhaseCVoltage = Card(&dashboard, GENERIC_CARD, "Phase C Voltage", "V");
 Card jsy333PhaseCCurrent = Card(&dashboard, GENERIC_CARD, "Phase C Current", "A");
 Card jsy333PhaseCPowerFactor = Card(&dashboard, GENERIC_CARD, "Phase C Power Factor");
@@ -288,10 +294,10 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
   messageRateCard.update(messageRate);
   dataRateCard.update(static_cast<int>(dataRate));
   udpSendEnabledCard.update(udpSendEnabled);
-  frequency.update(jsy.data.aggregate.frequency);
 
   switch (jsyModel) {
     case MYCILA_JSY_MK_163: {
+      jsy163Frequency.update(jsy.data.single().frequency);
       jsy163Voltage.update(jsy.data.single().voltage);
       jsy163current.update(jsy.data.single().current);
       jsy163PowerFactor.update(jsy.data.single().powerFactor);
@@ -315,7 +321,9 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
 
       break;
     }
+    case MYCILA_JSY_MK_193:
     case MYCILA_JSY_MK_194: {
+      jsy194Channel1Frequency.update(jsy.data.channel1().frequency);
       jsy194Channel1Voltage.update(jsy.data.channel1().voltage);
       jsy194Channel1Current.update(jsy.data.channel1().current);
       jsy194Channel1PowerFactor.update(jsy.data.channel1().powerFactor);
@@ -326,6 +334,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
       jsy194Channel1ActiveEnergyImported.update(jsy.data.channel1().activeEnergyImported);
       jsy194Channel1ActiveEnergyReturned.update(jsy.data.channel1().activeEnergyReturned);
 
+      jsy194Channel2Frequency.update(jsy.data.channel2().frequency);
       jsy194Channel2Voltage.update(jsy.data.channel2().voltage);
       jsy194Channel2Current.update(jsy.data.channel2().current);
       jsy194Channel2PowerFactor.update(jsy.data.channel2().powerFactor);
@@ -353,6 +362,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
       break;
     }
     case MYCILA_JSY_MK_333: {
+      jsy333PhaseAFrequency.update(jsy.data.phaseA().frequency);
       jsy333PhaseAVoltage.update(jsy.data.phaseA().voltage);
       jsy333PhaseACurrent.update(jsy.data.phaseA().current);
       jsy333PhaseAPowerFactor.update(jsy.data.phaseA().powerFactor);
@@ -367,6 +377,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
       jsy333PhaseAReactiveEnergyReturned.update(jsy.data.phaseA().reactiveEnergyReturned);
       jsy333PhaseAApparentEnergy.update(jsy.data.phaseA().apparentEnergy);
 
+      jsy333PhaseBFrequency.update(jsy.data.phaseB().frequency);
       jsy333PhaseBVoltage.update(jsy.data.phaseB().voltage);
       jsy333PhaseBCurrent.update(jsy.data.phaseB().current);
       jsy333PhaseBPowerFactor.update(jsy.data.phaseB().powerFactor);
@@ -381,6 +392,7 @@ Mycila::Task dashboardTask("Dashboard", [](void* params) {
       jsy333PhaseBReactiveEnergyReturned.update(jsy.data.phaseB().reactiveEnergyReturned);
       jsy333PhaseBApparentEnergy.update(jsy.data.phaseB().apparentEnergy);
 
+      jsy333PhaseCFrequency.update(jsy.data.phaseC().frequency);
       jsy333PhaseCVoltage.update(jsy.data.phaseC().voltage);
       jsy333PhaseCCurrent.update(jsy.data.phaseC().current);
       jsy333PhaseCPowerFactor.update(jsy.data.phaseC().powerFactor);
@@ -466,9 +478,9 @@ void setup() {
   jsyTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
 
   // WebSerial
-  WebSerial.setAuthentication(MYCILA_ADMIN_USERNAME, MYCILA_ADMIN_PASSWORD);
-  WebSerial.begin(&webServer, "/console");
-  logger.forwardTo(&WebSerial);
+  webSerial.setAuthentication(MYCILA_ADMIN_USERNAME, MYCILA_ADMIN_PASSWORD);
+  webSerial.begin(&webServer, "/console");
+  logger.forwardTo(&webSerial);
 
   // ElegantOTA
   ElegantOTA.setAutoReboot(false);
