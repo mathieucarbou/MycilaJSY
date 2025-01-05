@@ -990,8 +990,8 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00916" name="l00916"></a><span class="lineno">  916</span>      <span class="comment">// aggregate</span></div>
 <div class="line"><a id="l00917" name="l00917"></a><span class="lineno">  917</span>      parsed.aggregate = parsed._metrics[0];</div>
 <div class="line"><a id="l00918" name="l00918"></a><span class="lineno">  918</span>      parsed.aggregate += parsed._metrics[1];</div>
-<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span>      parsed.aggregate.voltage = max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);</div>
-<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span>      parsed.aggregate.frequency = max(parsed._metrics[0].frequency, parsed._metrics[1].frequency);</div>
+<div class="line"><a id="l00919" name="l00919"></a><span class="lineno">  919</span>      parsed.aggregate.voltage = std::max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);</div>
+<div class="line"><a id="l00920" name="l00920"></a><span class="lineno">  920</span>      parsed.aggregate.frequency = std::max(parsed._metrics[0].frequency, parsed._metrics[1].frequency);</div>
 <div class="line"><a id="l00921" name="l00921"></a><span class="lineno">  921</span> </div>
 <div class="line"><a id="l00922" name="l00922"></a><span class="lineno">  922</span>      <span class="keywordflow">break</span>;</div>
 <div class="line"><a id="l00923" name="l00923"></a><span class="lineno">  923</span>    }</div>
@@ -1041,7 +1041,7 @@ $(function(){ initResizable(false); });
 <div class="line"><a id="l00967" name="l00967"></a><span class="lineno">  967</span>      parsed.aggregate = parsed._metrics[0];</div>
 <div class="line"><a id="l00968" name="l00968"></a><span class="lineno">  968</span>      parsed.aggregate += parsed._metrics[1];</div>
 <div class="line"><a id="l00969" name="l00969"></a><span class="lineno">  969</span>      parsed.aggregate.frequency = frequency;</div>
-<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span>      parsed.aggregate.voltage = max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);</div>
+<div class="line"><a id="l00970" name="l00970"></a><span class="lineno">  970</span>      parsed.aggregate.voltage = std::max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);</div>
 <div class="line"><a id="l00971" name="l00971"></a><span class="lineno">  971</span> </div>
 <div class="line"><a id="l00972" name="l00972"></a><span class="lineno">  972</span>      <span class="keywordflow">break</span>;</div>
 <div class="line"><a id="l00973" name="l00973"></a><span class="lineno">  973</span>    }</div>
