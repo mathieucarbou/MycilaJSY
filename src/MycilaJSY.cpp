@@ -916,8 +916,8 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       // aggregate
       parsed.aggregate = parsed._metrics[0];
       parsed.aggregate += parsed._metrics[1];
-      parsed.aggregate.voltage = max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);
-      parsed.aggregate.frequency = max(parsed._metrics[0].frequency, parsed._metrics[1].frequency);
+      parsed.aggregate.voltage = std::max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);
+      parsed.aggregate.frequency = std::max(parsed._metrics[0].frequency, parsed._metrics[1].frequency);
 
       break;
     }
@@ -967,7 +967,7 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       parsed.aggregate = parsed._metrics[0];
       parsed.aggregate += parsed._metrics[1];
       parsed.aggregate.frequency = frequency;
-      parsed.aggregate.voltage = max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);
+      parsed.aggregate.voltage = std::max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);
 
       break;
     }
