@@ -112,6 +112,14 @@ The default GPIO for `Serial2` are:
 | tinypico            |          4          |         25          |
 | denky_d4            |          4          |         25          |
 
+**Electric wiring for JSY boards with 2 channels:**
+
+- Channel 1 (CT1): anything
+- Channel 2 (CT2): the grid should go through it
+
+Reason is that on some JSY, channel 1 is a tore on the board while channel 2 is always a clamp.
+This is easier to put a clamp around the grid wire.
+
 ## How to build your own version
 
 Run at the root of the project:

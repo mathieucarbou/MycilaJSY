@@ -505,6 +505,14 @@ Screenshot of the ESP32 running the JSY app called the `Sender`:
 
 [Click here for the download and installation instructions of the JSY Remote UDP Sender](https://github.com/mathieucarbou/MycilaJSY/tree/main/examples/RemoteUDP)
 
+**Wiring for JSY boards with 2 channels:**
+
+- Channel 1 (CT1): anything
+- Channel 2 (CT2): the grid should go through it
+
+Reason is that on some JSY, channel 1 is a tore on the board while channel 2 is always a clamp.
+This is easier to put a clamp around the grid wire.
+
 ## Zero-Cross Detection
 
 The JSY-MK-194G has a zero-cross detection feature which signals on the Zx pin when the current crosses zero.
