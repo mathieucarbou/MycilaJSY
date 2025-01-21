@@ -208,10 +208,10 @@ You need to install these Arduino dependencies from the library manager or by do
 
 ```c++
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
-#include <AsyncTCP.h>             // https://github.com/mathieucarbou/AsyncTCP
-#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
-#include <ESPAsyncWebServer.h>    // https://github.com/mathieucarbou/ESPAsyncWebServer
-#include <ESPDash.h>              // https://github.com/ayushsharma82/ESP-DASH
+#include <AsyncTCP.h>             // https://github.com/ESP32Async/AsyncTCP
+#include <ESPAsyncWebServer.h>    // https://github.com/ESP32Async/ESPAsyncWebServer
+#include <ElegantOTA.h>           // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
+#include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-dASH#dev
 #include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
 #include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
 #include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
