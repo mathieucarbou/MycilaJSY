@@ -611,7 +611,7 @@ void setup() {
         }
 
         // update rate
-        messageRateBuffer.add(millis() / 1000.0f);
+        messageRateBuffer.add(static_cast<float>(esp_timer_get_time() / 1000000));
         float diff = messageRateBuffer.diff();
         float count = messageRateBuffer.count();
         messageRate = diff == 0 ? 0 : count / diff;
