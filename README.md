@@ -716,4 +716,5 @@ The "Ramp down time" is the time it takes for the JSY to return to 0W after the 
 - [JSY-MK-333.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-333.pdf)
 - [JSY-MK-333G.pdf](https://mathieu.carbou.me/MycilaJSY/JSY-MK-333G.pdf)
 - [RENERGY RN8209G](https://mathieu.carbou.me/MycilaJSY/RENERGY-RN8209G.pdf)
+- [RENERGY RN8302B](https://mathieu.carbou.me/MycilaJSY/RENERGY-RN8302B.pdf)
 - [ModbusMechanic](https://github.com/SciFiDryer/ModbusMechanic) (can connect and configure JSY with a USB-TTL adapter)
