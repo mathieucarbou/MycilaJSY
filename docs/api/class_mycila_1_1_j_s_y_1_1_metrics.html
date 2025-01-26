@@ -98,9 +98,9 @@ $(function(){ initResizable(false); });
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a80ef789831ae7b7f0cb5d1e50c129d19" id="r_a80ef789831ae7b7f0cb5d1e50c129d19"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a80ef789831ae7b7f0cb5d1e50c129d19">thdi</a> (float phi=1) const</td></tr>
-<tr class="memdesc:a80ef789831ae7b7f0cb5d1e50c129d19"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the total harmonic distortion of current (THDi). See: <a href="https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance">https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance</a>.  <br /></td></tr>
-<tr class="separator:a80ef789831ae7b7f0cb5d1e50c129d19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4ce90e56691e167bdcc2300bda8f4f62" id="r_a4ce90e56691e167bdcc2300bda8f4f62"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4ce90e56691e167bdcc2300bda8f4f62">thdi</a> (float phi=0) const</td></tr>
+<tr class="memdesc:a4ce90e56691e167bdcc2300bda8f4f62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the total harmonic distortion of current (THDi). See: <a href="https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance">https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance</a>.  <br /></td></tr>
+<tr class="separator:a4ce90e56691e167bdcc2300bda8f4f62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0144439f2ce32ccec0d614214979fa86" id="r_a0144439f2ce32ccec0d614214979fa86"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0144439f2ce32ccec0d614214979fa86">resistance</a> () const</td></tr>
 <tr class="memdesc:a0144439f2ce32ccec0d614214979fa86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the resistance of the load in ohms (R = P / I^2).  <br /></td></tr>
 <tr class="separator:a0144439f2ce32ccec0d614214979fa86"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -165,6 +165,21 @@ Data Fields</h2></td></tr>
 <tr class="memitem:a3d22726d4a497dd961cd2707da2b75d8" id="r_a3d22726d4a497dd961cd2707da2b75d8"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3d22726d4a497dd961cd2707da2b75d8">apparentEnergy</a> = NAN</td></tr>
 <tr class="memdesc:a3d22726d4a497dd961cd2707da2b75d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apparent energy in kilovolt-amperes-hours (kVAh).  <br /></td></tr>
 <tr class="separator:a3d22726d4a497dd961cd2707da2b75d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e522b33752ef246a3011a969b033e88" id="r_a0e522b33752ef246a3011a969b033e88"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e522b33752ef246a3011a969b033e88">phaseAngleU</a> = NAN</td></tr>
+<tr class="memdesc:a0e522b33752ef246a3011a969b033e88"><td class="mdescLeft">&#160;</td><td class="mdescRight">voltage phase angle in degrees (°).  <br /></td></tr>
+<tr class="separator:a0e522b33752ef246a3011a969b033e88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9994a9b126358999038538c397d0cc2a" id="r_a9994a9b126358999038538c397d0cc2a"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9994a9b126358999038538c397d0cc2a">phaseAngleI</a> = NAN</td></tr>
+<tr class="memdesc:a9994a9b126358999038538c397d0cc2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">current phase angle in degrees (°).  <br /></td></tr>
+<tr class="separator:a9994a9b126358999038538c397d0cc2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2dcfbd62011a21029d2cb70298834f2" id="r_ab2dcfbd62011a21029d2cb70298834f2"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2dcfbd62011a21029d2cb70298834f2">phaseAngleUI</a> = NAN</td></tr>
+<tr class="memdesc:ab2dcfbd62011a21029d2cb70298834f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">voltage - current phase angle displacement in degrees (°).  <br /></td></tr>
+<tr class="separator:ab2dcfbd62011a21029d2cb70298834f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a207869b26772bc8e33bd03eef8d37eeb" id="r_a207869b26772bc8e33bd03eef8d37eeb"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a207869b26772bc8e33bd03eef8d37eeb">thdU</a> = NAN</td></tr>
+<tr class="memdesc:a207869b26772bc8e33bd03eef8d37eeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">total harmonic distortion of voltage (THDu).  <br /></td></tr>
+<tr class="separator:a207869b26772bc8e33bd03eef8d37eeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa4ade5dbba67a375bba6822cd40a5121" id="r_aa4ade5dbba67a375bba6822cd40a5121"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa4ade5dbba67a375bba6822cd40a5121">thdI</a> = NAN</td></tr>
+<tr class="memdesc:aa4ade5dbba67a375bba6822cd40a5121"><td class="mdescLeft">&#160;</td><td class="mdescRight">total harmonic distortion of current (THDi).  <br /></td></tr>
+<tr class="separator:aa4ade5dbba67a375bba6822cd40a5121"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
@@ -256,7 +271,7 @@ Data Fields</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00249">249</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00279">279</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
 
 </div>
 </div>
@@ -275,7 +290,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00054">54</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00064">64</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -294,7 +309,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00071">71</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00081">81</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -313,7 +328,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00037">37</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00042">42</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -338,8 +353,8 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
-<a id="a80ef789831ae7b7f0cb5d1e50c129d19" name="a80ef789831ae7b7f0cb5d1e50c129d19"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a80ef789831ae7b7f0cb5d1e50c129d19">&#9670;&#160;</a></span>thdi()</h2>
+<a id="a4ce90e56691e167bdcc2300bda8f4f62" name="a4ce90e56691e167bdcc2300bda8f4f62"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ce90e56691e167bdcc2300bda8f4f62">&#9670;&#160;</a></span>thdi()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -347,7 +362,7 @@ Data Fields</h2></td></tr>
         <tr>
           <td class="memname">float Mycila::JSY::Metrics::thdi </td>
           <td>(</td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>phi</em></span><span class="paramdefsep"> = </span><span class="paramdefval">1</span></td><td>)</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>phi</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
@@ -356,7 +371,7 @@ Data Fields</h2></td></tr>
 <p>Compute the total harmonic distortion of current (THDi). See: <a href="https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance">https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">phi</td><td>The phase shift angle in radians (1 for resistive load) </td></tr>
+    <tr><td class="paramname">phi</td><td>The phase shift angle in radians (0 for resistive load) </td></tr>
   </table>
   </dd>
 </dl>
@@ -527,6 +542,63 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed </dd></dl>
 
 </div>
 </div>
+<a id="a9994a9b126358999038538c397d0cc2a" name="a9994a9b126358999038538c397d0cc2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9994a9b126358999038538c397d0cc2a">&#9670;&#160;</a></span>phaseAngleI</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float Mycila::JSY::Metrics::phaseAngleI = NAN</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>current phase angle in degrees (°). </p>
+<dl class="section note"><dt>Note</dt><dd>JSY-MK-333: measured </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00228">228</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
+
+</div>
+</div>
+<a id="a0e522b33752ef246a3011a969b033e88" name="a0e522b33752ef246a3011a969b033e88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e522b33752ef246a3011a969b033e88">&#9670;&#160;</a></span>phaseAngleU</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float Mycila::JSY::Metrics::phaseAngleU = NAN</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>voltage phase angle in degrees (°). </p>
+<dl class="section note"><dt>Note</dt><dd>JSY-MK-333: measured </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00222">222</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
+
+</div>
+</div>
+<a id="ab2dcfbd62011a21029d2cb70298834f2" name="ab2dcfbd62011a21029d2cb70298834f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2dcfbd62011a21029d2cb70298834f2">&#9670;&#160;</a></span>phaseAngleUI</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float Mycila::JSY::Metrics::phaseAngleUI = NAN</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>voltage - current phase angle displacement in degrees (°). </p>
+<dl class="section note"><dt>Note</dt><dd>JSY-MK-333: measured </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00234">234</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
+
+</div>
+</div>
 <a id="a26eca2b283c648bd0a1eeb1e266fe10e" name="a26eca2b283c648bd0a1eeb1e266fe10e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a26eca2b283c648bd0a1eeb1e266fe10e">&#9670;&#160;</a></span>powerFactor</h2>
 
@@ -625,6 +697,44 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed </dd></dl>
 JSY-MK-163, JSY-MK-193, JSY-MK-194: computed and always be positive since we do not know the phase shift angle (inductive or capacitive load) </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00169">169</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
+
+</div>
+</div>
+<a id="aa4ade5dbba67a375bba6822cd40a5121" name="aa4ade5dbba67a375bba6822cd40a5121"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4ade5dbba67a375bba6822cd40a5121">&#9670;&#160;</a></span>thdI</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float Mycila::JSY::Metrics::thdI = NAN</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>total harmonic distortion of current (THDi). </p>
+<dl class="section note"><dt>Note</dt><dd>JSY-MK-333: measured </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00246">246</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
+
+</div>
+</div>
+<a id="a207869b26772bc8e33bd03eef8d37eeb" name="a207869b26772bc8e33bd03eef8d37eeb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a207869b26772bc8e33bd03eef8d37eeb">&#9670;&#160;</a></span>thdU</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">float Mycila::JSY::Metrics::thdU = NAN</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>total harmonic distortion of voltage (THDu). </p>
+<dl class="section note"><dt>Note</dt><dd>JSY-MK-333: measured </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00240">240</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
 
 </div>
 </div>
