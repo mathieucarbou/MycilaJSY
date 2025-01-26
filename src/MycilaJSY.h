@@ -218,10 +218,10 @@ namespace Mycila {
           /**
            * @brief Compute the total harmonic distortion of current (THDi).
            * See: https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance
-           * @param phi The phase shift angle in radians (1 for resistive load)
+           * @param phi The phase shift angle in radians (0 for resistive load)
            * @return The total harmonic distortion of current (THDi)
            */
-          float thdi(float phi = 1) const;
+          float thdi(float phi = 0) const;
 
           /**
            * @brief Compute the resistance of the load in ohms (R = P / I^2).

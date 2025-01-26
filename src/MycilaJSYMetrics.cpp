@@ -7,7 +7,7 @@
 float Mycila::JSY::Metrics::thdi(float phi) const {
   if (powerFactor == 0)
     return NAN;
-  const float cosPhi = phi == 1 ? 1 : cos(phi);
+  const float cosPhi = phi == 0 ? 1 : cos(phi);
   return sqrt((cosPhi * cosPhi) / (powerFactor * powerFactor) - 1);
 }
 
@@ -126,6 +126,6 @@ void Mycila::JSY::Metrics::toJson(const JsonObject& root) const {
   if (!isnan(n))
     root["nominal_power"] = n;
   if (!isnan(t))
-    root["thdi"] = t;
+    root["thdi_0"] = t;
 }
 #endif
