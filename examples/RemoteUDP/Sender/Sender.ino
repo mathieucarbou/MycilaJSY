@@ -247,10 +247,6 @@ volatile uint32_t dataRate = 0;
 Mycila::Task jsyTask("JSY", [](void* params) { jsy.read(); });
 Mycila::Task networkManagerTask("ESPConnect", [](void* params) { espConnect.loop(); });
 
-Mycila::Task profilerTask("Profiler", [](void* params) {
-  jsyTaskManager.log();
-});
-
 Mycila::Task networkUpTask("Network UP", Mycila::TaskType::ONCE, [](void* params) {
   logger.info(TAG, "Enable Network Services...");
 
@@ -470,8 +466,6 @@ void setup() {
   networkManagerTask.setManager(coreTaskManager);
   networkUpTask.setManager(coreTaskManager);
   otaTask.setManager(coreTaskManager);
-  profilerTask.setInterval(10 * Mycila::TaskDuration::SECONDS);
-  profilerTask.setManager(coreTaskManager);
   restartTask.setManager(coreTaskManager);
 
   // profiling
