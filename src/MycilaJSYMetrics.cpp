@@ -32,6 +32,11 @@ void Mycila::JSY::Metrics::clear() {
   reactiveEnergyImported = NAN;
   reactiveEnergyReturned = NAN;
   apparentEnergy = NAN;
+  phaseAngleU = NAN;
+  phaseAngleI = NAN;
+  phaseAngleUI = NAN;
+  thdU = NAN;
+  thdI = NAN;
 }
 
 bool Mycila::JSY::Metrics::operator==(const Mycila::JSY::Metrics& other) const {
@@ -48,11 +53,16 @@ bool Mycila::JSY::Metrics::operator==(const Mycila::JSY::Metrics& other) const {
          (isnanf(reactiveEnergy) ? isnanf(other.reactiveEnergy) : reactiveEnergy == other.reactiveEnergy) &&
          (isnanf(reactiveEnergyImported) ? isnanf(other.reactiveEnergyImported) : reactiveEnergyImported == other.reactiveEnergyImported) &&
          (isnanf(reactiveEnergyReturned) ? isnanf(other.reactiveEnergyReturned) : reactiveEnergyReturned == other.reactiveEnergyReturned) &&
-         (isnanf(apparentEnergy) ? isnanf(other.apparentEnergy) : apparentEnergy == other.apparentEnergy);
+         (isnanf(apparentEnergy) ? isnanf(other.apparentEnergy) : apparentEnergy == other.apparentEnergy) &&
+         (isnanf(phaseAngleU) ? isnanf(other.phaseAngleU) : phaseAngleU == other.phaseAngleU) &&
+         (isnanf(phaseAngleI) ? isnanf(other.phaseAngleI) : phaseAngleI == other.phaseAngleI) &&
+         (isnanf(phaseAngleUI) ? isnanf(other.phaseAngleUI) : phaseAngleUI == other.phaseAngleUI) &&
+         (isnanf(thdU) ? isnanf(other.thdU) : thdU == other.thdU) &&
+         (isnanf(thdI) ? isnanf(other.thdI) : thdI == other.thdI);
 }
 
 Mycila::JSY::Metrics& Mycila::JSY::Metrics::operator+=(const Mycila::JSY::Metrics& other) {
-  // voltage and frequency are not aggregated
+  // voltage, frequency, phase angle and thd are not aggregated
   current += other.current;
   activePower += other.activePower;
   apparentPower += other.apparentPower;
@@ -83,6 +93,11 @@ void Mycila::JSY::Metrics::operator=(const Metrics& other) {
   reactiveEnergyImported = other.reactiveEnergyImported;
   reactiveEnergyReturned = other.reactiveEnergyReturned;
   apparentEnergy = other.apparentEnergy;
+  phaseAngleU = other.phaseAngleU;
+  phaseAngleI = other.phaseAngleI;
+  phaseAngleUI = other.phaseAngleUI;
+  thdU = other.thdU;
+  thdI = other.thdI;
 }
 
 #ifdef MYCILA_JSON_SUPPORT
@@ -115,6 +130,16 @@ void Mycila::JSY::Metrics::toJson(const JsonObject& root) const {
     root["reactive_energy_imported"] = reactiveEnergyImported;
   if (!isnan(reactiveEnergyReturned))
     root["reactive_energy_returned"] = reactiveEnergyReturned;
+  if (!isnan(phaseAngleU))
+    root["phase_angle_u"] = phaseAngleU;
+  if (!isnan(phaseAngleI))
+    root["phase_angle_i"] = phaseAngleI;
+  if (!isnan(phaseAngleUI))
+    root["phase_angle_ui"] = phaseAngleUI;
+  if (!isnan(thdU))
+    root["thd_u"] = thdU;
+  if (!isnan(thdI))
+    root["thd_i"] = thdI;
   float r = resistance();
   float d = dimmedVoltage();
   float n = nominalPower();

@@ -61,7 +61,7 @@
 #endif
 
 #ifndef MYCILA_JSY_ASYNC_STACK_SIZE
-  #define MYCILA_JSY_ASYNC_STACK_SIZE 3072 // 512 * 6
+  #define MYCILA_JSY_ASYNC_STACK_SIZE 2048
 #endif
 
 // time in milliseconds to wait between each read in async mode
@@ -214,6 +214,36 @@ namespace Mycila {
            * @note JSY-MK-333: measured
            */
           float apparentEnergy = NAN;
+
+          /**
+           * @brief voltage phase angle in degrees (°).
+           * @note JSY-MK-333: measured
+           */
+          float phaseAngleU = NAN;
+
+          /**
+           * @brief current phase angle in degrees (°).
+           * @note JSY-MK-333: measured
+           */
+          float phaseAngleI = NAN;
+
+          /**
+           * @brief voltage - current phase angle displacement in degrees (°).
+           * @note JSY-MK-333: measured
+           */
+          float phaseAngleUI = NAN;
+
+          /**
+           * @brief total harmonic distortion of voltage (THDu).
+           * @note JSY-MK-333: measured
+           */
+          float thdU = NAN;
+
+          /**
+           * @brief total harmonic distortion of current (THDi).
+           * @note JSY-MK-333: measured
+           */
+          float thdI = NAN;
 
           /**
            * @brief Compute the total harmonic distortion of current (THDi).
@@ -557,9 +587,9 @@ namespace Mycila {
       bool _enabled = false;
       uint16_t _model = MYCILA_JSY_MK_UNKNOWN;
       // buffer to read/write data
-      // biggest need is for JSY-MK-333: 84 registers of 2 bytes each + 5 bytes for the response: 173 bytes
-      // we use 11 blocks of 16 bytes: 176 bytes
-      uint8_t _buffer[176];
+      // biggest need is for JSY-MK-333: 102 registers of 2 bytes each + 5 bytes for the response: 209 bytes
+      // we use 14 blocks of 16 bytes: 224 bytes
+      uint8_t _buffer[224];
 
     private:
       enum class ReadResult {
