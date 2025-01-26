@@ -219,9 +219,27 @@ extern Mycila::Logger logger;
 #define JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY_RETURNED 0x014E // RO + 0x014F
 #define JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY_RETURNED 0x0150 // RO + 0x0151
 #define JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY_RETURNED   0x0152 // RO + 0x0153
+#define JSY_333_REGISTER_PHASE_A_L_U                      0x0154 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_B_L_U                      0x0155 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_C_L_U                      0x0156 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_U            0x0157 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_U            0x0158 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_U            0x0159 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_I            0x015A // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_I            0x015B // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_I            0x015C // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_UI           0x015D // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_UI           0x015E // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_UI           0x015F // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_A_THD_U                    0x0160 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_B_THD_U                    0x0161 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_C_THD_U                    0x0162 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_A_THD_I                    0x0163 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_B_THD_I                    0x0164 // RO -- WARNING: UNDOCUMENTED
+#define JSY_333_REGISTER_PHASE_C_THD_I                    0x0165 // RO -- WARNING: UNDOCUMENTED
 
 #define JSY_333_REGISTER_LEN   2  // 2 bytes per register
-#define JSY_333_REGISTER_COUNT 84 // 84 registers
+#define JSY_333_REGISTER_COUNT 102 // registers
 #define JSY_333_REGISTER_START JSY_333_REGISTER_PHASE_A_VOLTAGE
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1033,6 +1051,11 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_ENERGY_RETURNED) / 100.0;
       parsed._metrics[0].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_ENERGY_IMPORTED) / 100.0;
       parsed._metrics[0].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_ENERGY_RETURNED) / 100.0;
+      parsed._metrics[0].phaseAngleU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_U) / 100.0;
+      parsed._metrics[0].phaseAngleI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_I) / 100.0;
+      parsed._metrics[0].phaseAngleUI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_UI) / 100.0;
+      parsed._metrics[0].thdU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_THD_U) / 100.0;
+      parsed._metrics[0].thdI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_THD_I) / 100.0;
 
       // phase B
       parsed._metrics[1].frequency = frequency;
@@ -1049,6 +1072,11 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       parsed._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY_RETURNED) / 100.0;
       parsed._metrics[1].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY_IMPORTED) / 100.0;
       parsed._metrics[1].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY_RETURNED) / 100.0;
+      parsed._metrics[1].phaseAngleU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_U) / 100.0;
+      parsed._metrics[1].phaseAngleI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_I) / 100.0;
+      parsed._metrics[1].phaseAngleUI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_UI) / 100.0;
+      parsed._metrics[1].thdU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_THD_U) / 100.0;
+      parsed._metrics[1].thdI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_THD_I) / 100.0;
 
       // phase C
       parsed._metrics[2].frequency = frequency;
@@ -1065,6 +1093,11 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       parsed._metrics[2].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_ENERGY_RETURNED) / 100.0;
       parsed._metrics[2].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY_IMPORTED) / 100.0;
       parsed._metrics[2].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY_RETURNED) / 100.0;
+      parsed._metrics[2].phaseAngleU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_U) / 100.0;
+      parsed._metrics[2].phaseAngleI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_I) / 100.0;
+      parsed._metrics[2].phaseAngleUI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_UI) / 100.0;
+      parsed._metrics[2].thdU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_THD_U) / 100.0;
+      parsed._metrics[2].thdI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_THD_I) / 100.0;
 
       // aggregate
       parsed.aggregate.frequency = frequency;
