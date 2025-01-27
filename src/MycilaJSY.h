@@ -61,7 +61,7 @@
 #endif
 
 #ifndef MYCILA_JSY_ASYNC_STACK_SIZE
-  #define MYCILA_JSY_ASYNC_STACK_SIZE 2048
+  #define MYCILA_JSY_ASYNC_STACK_SIZE 4094
 #endif
 
 // time in milliseconds to wait between each read in async mode
