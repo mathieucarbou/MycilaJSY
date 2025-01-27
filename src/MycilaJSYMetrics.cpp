@@ -7,15 +7,15 @@
 float Mycila::JSY::Metrics::thdi(float phi) const {
   if (powerFactor == 0)
     return NAN;
-  const float cosPhi = phi == 0 ? 1 : cos(phi);
-  return sqrt((cosPhi * cosPhi) / (powerFactor * powerFactor) - 1);
+  const float cosPhi = phi == 0 ? 1 : std::cos(phi);
+  return std::sqrt((cosPhi * cosPhi) / (powerFactor * powerFactor) - 1);
 }
 
-float Mycila::JSY::Metrics::resistance() const { return current == 0 ? NAN : abs(activePower / (current * current)); }
+float Mycila::JSY::Metrics::resistance() const { return current == 0 ? NAN : std::abs(activePower / (current * current)); }
 
-float Mycila::JSY::Metrics::dimmedVoltage() const { return current == 0 ? NAN : abs(activePower / current); }
+float Mycila::JSY::Metrics::dimmedVoltage() const { return current == 0 ? NAN : std::abs(activePower / current); }
 
-float Mycila::JSY::Metrics::nominalPower() const { return activePower == 0 ? NAN : abs(voltage * voltage * current * current / activePower); }
+float Mycila::JSY::Metrics::nominalPower() const { return activePower == 0 ? NAN : std::abs(voltage * voltage * current * current / activePower); }
 
 void Mycila::JSY::Metrics::clear() {
   frequency = NAN;
@@ -40,25 +40,25 @@ void Mycila::JSY::Metrics::clear() {
 }
 
 bool Mycila::JSY::Metrics::operator==(const Mycila::JSY::Metrics& other) const {
-  return (isnanf(frequency) ? isnanf(other.frequency) : frequency == other.frequency) &&
-         (isnanf(voltage) ? isnanf(other.voltage) : voltage == other.voltage) &&
-         (isnanf(current) ? isnanf(other.current) : current == other.current) &&
-         (isnanf(activePower) ? isnanf(other.activePower) : activePower == other.activePower) &&
-         (isnanf(reactivePower) ? isnanf(other.reactivePower) : reactivePower == other.reactivePower) &&
-         (isnanf(apparentPower) ? isnanf(other.apparentPower) : apparentPower == other.apparentPower) &&
-         (isnanf(powerFactor) ? isnanf(other.powerFactor) : powerFactor == other.powerFactor) &&
-         (isnanf(activeEnergy) ? isnanf(other.activeEnergy) : activeEnergy == other.activeEnergy) &&
-         (isnanf(activeEnergyImported) ? isnanf(other.activeEnergyImported) : activeEnergyImported == other.activeEnergyImported) &&
-         (isnanf(activeEnergyReturned) ? isnanf(other.activeEnergyReturned) : activeEnergyReturned == other.activeEnergyReturned) &&
-         (isnanf(reactiveEnergy) ? isnanf(other.reactiveEnergy) : reactiveEnergy == other.reactiveEnergy) &&
-         (isnanf(reactiveEnergyImported) ? isnanf(other.reactiveEnergyImported) : reactiveEnergyImported == other.reactiveEnergyImported) &&
-         (isnanf(reactiveEnergyReturned) ? isnanf(other.reactiveEnergyReturned) : reactiveEnergyReturned == other.reactiveEnergyReturned) &&
-         (isnanf(apparentEnergy) ? isnanf(other.apparentEnergy) : apparentEnergy == other.apparentEnergy) &&
-         (isnanf(phaseAngleU) ? isnanf(other.phaseAngleU) : phaseAngleU == other.phaseAngleU) &&
-         (isnanf(phaseAngleI) ? isnanf(other.phaseAngleI) : phaseAngleI == other.phaseAngleI) &&
-         (isnanf(phaseAngleUI) ? isnanf(other.phaseAngleUI) : phaseAngleUI == other.phaseAngleUI) &&
-         (isnanf(thdU) ? isnanf(other.thdU) : thdU == other.thdU) &&
-         (isnanf(thdI) ? isnanf(other.thdI) : thdI == other.thdI);
+  return (std::isnan(frequency) ? std::isnan(other.frequency) : frequency == other.frequency) &&
+         (std::isnan(voltage) ? std::isnan(other.voltage) : voltage == other.voltage) &&
+         (std::isnan(current) ? std::isnan(other.current) : current == other.current) &&
+         (std::isnan(activePower) ? std::isnan(other.activePower) : activePower == other.activePower) &&
+         (std::isnan(reactivePower) ? std::isnan(other.reactivePower) : reactivePower == other.reactivePower) &&
+         (std::isnan(apparentPower) ? std::isnan(other.apparentPower) : apparentPower == other.apparentPower) &&
+         (std::isnan(powerFactor) ? std::isnan(other.powerFactor) : powerFactor == other.powerFactor) &&
+         (std::isnan(activeEnergy) ? std::isnan(other.activeEnergy) : activeEnergy == other.activeEnergy) &&
+         (std::isnan(activeEnergyImported) ? std::isnan(other.activeEnergyImported) : activeEnergyImported == other.activeEnergyImported) &&
+         (std::isnan(activeEnergyReturned) ? std::isnan(other.activeEnergyReturned) : activeEnergyReturned == other.activeEnergyReturned) &&
+         (std::isnan(reactiveEnergy) ? std::isnan(other.reactiveEnergy) : reactiveEnergy == other.reactiveEnergy) &&
+         (std::isnan(reactiveEnergyImported) ? std::isnan(other.reactiveEnergyImported) : reactiveEnergyImported == other.reactiveEnergyImported) &&
+         (std::isnan(reactiveEnergyReturned) ? std::isnan(other.reactiveEnergyReturned) : reactiveEnergyReturned == other.reactiveEnergyReturned) &&
+         (std::isnan(apparentEnergy) ? std::isnan(other.apparentEnergy) : apparentEnergy == other.apparentEnergy) &&
+         (std::isnan(phaseAngleU) ? std::isnan(other.phaseAngleU) : phaseAngleU == other.phaseAngleU) &&
+         (std::isnan(phaseAngleI) ? std::isnan(other.phaseAngleI) : phaseAngleI == other.phaseAngleI) &&
+         (std::isnan(phaseAngleUI) ? std::isnan(other.phaseAngleUI) : phaseAngleUI == other.phaseAngleUI) &&
+         (std::isnan(thdU) ? std::isnan(other.thdU) : thdU == other.thdU) &&
+         (std::isnan(thdI) ? std::isnan(other.thdI) : thdI == other.thdI);
 }
 
 Mycila::JSY::Metrics& Mycila::JSY::Metrics::operator+=(const Mycila::JSY::Metrics& other) {
@@ -74,7 +74,7 @@ Mycila::JSY::Metrics& Mycila::JSY::Metrics::operator+=(const Mycila::JSY::Metric
   reactiveEnergyReturned += other.reactiveEnergyReturned;
   apparentEnergy += other.apparentEnergy;
   powerFactor = apparentPower == 0 ? NAN : abs(activePower / apparentPower);
-  reactivePower = sqrt(apparentPower * apparentPower - activePower * activePower);
+  reactivePower = std::sqrt(apparentPower * apparentPower - activePower * activePower);
   return *this;
 }
 
@@ -102,55 +102,55 @@ void Mycila::JSY::Metrics::operator=(const Metrics& other) {
 
 #ifdef MYCILA_JSON_SUPPORT
 void Mycila::JSY::Metrics::toJson(const JsonObject& root) const {
-  if (!isnan(frequency))
+  if (!std::isnan(frequency))
     root["frequency"] = frequency;
-  if (!isnan(voltage))
+  if (!std::isnan(voltage))
     root["voltage"] = voltage;
-  if (!isnan(current))
+  if (!std::isnan(current))
     root["current"] = current;
-  if (!isnan(activePower))
+  if (!std::isnan(activePower))
     root["active_power"] = activePower;
-  if (!isnan(reactivePower))
+  if (!std::isnan(reactivePower))
     root["reactive_power"] = reactivePower;
-  if (!isnan(apparentPower))
+  if (!std::isnan(apparentPower))
     root["apparent_power"] = apparentPower;
-  if (!isnan(powerFactor))
+  if (!std::isnan(powerFactor))
     root["power_factor"] = powerFactor;
-  if (!isnan(activeEnergy))
+  if (!std::isnan(activeEnergy))
     root["active_energy"] = activeEnergy;
-  if (!isnan(apparentEnergy))
+  if (!std::isnan(apparentEnergy))
     root["apparent_energy"] = apparentEnergy;
-  if (!isnan(activeEnergyImported))
+  if (!std::isnan(activeEnergyImported))
     root["active_energy_imported"] = activeEnergyImported;
-  if (!isnan(activeEnergyReturned))
+  if (!std::isnan(activeEnergyReturned))
     root["active_energy_returned"] = activeEnergyReturned;
-  if (!isnan(reactiveEnergy))
+  if (!std::isnan(reactiveEnergy))
     root["reactive_energy"] = reactiveEnergy;
-  if (!isnan(reactiveEnergyImported))
+  if (!std::isnan(reactiveEnergyImported))
     root["reactive_energy_imported"] = reactiveEnergyImported;
-  if (!isnan(reactiveEnergyReturned))
+  if (!std::isnan(reactiveEnergyReturned))
     root["reactive_energy_returned"] = reactiveEnergyReturned;
-  if (!isnan(phaseAngleU))
+  if (!std::isnan(phaseAngleU))
     root["phase_angle_u"] = phaseAngleU;
-  if (!isnan(phaseAngleI))
+  if (!std::isnan(phaseAngleI))
     root["phase_angle_i"] = phaseAngleI;
-  if (!isnan(phaseAngleUI))
+  if (!std::isnan(phaseAngleUI))
     root["phase_angle_ui"] = phaseAngleUI;
-  if (!isnan(thdU))
+  if (!std::isnan(thdU))
     root["thd_u"] = thdU;
-  if (!isnan(thdI))
+  if (!std::isnan(thdI))
     root["thd_i"] = thdI;
   float r = resistance();
   float d = dimmedVoltage();
   float n = nominalPower();
   float t = thdi();
-  if (!isnan(r))
+  if (!std::isnan(r))
     root["resistance"] = r;
-  if (!isnan(d))
+  if (!std::isnan(d))
     root["dimmed_voltage"] = d;
-  if (!isnan(n))
+  if (!std::isnan(n))
     root["nominal_power"] = n;
-  if (!isnan(t))
+  if (!std::isnan(t))
     root["thdi_0"] = t;
 }
 #endif
