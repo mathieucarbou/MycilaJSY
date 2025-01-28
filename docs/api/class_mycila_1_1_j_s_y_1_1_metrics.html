@@ -99,7 +99,7 @@ $(function(){ initResizable(false); });
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a4ce90e56691e167bdcc2300bda8f4f62" id="r_a4ce90e56691e167bdcc2300bda8f4f62"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4ce90e56691e167bdcc2300bda8f4f62">thdi</a> (float phi=0) const</td></tr>
-<tr class="memdesc:a4ce90e56691e167bdcc2300bda8f4f62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the total harmonic distortion of current (THDi). See: <a href="https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance">https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance</a>.  <br /></td></tr>
+<tr class="memdesc:a4ce90e56691e167bdcc2300bda8f4f62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the total harmonic distortion percentage of current (THDi). This assumes THDu = 0 (perfect voltage sin wave). See: <a href="https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance">https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance</a>.  <br /></td></tr>
 <tr class="separator:a4ce90e56691e167bdcc2300bda8f4f62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0144439f2ce32ccec0d614214979fa86" id="r_a0144439f2ce32ccec0d614214979fa86"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0144439f2ce32ccec0d614214979fa86">resistance</a> () const</td></tr>
 <tr class="memdesc:a0144439f2ce32ccec0d614214979fa86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the resistance of the load in ohms (R = P / I^2).  <br /></td></tr>
@@ -133,38 +133,38 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:a8518e47d40840ed3cdb6adc95682454a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Current in amperes (A).  <br /></td></tr>
 <tr class="separator:a8518e47d40840ed3cdb6adc95682454a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bffb10f616578af96de9f4eccf1de0b" id="r_a6bffb10f616578af96de9f4eccf1de0b"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6bffb10f616578af96de9f4eccf1de0b">activePower</a> = NAN</td></tr>
-<tr class="memdesc:a6bffb10f616578af96de9f4eccf1de0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active power in watts (W).  <br /></td></tr>
+<tr class="memdesc:a6bffb10f616578af96de9f4eccf1de0b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active power in watts (W). Can be positive or negative.  <br /></td></tr>
 <tr class="separator:a6bffb10f616578af96de9f4eccf1de0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26eca2b283c648bd0a1eeb1e266fe10e" id="r_a26eca2b283c648bd0a1eeb1e266fe10e"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a26eca2b283c648bd0a1eeb1e266fe10e">powerFactor</a> = NAN</td></tr>
-<tr class="memdesc:a26eca2b283c648bd0a1eeb1e266fe10e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Power factor.  <br /></td></tr>
+<tr class="memdesc:a26eca2b283c648bd0a1eeb1e266fe10e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Power factor. Positive value between 0 and 1.  <br /></td></tr>
 <tr class="separator:a26eca2b283c648bd0a1eeb1e266fe10e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a12e7169314005ebc298db4fcf99a5711" id="r_a12e7169314005ebc298db4fcf99a5711"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a12e7169314005ebc298db4fcf99a5711">apparentPower</a> = NAN</td></tr>
-<tr class="memdesc:a12e7169314005ebc298db4fcf99a5711"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apparent power in volt-amperes (VA).  <br /></td></tr>
+<tr class="memdesc:a12e7169314005ebc298db4fcf99a5711"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apparent power in volt-amperes (VA). Always positive.  <br /></td></tr>
 <tr class="separator:a12e7169314005ebc298db4fcf99a5711"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06f8e70d32b7207d80f188fb9aee1def" id="r_a06f8e70d32b7207d80f188fb9aee1def"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a06f8e70d32b7207d80f188fb9aee1def">reactivePower</a> = NAN</td></tr>
-<tr class="memdesc:a06f8e70d32b7207d80f188fb9aee1def"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reactive power in volt-amperes reactive (VAr).  <br /></td></tr>
+<tr class="memdesc:a06f8e70d32b7207d80f188fb9aee1def"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reactive power in volt-amperes reactive (VAr). Can be positive or negative.  <br /></td></tr>
 <tr class="separator:a06f8e70d32b7207d80f188fb9aee1def"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ca0f5e3cd67f27daf20d1ab281699ff" id="r_a5ca0f5e3cd67f27daf20d1ab281699ff"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5ca0f5e3cd67f27daf20d1ab281699ff">activeEnergy</a> = NAN</td></tr>
-<tr class="memdesc:a5ca0f5e3cd67f27daf20d1ab281699ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active energy in kilowatt-hours (kWh).  <br /></td></tr>
-<tr class="separator:a5ca0f5e3cd67f27daf20d1ab281699ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3dbea4ae7535ad38bfb4645084828df0" id="r_a3dbea4ae7535ad38bfb4645084828df0"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3dbea4ae7535ad38bfb4645084828df0">activeEnergyImported</a> = NAN</td></tr>
-<tr class="memdesc:a3dbea4ae7535ad38bfb4645084828df0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active energy imported in kilowatt-hours (kWh), going to the load, when activePower &gt; 0.  <br /></td></tr>
-<tr class="separator:a3dbea4ae7535ad38bfb4645084828df0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d5654bb558d50ec8b07b7be39993020" id="r_a9d5654bb558d50ec8b07b7be39993020"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d5654bb558d50ec8b07b7be39993020">activeEnergyReturned</a> = NAN</td></tr>
-<tr class="memdesc:a9d5654bb558d50ec8b07b7be39993020"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active energy returned in kilowatt-hours (kWh), coming from the load, when activePower &lt; 0.  <br /></td></tr>
-<tr class="separator:a9d5654bb558d50ec8b07b7be39993020"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27e34cd1f73ece320e20e365b0c76f05" id="r_a27e34cd1f73ece320e20e365b0c76f05"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a27e34cd1f73ece320e20e365b0c76f05">reactiveEnergy</a> = NAN</td></tr>
-<tr class="memdesc:a27e34cd1f73ece320e20e365b0c76f05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reactive energy in kilovolt-amperes reactive-hours (kVArh).  <br /></td></tr>
-<tr class="separator:a27e34cd1f73ece320e20e365b0c76f05"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a522cc922f8b51a6c3a8e83bebb26dcff" id="r_a522cc922f8b51a6c3a8e83bebb26dcff"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a522cc922f8b51a6c3a8e83bebb26dcff">reactiveEnergyImported</a> = NAN</td></tr>
-<tr class="memdesc:a522cc922f8b51a6c3a8e83bebb26dcff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reactive energy imported in kilovolt-amperes reactive-hours (kVArh), going to the load, when reactivePower &gt; 0.  <br /></td></tr>
-<tr class="separator:a522cc922f8b51a6c3a8e83bebb26dcff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2397b5350b7d69481f6c424cf3cbe8b" id="r_af2397b5350b7d69481f6c424cf3cbe8b"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af2397b5350b7d69481f6c424cf3cbe8b">reactiveEnergyReturned</a> = NAN</td></tr>
-<tr class="memdesc:af2397b5350b7d69481f6c424cf3cbe8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reactive energy returned in kilovolt-amperes reactive-hours (kVArh), coming from the load, when reactivePower &lt; 0.  <br /></td></tr>
-<tr class="separator:af2397b5350b7d69481f6c424cf3cbe8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d22726d4a497dd961cd2707da2b75d8" id="r_a3d22726d4a497dd961cd2707da2b75d8"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3d22726d4a497dd961cd2707da2b75d8">apparentEnergy</a> = NAN</td></tr>
-<tr class="memdesc:a3d22726d4a497dd961cd2707da2b75d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apparent energy in kilovolt-amperes-hours (kVAh).  <br /></td></tr>
-<tr class="separator:a3d22726d4a497dd961cd2707da2b75d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90dcb23d91589c1a35cba130e9ff935b" id="r_a90dcb23d91589c1a35cba130e9ff935b"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a90dcb23d91589c1a35cba130e9ff935b">activeEnergy</a> = 0</td></tr>
+<tr class="memdesc:a90dcb23d91589c1a35cba130e9ff935b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active energy in watt-hours (Wh).  <br /></td></tr>
+<tr class="separator:a90dcb23d91589c1a35cba130e9ff935b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8502256b7f734e78a219514dd4d5e1ff" id="r_a8502256b7f734e78a219514dd4d5e1ff"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8502256b7f734e78a219514dd4d5e1ff">activeEnergyImported</a> = 0</td></tr>
+<tr class="memdesc:a8502256b7f734e78a219514dd4d5e1ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active energy imported in watt-hours (Wh), going to the load, when activePower &gt; 0.  <br /></td></tr>
+<tr class="separator:a8502256b7f734e78a219514dd4d5e1ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6c4aa7937f9ecc21acaf4855f11436b" id="r_ab6c4aa7937f9ecc21acaf4855f11436b"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab6c4aa7937f9ecc21acaf4855f11436b">activeEnergyReturned</a> = 0</td></tr>
+<tr class="memdesc:ab6c4aa7937f9ecc21acaf4855f11436b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Active energy returned in watt-hours (Wh), coming from the load, when activePower &lt; 0.  <br /></td></tr>
+<tr class="separator:ab6c4aa7937f9ecc21acaf4855f11436b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f05ca3b3a9eb5595d33b10921a37469" id="r_a5f05ca3b3a9eb5595d33b10921a37469"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5f05ca3b3a9eb5595d33b10921a37469">reactiveEnergy</a> = 0</td></tr>
+<tr class="memdesc:a5f05ca3b3a9eb5595d33b10921a37469"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reactive energy in volt-amperes reactive-hours (VArh).  <br /></td></tr>
+<tr class="separator:a5f05ca3b3a9eb5595d33b10921a37469"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7517b13ce34ad06f20e3e9c263d147d" id="r_ad7517b13ce34ad06f20e3e9c263d147d"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad7517b13ce34ad06f20e3e9c263d147d">reactiveEnergyImported</a> = 0</td></tr>
+<tr class="memdesc:ad7517b13ce34ad06f20e3e9c263d147d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reactive energy imported in volt-amperes reactive-hours (VArh), going to the load, when reactivePower &gt; 0.  <br /></td></tr>
+<tr class="separator:ad7517b13ce34ad06f20e3e9c263d147d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad30a3135b3c3a495a1ad04a9e53f01a2" id="r_ad30a3135b3c3a495a1ad04a9e53f01a2"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad30a3135b3c3a495a1ad04a9e53f01a2">reactiveEnergyReturned</a> = 0</td></tr>
+<tr class="memdesc:ad30a3135b3c3a495a1ad04a9e53f01a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reactive energy returned in volt-amperes reactive-hours (VArh), coming from the load, when reactivePower &lt; 0.  <br /></td></tr>
+<tr class="separator:ad30a3135b3c3a495a1ad04a9e53f01a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affcaff243cc967b5b126ddb65e22eafd" id="r_affcaff243cc967b5b126ddb65e22eafd"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#affcaff243cc967b5b126ddb65e22eafd">apparentEnergy</a> = 0</td></tr>
+<tr class="memdesc:affcaff243cc967b5b126ddb65e22eafd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apparent energy in volt-amperes-hours (VAh).  <br /></td></tr>
+<tr class="separator:affcaff243cc967b5b126ddb65e22eafd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e522b33752ef246a3011a969b033e88" id="r_a0e522b33752ef246a3011a969b033e88"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e522b33752ef246a3011a969b033e88">phaseAngleU</a> = NAN</td></tr>
 <tr class="memdesc:a0e522b33752ef246a3011a969b033e88"><td class="mdescLeft">&#160;</td><td class="mdescRight">voltage phase angle in degrees (°).  <br /></td></tr>
 <tr class="separator:a0e522b33752ef246a3011a969b033e88"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -175,10 +175,10 @@ Data Fields</h2></td></tr>
 <tr class="memdesc:ab2dcfbd62011a21029d2cb70298834f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">voltage - current phase angle displacement in degrees (°).  <br /></td></tr>
 <tr class="separator:ab2dcfbd62011a21029d2cb70298834f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a207869b26772bc8e33bd03eef8d37eeb" id="r_a207869b26772bc8e33bd03eef8d37eeb"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a207869b26772bc8e33bd03eef8d37eeb">thdU</a> = NAN</td></tr>
-<tr class="memdesc:a207869b26772bc8e33bd03eef8d37eeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">total harmonic distortion of voltage (THDu).  <br /></td></tr>
+<tr class="memdesc:a207869b26772bc8e33bd03eef8d37eeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">total harmonic distortion of voltage (THDu), as a percentage (%).  <br /></td></tr>
 <tr class="separator:a207869b26772bc8e33bd03eef8d37eeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa4ade5dbba67a375bba6822cd40a5121" id="r_aa4ade5dbba67a375bba6822cd40a5121"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa4ade5dbba67a375bba6822cd40a5121">thdI</a> = NAN</td></tr>
-<tr class="memdesc:aa4ade5dbba67a375bba6822cd40a5121"><td class="mdescLeft">&#160;</td><td class="mdescRight">total harmonic distortion of current (THDi).  <br /></td></tr>
+<tr class="memdesc:aa4ade5dbba67a375bba6822cd40a5121"><td class="mdescLeft">&#160;</td><td class="mdescRight">total harmonic distortion of current (THDi) as a percentage (%).  <br /></td></tr>
 <tr class="separator:aa4ade5dbba67a375bba6822cd40a5121"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -200,7 +200,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00020">20</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00022">22</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -222,7 +222,7 @@ Data Fields</h2></td></tr>
 <p>Compute the dimmed voltage (V = P / I). </p>
 <dl class="section note"><dt>Note</dt><dd>The dimmed voltage is the voltage that would be measured at the output of a TRIAC, SSR or voltage regulator device. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00016">16</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00018">18</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -244,7 +244,7 @@ Data Fields</h2></td></tr>
 <p>Compute the nominal power of the load in watts (P = V^2 / R). </p>
 <dl class="section note"><dt>Note</dt><dd>The voltage is the nominal voltage measured by the <a class="el" href="class_mycila_1_1_j_s_y.html">JSY</a> and R is the measured resistance of the load, which can be regulated by a TRIAC, SSR or voltage regulator. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00018">18</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00020">20</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -271,7 +271,7 @@ Data Fields</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00279">279</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00280">280</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
 
 </div>
 </div>
@@ -290,7 +290,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00064">64</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00066">66</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -309,7 +309,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00081">81</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00083">83</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -328,7 +328,7 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00042">42</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00044">44</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -349,7 +349,7 @@ Data Fields</h2></td></tr>
 
 <p>Compute the resistance of the load in ohms (R = P / I^2). </p>
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00014">14</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00016">16</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
@@ -368,33 +368,33 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Compute the total harmonic distortion of current (THDi). See: <a href="https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance">https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance</a>. </p>
+<p>Compute the total harmonic distortion percentage of current (THDi). This assumes THDu = 0 (perfect voltage sin wave). See: <a href="https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance">https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">phi</td><td>The phase shift angle in radians (0 for resistive load) </td></tr>
+    <tr><td class="paramname">phi</td><td>The phase shift angle in degrees (°) (0 for resistive load) </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The total harmonic distortion of current (THDi) </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The total harmonic distortion of current (THDi) as a percentage (%) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00007">7</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html#l00009">9</a> of file <a class="el" href="_mycila_j_s_y_metrics_8cpp_source.html">MycilaJSYMetrics.cpp</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Field Documentation</h2>
-<a id="a5ca0f5e3cd67f27daf20d1ab281699ff" name="a5ca0f5e3cd67f27daf20d1ab281699ff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ca0f5e3cd67f27daf20d1ab281699ff">&#9670;&#160;</a></span>activeEnergy</h2>
+<a id="a90dcb23d91589c1a35cba130e9ff935b" name="a90dcb23d91589c1a35cba130e9ff935b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90dcb23d91589c1a35cba130e9ff935b">&#9670;&#160;</a></span>activeEnergy</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float Mycila::JSY::Metrics::activeEnergy = NAN</td>
+          <td class="memname">uint32_t Mycila::JSY::Metrics::activeEnergy = 0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Active energy in kilowatt-hours (kWh). </p>
+<p>Active energy in watt-hours (Wh). </p>
 <dl class="section note"><dt>Note</dt><dd>JSY1031, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured </dd>
 <dd>
 JSY-MK-163, JSY-MK-193, JSY-MK-194: computed, sum of activeEnergyImported and activeEnergyReturned </dd></dl>
@@ -403,19 +403,19 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed, sum of activeEnergyImported and ac
 
 </div>
 </div>
-<a id="a3dbea4ae7535ad38bfb4645084828df0" name="a3dbea4ae7535ad38bfb4645084828df0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3dbea4ae7535ad38bfb4645084828df0">&#9670;&#160;</a></span>activeEnergyImported</h2>
+<a id="a8502256b7f734e78a219514dd4d5e1ff" name="a8502256b7f734e78a219514dd4d5e1ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8502256b7f734e78a219514dd4d5e1ff">&#9670;&#160;</a></span>activeEnergyImported</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float Mycila::JSY::Metrics::activeEnergyImported = NAN</td>
+          <td class="memname">uint32_t Mycila::JSY::Metrics::activeEnergyImported = 0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Active energy imported in kilowatt-hours (kWh), going to the load, when activePower &gt; 0. </p>
+<p>Active energy imported in watt-hours (Wh), going to the load, when activePower &gt; 0. </p>
 <dl class="section note"><dt>Note</dt><dd>JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured </dd>
 <dd>
 : For DC boards, matches the positive energy </dd></dl>
@@ -424,19 +424,19 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed, sum of activeEnergyImported and ac
 
 </div>
 </div>
-<a id="a9d5654bb558d50ec8b07b7be39993020" name="a9d5654bb558d50ec8b07b7be39993020"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9d5654bb558d50ec8b07b7be39993020">&#9670;&#160;</a></span>activeEnergyReturned</h2>
+<a id="ab6c4aa7937f9ecc21acaf4855f11436b" name="ab6c4aa7937f9ecc21acaf4855f11436b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6c4aa7937f9ecc21acaf4855f11436b">&#9670;&#160;</a></span>activeEnergyReturned</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float Mycila::JSY::Metrics::activeEnergyReturned = NAN</td>
+          <td class="memname">uint32_t Mycila::JSY::Metrics::activeEnergyReturned = 0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Active energy returned in kilowatt-hours (kWh), coming from the load, when activePower &lt; 0. </p>
+<p>Active energy returned in watt-hours (Wh), coming from the load, when activePower &lt; 0. </p>
 <dl class="section note"><dt>Note</dt><dd>JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured </dd>
 <dd>
 : For DC boards, matches the negative energy </dd></dl>
@@ -457,26 +457,26 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed, sum of activeEnergyImported and ac
       </table>
 </div><div class="memdoc">
 
-<p>Active power in watts (W). </p>
+<p>Active power in watts (W). Can be positive or negative. </p>
 <dl class="section note"><dt>Note</dt><dd>JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333 </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00149">149</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
 
 </div>
 </div>
-<a id="a3d22726d4a497dd961cd2707da2b75d8" name="a3d22726d4a497dd961cd2707da2b75d8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d22726d4a497dd961cd2707da2b75d8">&#9670;&#160;</a></span>apparentEnergy</h2>
+<a id="affcaff243cc967b5b126ddb65e22eafd" name="affcaff243cc967b5b126ddb65e22eafd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#affcaff243cc967b5b126ddb65e22eafd">&#9670;&#160;</a></span>apparentEnergy</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float Mycila::JSY::Metrics::apparentEnergy = NAN</td>
+          <td class="memname">uint32_t Mycila::JSY::Metrics::apparentEnergy = 0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Apparent energy in kilovolt-amperes-hours (kVAh). </p>
+<p>Apparent energy in volt-amperes-hours (VAh). </p>
 <dl class="section note"><dt>Note</dt><dd>JSY-MK-333: measured </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00216">216</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
@@ -495,7 +495,7 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed, sum of activeEnergyImported and ac
       </table>
 </div><div class="memdoc">
 
-<p>Apparent power in volt-amperes (VA). </p>
+<p>Apparent power in volt-amperes (VA). Always positive. </p>
 <dl class="section note"><dt>Note</dt><dd>JSY1031, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured </dd>
 <dd>
 JSY-MK-163, JSY-MK-193, JSY-MK-194: computed </dd></dl>
@@ -611,45 +611,45 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Power factor. </p>
+<p>Power factor. Positive value between 0 and 1. </p>
 <dl class="section note"><dt>Note</dt><dd>JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333 </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00155">155</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
 
 </div>
 </div>
-<a id="a27e34cd1f73ece320e20e365b0c76f05" name="a27e34cd1f73ece320e20e365b0c76f05"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a27e34cd1f73ece320e20e365b0c76f05">&#9670;&#160;</a></span>reactiveEnergy</h2>
+<a id="a5f05ca3b3a9eb5595d33b10921a37469" name="a5f05ca3b3a9eb5595d33b10921a37469"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f05ca3b3a9eb5595d33b10921a37469">&#9670;&#160;</a></span>reactiveEnergy</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float Mycila::JSY::Metrics::reactiveEnergy = NAN</td>
+          <td class="memname">uint32_t Mycila::JSY::Metrics::reactiveEnergy = 0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Reactive energy in kilovolt-amperes reactive-hours (kVArh). </p>
+<p>Reactive energy in volt-amperes reactive-hours (VArh). </p>
 <dl class="section note"><dt>Note</dt><dd>JSY-MK-227, JSY-MK-229, JSY-MK-333: measured </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00196">196</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
 
 </div>
 </div>
-<a id="a522cc922f8b51a6c3a8e83bebb26dcff" name="a522cc922f8b51a6c3a8e83bebb26dcff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a522cc922f8b51a6c3a8e83bebb26dcff">&#9670;&#160;</a></span>reactiveEnergyImported</h2>
+<a id="ad7517b13ce34ad06f20e3e9c263d147d" name="ad7517b13ce34ad06f20e3e9c263d147d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7517b13ce34ad06f20e3e9c263d147d">&#9670;&#160;</a></span>reactiveEnergyImported</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float Mycila::JSY::Metrics::reactiveEnergyImported = NAN</td>
+          <td class="memname">uint32_t Mycila::JSY::Metrics::reactiveEnergyImported = 0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Reactive energy imported in kilovolt-amperes reactive-hours (kVArh), going to the load, when reactivePower &gt; 0. </p>
+<p>Reactive energy imported in volt-amperes reactive-hours (VArh), going to the load, when reactivePower &gt; 0. </p>
 <dl class="section note"><dt>Note</dt><dd>JSY-MK-227, JSY-MK-229, JSY-MK-333: measured </dd>
 <dd>
 : For DC boards, matches the positive energy </dd></dl>
@@ -658,19 +658,19 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed </dd></dl>
 
 </div>
 </div>
-<a id="af2397b5350b7d69481f6c424cf3cbe8b" name="af2397b5350b7d69481f6c424cf3cbe8b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af2397b5350b7d69481f6c424cf3cbe8b">&#9670;&#160;</a></span>reactiveEnergyReturned</h2>
+<a id="ad30a3135b3c3a495a1ad04a9e53f01a2" name="ad30a3135b3c3a495a1ad04a9e53f01a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad30a3135b3c3a495a1ad04a9e53f01a2">&#9670;&#160;</a></span>reactiveEnergyReturned</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float Mycila::JSY::Metrics::reactiveEnergyReturned = NAN</td>
+          <td class="memname">uint32_t Mycila::JSY::Metrics::reactiveEnergyReturned = 0</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Reactive energy returned in kilovolt-amperes reactive-hours (kVArh), coming from the load, when reactivePower &lt; 0. </p>
+<p>Reactive energy returned in volt-amperes reactive-hours (VArh), coming from the load, when reactivePower &lt; 0. </p>
 <dl class="section note"><dt>Note</dt><dd>JSY-MK-227, JSY-MK-229, JSY-MK-333: measured </dd>
 <dd>
 : For DC boards, matches the negative energy </dd></dl>
@@ -691,7 +691,7 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>Reactive power in volt-amperes reactive (VAr). </p>
+<p>Reactive power in volt-amperes reactive (VAr). Can be positive or negative. </p>
 <dl class="section note"><dt>Note</dt><dd>JSY1031, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured </dd>
 <dd>
 JSY-MK-163, JSY-MK-193, JSY-MK-194: computed and always be positive since we do not know the phase shift angle (inductive or capacitive load) </dd></dl>
@@ -712,7 +712,7 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed and always be positive since we do 
       </table>
 </div><div class="memdoc">
 
-<p>total harmonic distortion of current (THDi). </p>
+<p>total harmonic distortion of current (THDi) as a percentage (%). </p>
 <dl class="section note"><dt>Note</dt><dd>JSY-MK-333: measured </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00246">246</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
@@ -731,7 +731,7 @@ JSY-MK-163, JSY-MK-193, JSY-MK-194: computed and always be positive since we do 
       </table>
 </div><div class="memdoc">
 
-<p>total harmonic distortion of voltage (THDu). </p>
+<p>total harmonic distortion of voltage (THDu), as a percentage (%). </p>
 <dl class="section note"><dt>Note</dt><dd>JSY-MK-333: measured </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="_mycila_j_s_y_8h_source.html#l00240">240</a> of file <a class="el" href="_mycila_j_s_y_8h_source.html">MycilaJSY.h</a>.</p>
