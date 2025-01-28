@@ -119,12 +119,18 @@ void Mycila::JSY::Metrics::toJson(const JsonObject& root) const {
   if (!std::isnan(powerFactor))
     root["power_factor"] = powerFactor;
   root["active_energy"] = activeEnergy;
-  root["apparent_energy"] = apparentEnergy;
-  root["active_energy_imported"] = activeEnergyImported;
-  root["active_energy_returned"] = activeEnergyReturned;
-  root["reactive_energy"] = reactiveEnergy;
-  root["reactive_energy_imported"] = reactiveEnergyImported;
-  root["reactive_energy_returned"] = reactiveEnergyReturned;
+  if (apparentEnergy)
+    root["apparent_energy"] = apparentEnergy;
+  if (activeEnergyImported)
+    root["active_energy_imported"] = activeEnergyImported;
+  if (activeEnergyReturned)
+    root["active_energy_returned"] = activeEnergyReturned;
+  if (reactiveEnergy)
+    root["reactive_energy"] = reactiveEnergy;
+  if (reactiveEnergyImported)
+    root["reactive_energy_imported"] = reactiveEnergyImported;
+  if (reactiveEnergyReturned)
+    root["reactive_energy_returned"] = reactiveEnergyReturned;
   if (!std::isnan(phaseAngleU))
     root["phase_angle_u"] = phaseAngleU;
   if (!std::isnan(phaseAngleI))
