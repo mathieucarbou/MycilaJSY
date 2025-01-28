@@ -4,11 +4,13 @@
  */
 #include "MycilaJSY.h"
 
+static constexpr float DEG_TO_RAD_F = static_cast<float>(DEG_TO_RAD);
+
 float Mycila::JSY::Metrics::thdi(float phi) const {
   if (powerFactor == 0)
     return NAN;
-  const float cosPhi = phi == 0 ? 1 : std::cos(phi);
-  return std::sqrt((cosPhi * cosPhi) / (powerFactor * powerFactor) - 1);
+  const float cosPhi = std::cos(phi * DEG_TO_RAD_F);
+  return 100.0f * std::sqrt((cosPhi * cosPhi) / (powerFactor * powerFactor) - 1);
 }
 
 float Mycila::JSY::Metrics::resistance() const { return current == 0 ? NAN : std::abs(activePower / (current * current)); }
@@ -25,13 +27,13 @@ void Mycila::JSY::Metrics::clear() {
   reactivePower = NAN;
   apparentPower = NAN;
   powerFactor = NAN;
-  activeEnergy = NAN;
-  activeEnergyImported = NAN;
-  activeEnergyReturned = NAN;
-  reactiveEnergy = NAN;
-  reactiveEnergyImported = NAN;
-  reactiveEnergyReturned = NAN;
-  apparentEnergy = NAN;
+  activeEnergy = 0;
+  activeEnergyImported = 0;
+  activeEnergyReturned = 0;
+  reactiveEnergy = 0;
+  reactiveEnergyImported = 0;
+  reactiveEnergyReturned = 0;
+  apparentEnergy = 0;
   phaseAngleU = NAN;
   phaseAngleI = NAN;
   phaseAngleUI = NAN;
@@ -47,13 +49,13 @@ bool Mycila::JSY::Metrics::operator==(const Mycila::JSY::Metrics& other) const {
          (std::isnan(reactivePower) ? std::isnan(other.reactivePower) : reactivePower == other.reactivePower) &&
          (std::isnan(apparentPower) ? std::isnan(other.apparentPower) : apparentPower == other.apparentPower) &&
          (std::isnan(powerFactor) ? std::isnan(other.powerFactor) : powerFactor == other.powerFactor) &&
-         (std::isnan(activeEnergy) ? std::isnan(other.activeEnergy) : activeEnergy == other.activeEnergy) &&
-         (std::isnan(activeEnergyImported) ? std::isnan(other.activeEnergyImported) : activeEnergyImported == other.activeEnergyImported) &&
-         (std::isnan(activeEnergyReturned) ? std::isnan(other.activeEnergyReturned) : activeEnergyReturned == other.activeEnergyReturned) &&
-         (std::isnan(reactiveEnergy) ? std::isnan(other.reactiveEnergy) : reactiveEnergy == other.reactiveEnergy) &&
-         (std::isnan(reactiveEnergyImported) ? std::isnan(other.reactiveEnergyImported) : reactiveEnergyImported == other.reactiveEnergyImported) &&
-         (std::isnan(reactiveEnergyReturned) ? std::isnan(other.reactiveEnergyReturned) : reactiveEnergyReturned == other.reactiveEnergyReturned) &&
-         (std::isnan(apparentEnergy) ? std::isnan(other.apparentEnergy) : apparentEnergy == other.apparentEnergy) &&
+         (activeEnergy == other.activeEnergy) &&
+         (activeEnergyImported == other.activeEnergyImported) &&
+         (activeEnergyReturned == other.activeEnergyReturned) &&
+         (reactiveEnergy == other.reactiveEnergy) &&
+         (reactiveEnergyImported == other.reactiveEnergyImported) &&
+         (reactiveEnergyReturned == other.reactiveEnergyReturned) &&
+         (apparentEnergy == other.apparentEnergy) &&
          (std::isnan(phaseAngleU) ? std::isnan(other.phaseAngleU) : phaseAngleU == other.phaseAngleU) &&
          (std::isnan(phaseAngleI) ? std::isnan(other.phaseAngleI) : phaseAngleI == other.phaseAngleI) &&
          (std::isnan(phaseAngleUI) ? std::isnan(other.phaseAngleUI) : phaseAngleUI == other.phaseAngleUI) &&
@@ -116,20 +118,13 @@ void Mycila::JSY::Metrics::toJson(const JsonObject& root) const {
     root["apparent_power"] = apparentPower;
   if (!std::isnan(powerFactor))
     root["power_factor"] = powerFactor;
-  if (!std::isnan(activeEnergy))
-    root["active_energy"] = activeEnergy;
-  if (!std::isnan(apparentEnergy))
-    root["apparent_energy"] = apparentEnergy;
-  if (!std::isnan(activeEnergyImported))
-    root["active_energy_imported"] = activeEnergyImported;
-  if (!std::isnan(activeEnergyReturned))
-    root["active_energy_returned"] = activeEnergyReturned;
-  if (!std::isnan(reactiveEnergy))
-    root["reactive_energy"] = reactiveEnergy;
-  if (!std::isnan(reactiveEnergyImported))
-    root["reactive_energy_imported"] = reactiveEnergyImported;
-  if (!std::isnan(reactiveEnergyReturned))
-    root["reactive_energy_returned"] = reactiveEnergyReturned;
+  root["active_energy"] = activeEnergy;
+  root["apparent_energy"] = apparentEnergy;
+  root["active_energy_imported"] = activeEnergyImported;
+  root["active_energy_returned"] = activeEnergyReturned;
+  root["reactive_energy"] = reactiveEnergy;
+  root["reactive_energy_imported"] = reactiveEnergyImported;
+  root["reactive_energy_returned"] = reactiveEnergyReturned;
   if (!std::isnan(phaseAngleU))
     root["phase_angle_u"] = phaseAngleU;
   if (!std::isnan(phaseAngleI))

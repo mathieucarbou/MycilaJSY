@@ -143,77 +143,77 @@ namespace Mycila {
           float current = NAN;
 
           /**
-           * @brief Active power in watts (W).
+           * @brief Active power in watts (W). Can be positive or negative.
            * @note JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333
            */
           float activePower = NAN;
 
           /**
-           * @brief Power factor
+           * @brief Power factor. Positive value between 0 and 1.
            * @note JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333
            */
           float powerFactor = NAN;
 
           /**
-           * @brief Apparent power in volt-amperes (VA).
+           * @brief Apparent power in volt-amperes (VA). Always positive.
            * @note JSY1031, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
            * @note JSY-MK-163, JSY-MK-193, JSY-MK-194: computed
            */
           float apparentPower = NAN;
 
           /**
-           * @brief Reactive power in volt-amperes reactive (VAr).
+           * @brief Reactive power in volt-amperes reactive (VAr). Can be positive or negative.
            * @note JSY1031, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
            * @note JSY-MK-163, JSY-MK-193, JSY-MK-194: computed and always be positive since we do not know the phase shift angle (inductive or capacitive load)
            */
           float reactivePower = NAN;
 
           /**
-           * @brief Active energy in kilowatt-hours (kWh).
+           * @brief Active energy in watt-hours (Wh).
            * @note JSY1031, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
            * @note JSY-MK-163, JSY-MK-193, JSY-MK-194: computed, sum of activeEnergyImported and activeEnergyReturned
            */
-          float activeEnergy = NAN;
+          uint32_t activeEnergy = 0;
 
           /**
-           * @brief Active energy imported in kilowatt-hours (kWh), going to the load, when activePower > 0
+           * @brief Active energy imported in watt-hours (Wh), going to the load, when activePower > 0
            * @note JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
            * @note: For DC boards, matches the positive energy
            */
-          float activeEnergyImported = NAN;
+          uint32_t activeEnergyImported = 0;
 
           /**
-           * @brief Active energy returned in kilowatt-hours (kWh), coming from the load, when activePower < 0
+           * @brief Active energy returned in watt-hours (Wh), coming from the load, when activePower < 0
            * @note JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
            * @note: For DC boards, matches the negative energy
            */
-          float activeEnergyReturned = NAN;
+          uint32_t activeEnergyReturned = 0;
 
           /**
-           * @brief Reactive energy in kilovolt-amperes reactive-hours (kVArh).
+           * @brief Reactive energy in volt-amperes reactive-hours (VArh).
            * @note JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
            */
-          float reactiveEnergy = NAN;
+          uint32_t reactiveEnergy = 0;
 
           /**
-           * @brief Reactive energy imported in kilovolt-amperes reactive-hours (kVArh), going to the load, when reactivePower > 0
+           * @brief Reactive energy imported in volt-amperes reactive-hours (VArh), going to the load, when reactivePower > 0
            * @note JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
            * @note: For DC boards, matches the positive energy
            */
-          float reactiveEnergyImported = NAN;
+          uint32_t reactiveEnergyImported = 0;
 
           /**
-           * @brief Reactive energy returned in kilovolt-amperes reactive-hours (kVArh), coming from the load, when reactivePower < 0
+           * @brief Reactive energy returned in volt-amperes reactive-hours (VArh), coming from the load, when reactivePower < 0
            * @note JSY-MK-227, JSY-MK-229, JSY-MK-333: measured
            * @note: For DC boards, matches the negative energy
            */
-          float reactiveEnergyReturned = NAN;
+          uint32_t reactiveEnergyReturned = 0;
 
           /**
-           * @brief Apparent energy in kilovolt-amperes-hours (kVAh).
+           * @brief Apparent energy in volt-amperes-hours (VAh).
            * @note JSY-MK-333: measured
            */
-          float apparentEnergy = NAN;
+          uint32_t apparentEnergy = 0;
 
           /**
            * @brief voltage phase angle in degrees (°).
@@ -234,22 +234,23 @@ namespace Mycila {
           float phaseAngleUI = NAN;
 
           /**
-           * @brief total harmonic distortion of voltage (THDu).
+           * @brief total harmonic distortion of voltage (THDu), as a percentage (%).
            * @note JSY-MK-333: measured
            */
           float thdU = NAN;
 
           /**
-           * @brief total harmonic distortion of current (THDi).
+           * @brief total harmonic distortion of current (THDi) as a percentage (%).
            * @note JSY-MK-333: measured
            */
           float thdI = NAN;
 
           /**
-           * @brief Compute the total harmonic distortion of current (THDi).
+           * @brief Compute the total harmonic distortion percentage of current (THDi).
+           * This assumes THDu = 0 (perfect voltage sin wave).
            * See: https://fr.electrical-installation.org/frwiki/Indicateur_de_distorsion_harmonique_:_facteur_de_puissance
-           * @param phi The phase shift angle in radians (0 for resistive load)
-           * @return The total harmonic distortion of current (THDi)
+           * @param phi The phase shift angle in degrees (°) (0 for resistive load)
+           * @return The total harmonic distortion of current (THDi) as a percentage (%)
            */
           float thdi(float phi = 0) const;
 
