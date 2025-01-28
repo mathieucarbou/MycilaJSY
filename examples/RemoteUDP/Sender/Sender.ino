@@ -114,8 +114,8 @@ static dash::SwitchCard energyReset(dashboard, "Reset Energy");
 static dash::SwitchCard reset(dashboard, "Factory Reset");
 
 static dash::GenericCard jsyModelCard(dashboard, "Model");
-static dash::GenericCard<float, 2> messageRateCard(dashboard, "Message Rate", "msg/s");
-static dash::GenericCard<float, 2> dataRateCard(dashboard, "Data Rate", "bytes/s");
+static dash::GenericCard<volatile float, 2> messageRateCard(dashboard, "Message Rate", "msg/s");
+static dash::GenericCard<volatile uint32_t> dataRateCard(dashboard, "Data Rate", "bytes/s");
 
 // JSY-MK-163
 static dash::GenericCard<float, 1> jsy163Frequency(dashboard, "Frequency", "Hz");
@@ -214,11 +214,11 @@ static uint16_t jsyModel = MYCILA_JSY_MK_UNKNOWN;
 
 // circular buffer for msg rate
 static Mycila::CircularBuffer<float, MYCILA_UDP_SEND_RATE_WINDOW> messageRateBuffer;
-static float messageRate = 0;
+static volatile float messageRate = 0;
 
 // circular buffer for data rate
 static Mycila::CircularBuffer<uint32_t, MYCILA_UDP_SEND_RATE_WINDOW> dataRateBuffer;
-static uint32_t dataRate = 0;
+static volatile uint32_t dataRate = 0;
 
 static Mycila::Task jsyTask("JSY", [](void* params) { jsy.read(); });
 static Mycila::Task networkManagerTask("ESPConnect", [](void* params) { espConnect.loop(); });
@@ -264,7 +264,7 @@ static Mycila::Task dashboardTask("Dashboard", [](void* params) {
   uptime.setValue(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()));
 
   messageRateCard.setValue(messageRate);
-  dataRateCard.setValue(static_cast<int>(dataRate));
+  dataRateCard.setValue(dataRate);
   udpSendEnabledCard.setValue(udpSendEnabled);
 
   switch (jsyModel) {
