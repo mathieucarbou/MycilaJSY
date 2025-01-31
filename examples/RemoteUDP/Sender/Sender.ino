@@ -491,6 +491,7 @@ void setup() {
 
   for (int i = 0; i < MYCILA_GRAPH_POINTS; i++)
     historyX[i] = i - MYCILA_GRAPH_POINTS;
+
   jsy163ActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
   jsy194Channel1ActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
   jsy194Channel2ActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
@@ -600,6 +601,7 @@ void setup() {
   jsyModel = jsy.getModel();
 
   if (jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
+    dashboard.remove(jsy163Frequency);
     dashboard.remove(jsy163Voltage);
     dashboard.remove(jsy163current);
     dashboard.remove(jsy163PowerFactor);
@@ -613,6 +615,7 @@ void setup() {
   }
 
   if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
+    dashboard.remove(jsy194Channel1Frequency);
     dashboard.remove(jsy194Channel1Voltage);
     dashboard.remove(jsy194Channel1Current);
     dashboard.remove(jsy194Channel1PowerFactor);
@@ -622,6 +625,7 @@ void setup() {
     dashboard.remove(jsy194Channel1ActiveEnergy);
     dashboard.remove(jsy194Channel1ActiveEnergyImported);
     dashboard.remove(jsy194Channel1ActiveEnergyReturned);
+    dashboard.remove(jsy194Channel2Frequency);
     dashboard.remove(jsy194Channel2Voltage);
     dashboard.remove(jsy194Channel2Current);
     dashboard.remove(jsy194Channel2PowerFactor);
@@ -636,6 +640,7 @@ void setup() {
   }
 
   if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
+    dashboard.remove(jsy333PhaseAFrequency);
     dashboard.remove(jsy333PhaseAVoltage);
     dashboard.remove(jsy333PhaseACurrent);
     dashboard.remove(jsy333PhaseAPowerFactor);
@@ -649,6 +654,7 @@ void setup() {
     dashboard.remove(jsy333PhaseAReactiveEnergyImported);
     dashboard.remove(jsy333PhaseAReactiveEnergyReturned);
     dashboard.remove(jsy333PhaseAApparentEnergy);
+    dashboard.remove(jsy333PhaseBFrequency);
     dashboard.remove(jsy333PhaseBVoltage);
     dashboard.remove(jsy333PhaseBCurrent);
     dashboard.remove(jsy333PhaseBPowerFactor);
@@ -662,6 +668,7 @@ void setup() {
     dashboard.remove(jsy333PhaseBReactiveEnergyImported);
     dashboard.remove(jsy333PhaseBReactiveEnergyReturned);
     dashboard.remove(jsy333PhaseBApparentEnergy);
+    dashboard.remove(jsy333PhaseCFrequency);
     dashboard.remove(jsy333PhaseCVoltage);
     dashboard.remove(jsy333PhaseCCurrent);
     dashboard.remove(jsy333PhaseCPowerFactor);
