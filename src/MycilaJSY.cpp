@@ -644,11 +644,7 @@ void Mycila::JSY::begin(HardwareSerial& serial,
                         const int8_t txPin,
                         const BaudRate baudRate,
                         const uint8_t destinationAddress,
-                        const uint16_t model,
-                        const bool async,
-                        const uint8_t core,
-                        const uint32_t stackSize,
-                        const uint32_t pause) {
+                        const uint16_t model) {
   if (_enabled)
     return;
 
@@ -724,8 +720,6 @@ void Mycila::JSY::begin(HardwareSerial& serial,
 
   _destinationAddress = destinationAddress;
   LOGI(TAG, "Detected JSY-MK-%X @ 0x%02X with speed %" PRIu32 " bauds", _model, _lastAddress, _baudRate);
-
-  assert(!async || xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, MYCILA_JSY_ASYNC_PRIORITY, &_taskHandle, core) == pdPASS);
 }
 
 void Mycila::JSY::end() {
@@ -739,7 +733,8 @@ void Mycila::JSY::end() {
     _baudRate = BaudRate::UNKNOWN;
     _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
     _model = MYCILA_JSY_MK_UNKNOWN;
-    data.clear();
+    _time = 0;
+    _connected = false;
     _serial->end();
   }
 }
@@ -748,7 +743,7 @@ void Mycila::JSY::end() {
 // read
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
+bool Mycila::JSY::_readMetrics(const uint8_t address, uint16_t model, Data& data) {
   if (!_enabled)
     return false;
 
@@ -822,6 +817,7 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
   if (result == ReadResult::READ_TIMEOUT) {
     // reset live values in case of read timeout
     data.clear();
+    _connected = data.isConnected();
     _mutexOp.unlock();
     if (_callback) {
       _callback(EventType::EVT_READ_TIMEOUT);
@@ -832,6 +828,7 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
   if (result == ReadResult::READ_ERROR_COUNT || result == ReadResult::READ_ERROR_CRC) {
     // reset live values in case of read failure
     data.clear();
+    _connected = data.isConnected();
     _mutexOp.unlock();
     if (_callback) {
       _callback(EventType::EVT_READ_ERROR);
@@ -1122,15 +1119,14 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       break;
   }
 
-  bool changed = data != parsed;
-
-  if (changed)
-    data = parsed;
-
+  _connected = parsed.isConnected();
   _time = millis();
-
   _mutexOp.unlock();
 
+  std::unique_lock lock(data._mutexData);
+  bool changed = data != parsed;
+  if (changed)
+    data = parsed;
   if (_callback) {
     _callback(EventType::EVT_READ);
     if (changed) {
@@ -1139,6 +1135,16 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
   }
 
   return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// readMetricsAsync
+///////////////////////////////////////////////////////////////////////////////
+
+bool Mycila::JSY::_readMetricsAsync(uint8_t address, uint16_t model, Data& data, uint8_t core, uint32_t stackSize, uint32_t pause) {
+  if (!_enabled)
+    return false;
+  return xTaskCreateUniversal(_jsyTask, "jsyTask", stackSize, this, MYCILA_JSY_ASYNC_PRIORITY, &_taskHandle, core) == pdPASS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1479,7 +1485,9 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
   root["enabled"] = _enabled;
   root["time"] = _time;
   root["speed"] = _baudRate;
-  data.toJson(root);
+  root["address"] = _lastAddress;
+  root["model"] = _model;
+  root["model_name"] = Mycila::JSY::getModelName(_model);
 }
 #endif
 

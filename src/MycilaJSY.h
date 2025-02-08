@@ -290,6 +290,17 @@ namespace Mycila {
 
       class Data {
         public:
+          /**
+           * @brief lock the data for reading.
+           * This must be called before reading the data.
+           */
+          void lock() const { _mutexData.lock_shared(); }
+
+          /**
+           * @brief unlock the data after reading.
+           */
+          void unlock() const { _mutexData.unlock_shared(); }
+
           uint8_t address = MYCILA_JSY_ADDRESS_UNKNOWN; // device address
           uint16_t model = MYCILA_JSY_MK_UNKNOWN;       // device model
 
@@ -317,6 +328,8 @@ namespace Mycila {
           // clear all values
           void clear();
 
+          bool isConnected() const { return aggregate.frequency > 0; }
+
           // compare two data
           bool operator==(const Data& other) const;
           // compare two data
@@ -343,45 +356,17 @@ namespace Mycila {
        * @param serial The serial port to use
        * @param rxPin RX board pin connected to the TX of the JSY
        * @param txPin TX board pin connected to the RX of the JSY
-       * @param async If true, the JSY will be read in a separate task (default: false)
-       * @param core The core to use for the async task (default: MYCILA_JSY_ASYNC_CORE)
-       * @param stackSize The stack size of the async task (default: MYCILA_JSY_ASYNC_STACK_SIZE)
-       * @param pause Time in milliseconds to wait between each read in async mode (default: MYCILA_JSY_ASYNC_READ_PAUSE_MS)
-       * @note The baud rate and model is automatically detected.
-       */
-      void begin(HardwareSerial& serial, // NOLINT
-                 int8_t rxPin,
-                 int8_t txPin,
-                 bool async,
-                 uint8_t core = MYCILA_JSY_ASYNC_CORE,
-                 uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
-                 uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS) {
-        begin(serial, rxPin, txPin, BaudRate::UNKNOWN, MYCILA_JSY_ADDRESS_BROADCAST, MYCILA_JSY_MK_UNKNOWN, async, core, stackSize, pause);
-      }
-
-      /**
-       * @brief Initialize the JSY with the given RX and TX pins.
-       * @param serial The serial port to use
-       * @param rxPin RX board pin connected to the TX of the JSY
-       * @param txPin TX board pin connected to the RX of the JSY
        * @param baudRate The baud rate of the JSY. If set to BaudRate::UNKNOWN, the baud rate is automatically detected
        * @param destinationAddress The address of the device to communicate with (1-255) or MYCILA_JSY_ADDRESS_BROADCAST for all devices
        * @param model The model of the JSY. If set to MYCILA_JSY_MK_UNKNOWN, the model is automatically detected
-       * @param async If true, the JSY will be read in a separate task (default: false)
-       * @param core The core to use for the async task (default: MYCILA_JSY_ASYNC_CORE)
-       * @param stackSize The stack size of the async task (default: MYCILA_JSY_ASYNC_STACK_SIZE)
-       * @param pause Time in milliseconds to wait between each read in async mode (default: MYCILA_JSY_ASYNC_READ_PAUSE_MS)
+       *
        */
       void begin(HardwareSerial& serial, // NOLINT
                  int8_t rxPin,
                  int8_t txPin,
                  BaudRate baudRate = BaudRate::UNKNOWN,
                  uint8_t destinationAddress = MYCILA_JSY_ADDRESS_BROADCAST,
-                 uint16_t model = MYCILA_JSY_MK_UNKNOWN,
-                 bool async = false,
-                 uint8_t core = MYCILA_JSY_ASYNC_CORE,
-                 uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
-                 uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS);
+                 uint16_t model = MYCILA_JSY_MK_UNKNOWN);
 
       /**
        * @brief Ends the JSY communication.
@@ -470,19 +455,49 @@ namespace Mycila {
       bool setMode(uint8_t address, Mode mode) { return _setMode(address, readModel(address), mode); }
 
       /**
-       * @brief Read the JSY values.
+       * @brief Read the JSY metrics.
+       * @param data The data to fill with the metrics
        * @return true if the read was successful
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      bool read() { return _read(_destinationAddress, _model); }
+      bool readMetrics(Data& data) { return _readMetrics(_destinationAddress, _model, data); }
 
       /**
-       * @brief Read the JSY values.
+       * @brief Read the JSY metrics.
        * @param address The address of the device to read (1-255) or MYCILA_JSY_ADDRESS_BROADCAST for all devices
+       * @param data The data to fill with the metrics
        * @return true if the read was successful
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      bool read(uint8_t address) { return _read(address, readModel(address)); }
+      bool readMetrics(uint8_t address, Data& data) { return _readMetrics(address, readModel(address), data); }
+
+      /**
+       * @brief Read the JSY metrics asynchronously.
+       * @param data The data to fill with the metrics
+       * @param core The core to use for the async task (default: MYCILA_JSY_ASYNC_CORE)
+       * @param stackSize The stack size of the async task (default: MYCILA_JSY_ASYNC_STACK_SIZE)
+       * @param pause Time in milliseconds to wait between each read in async mode (default: MYCILA_JSY_ASYNC_READ_PAUSE_MS)
+       * @return true if the task initialization was successful
+       */
+      bool readMetricsAsync(Data& data,
+                            uint8_t core = MYCILA_JSY_ASYNC_CORE,
+                            uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
+                            uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS) { return _readMetricsAsync(_destinationAddress, _model, data, core, stackSize, pause); }
+
+      /**
+       * @brief Read the JSY metrics asynchronously.
+       * @param address The address of the device to read (1-255) or MYCILA_JSY_ADDRESS_BROADCAST for all devices
+       * @param data The data to fill with the metrics
+       * @param core The core to use for the async task (default: MYCILA_JSY_ASYNC_CORE)
+       * @param stackSize The stack size of the async task (default: MYCILA_JSY_ASYNC_STACK_SIZE)
+       * @param pause Time in milliseconds to wait between each read in async mode (default: MYCILA_JSY_ASYNC_READ_PAUSE_MS)
+       * @return true if the task initialization was successful
+       */
+      bool readMetricsAsync(uint8_t address,
+                            Data& data,
+                            uint8_t core = MYCILA_JSY_ASYNC_CORE,
+                            uint32_t stackSize = MYCILA_JSY_ASYNC_STACK_SIZE,
+                            uint32_t pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS) { return _readMetricsAsync(address, readModel(address), data, core, stackSize, pause); }
 
       /**
        * @brief Reset the energy counters of the JSY.
@@ -563,15 +578,9 @@ namespace Mycila {
       uint32_t getTime() const { return _time; }
 
       // check if the device is connected to the grid, meaning if last read was successful
-      bool isConnected() const { return data.aggregate.frequency > 0; }
+      bool isConnected() const { return _connected; }
 
-      void setCallback(Callback callback) { _callback = callback; }
-
-    public:
-      /**
-       * @brief Access the runtime JSY data.
-       */
-      Data data;
+      void onEvent(Callback callback) { _callback = callback; }
 
     private:
       Callback _callback = nullptr;
@@ -581,6 +590,7 @@ namespace Mycila {
       std::timed_mutex _mutexOp;
       TaskHandle_t _taskHandle;
       uint32_t _time = 0;
+      bool _connected = false;
       uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS;
       uint8_t _destinationAddress = MYCILA_JSY_ADDRESS_BROADCAST;
       uint8_t _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
@@ -602,7 +612,8 @@ namespace Mycila {
       };
 
       bool _set(uint8_t address, uint8_t newAddress, BaudRate newBaudRate);
-      bool _read(uint8_t address, uint16_t model);
+      bool _readMetrics(uint8_t address, uint16_t model, Data& data);
+      bool _readMetricsAsync(uint8_t address, uint16_t model, Data& data, uint8_t core, uint32_t stackSize, uint32_t pause);
       Mode _readMode(uint8_t address, uint16_t model);
       bool _setMode(uint8_t address, uint16_t model, Mode mode);
 
