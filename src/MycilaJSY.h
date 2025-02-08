@@ -290,6 +290,17 @@ namespace Mycila {
 
       class Data {
         public:
+          /**
+           * @brief lock the data for reading.
+           * This must be called before reading the data.
+           */
+          void lock() const { _mutexData.lock_shared(); }
+
+          /**
+           * @brief unlock the data after reading.
+           */
+          void unlock() const { _mutexData.unlock_shared(); }
+
           uint8_t address = MYCILA_JSY_ADDRESS_UNKNOWN; // device address
           uint16_t model = MYCILA_JSY_MK_UNKNOWN;       // device model
 
@@ -316,6 +327,8 @@ namespace Mycila {
 
           // clear all values
           void clear();
+
+          bool isConnected() const { return aggregate.frequency > 0; }
 
           // compare two data
           bool operator==(const Data& other) const;
@@ -470,19 +483,19 @@ namespace Mycila {
       bool setMode(uint8_t address, Mode mode) { return _setMode(address, readModel(address), mode); }
 
       /**
-       * @brief Read the JSY values.
+       * @brief Read the JSY metrics.
        * @return true if the read was successful
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      bool read() { return _read(_destinationAddress, _model); }
+      bool readMetrics() { return _readMetrics(_destinationAddress, _model); }
 
       /**
-       * @brief Read the JSY values.
+       * @brief Read the JSY metrics.
        * @param address The address of the device to read (1-255) or MYCILA_JSY_ADDRESS_BROADCAST for all devices
        * @return true if the read was successful
        * @note This function is blocking until the data is read or the timeout is reached.
        */
-      bool read(uint8_t address) { return _read(address, readModel(address)); }
+      bool readMetrics(uint8_t address) { return _readMetrics(address, readModel(address)); }
 
       /**
        * @brief Reset the energy counters of the JSY.
@@ -563,9 +576,9 @@ namespace Mycila {
       uint32_t getTime() const { return _time; }
 
       // check if the device is connected to the grid, meaning if last read was successful
-      bool isConnected() const { return data.aggregate.frequency > 0; }
+      bool isConnected() const { return data.isConnected(); }
 
-      void setCallback(Callback callback) { _callback = callback; }
+      void onEvent(Callback callback) { _callback = callback; }
 
     public:
       /**
@@ -602,7 +615,7 @@ namespace Mycila {
       };
 
       bool _set(uint8_t address, uint8_t newAddress, BaudRate newBaudRate);
-      bool _read(uint8_t address, uint16_t model);
+      bool _readMetrics(uint8_t address, uint16_t model);
       Mode _readMode(uint8_t address, uint16_t model);
       bool _setMode(uint8_t address, uint16_t model, Mode mode);
 

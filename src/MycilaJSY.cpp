@@ -739,6 +739,7 @@ void Mycila::JSY::end() {
     _baudRate = BaudRate::UNKNOWN;
     _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
     _model = MYCILA_JSY_MK_UNKNOWN;
+    _time = 0;
     data.clear();
     _serial->end();
   }
@@ -748,7 +749,7 @@ void Mycila::JSY::end() {
 // read
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
+bool Mycila::JSY::_readMetrics(const uint8_t address, uint16_t model) {
   if (!_enabled)
     return false;
 
@@ -1122,12 +1123,13 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       break;
   }
 
-  bool changed = data != parsed;
+  _time = millis();
 
+  bool changed = data != parsed;
   if (changed)
     data = parsed;
 
-  _time = millis();
+  
 
   _mutexOp.unlock();
 
