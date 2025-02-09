@@ -32,6 +32,10 @@
   #define MYCILA_JSON_SUPPORT 1
 #endif
 
+#ifndef MYCILA_LOGGER_SUPPORT
+  #define MYCILA_LOGGER_SUPPORT 1
+#endif
+
 #ifndef MYCILA_JSY_SERIAL
   #define MYCILA_JSY_SERIAL Serial2
 #endif
@@ -54,18 +58,17 @@
 
 #define DASH_USE_STL_STRING 1
 
-#define MYCILA_ADMIN_USERNAME "admin"
-#define MYCILA_APP_NAME       "JSY Remote UDP Sender"
-#define MYCILA_GRAPH_POINTS   60
-// #define MYCILA_UDP_MSG_TYPE_JSY_DATA 0x01 // old json format
+#define MYCILA_ADMIN_USERNAME        "admin"
+#define MYCILA_APP_NAME              "JSY Remote UDP Sender"
+#define MYCILA_GRAPH_POINTS          60
 #define MYCILA_UDP_MSG_TYPE_JSY_DATA 0x02 // supports all JSY models
-#define MYCILA_UDP_SEND_INTERVAL_MS  200
-#define MYCILA_UDP_SEND_RATE_WINDOW  50
+#define MYCILA_UDP_SEND_RATE_WINDOW  20
 #define TAG                          "JSY-UDP"
 
 #include <Arduino.h>
 #include <AsyncUDP.h>
 #include <ESPmDNS.h>
+#include <Preferences.h>
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/ESP32Async/AsyncTCP
@@ -84,13 +87,17 @@
 
 #include <string>
 
+Mycila::Logger logger;
+
 static AsyncUDP udp;
 static AsyncWebServer webServer(80);
+static AsyncAuthenticationMiddleware authMiddleware;
 static Mycila::ESPConnect espConnect(webServer);
 static ESPDash dashboard = ESPDash(webServer, "/dashboard", false);
 static WebSerial webSerial;
+static Preferences preferences;
+
 static Mycila::JSY jsy;
-static Mycila::Logger logger;
 static Mycila::TaskManager coreTaskManager("core");
 static Mycila::TaskManager jsyTaskManager("jsy");
 
@@ -108,14 +115,14 @@ static dash::StatisticValue networkWiFiSignal(dashboard, "Network WiFi Signal");
 static dash::StatisticValue uptime(dashboard, "Uptime");
 static dash::StatisticValue version(dashboard, "Version");
 
-static dash::SwitchCard udpSendEnabledCard(dashboard, "Enable UDP Transfer");
+static dash::SwitchCard publishDataCard(dashboard, "Publish Data");
 static dash::SwitchCard restart(dashboard, "Restart");
 static dash::SwitchCard energyReset(dashboard, "Reset Energy");
 static dash::SwitchCard reset(dashboard, "Factory Reset");
 
 static dash::GenericCard jsyModelCard(dashboard, "Model");
-static dash::GenericCard<volatile float, 2> messageRateCard(dashboard, "Message Rate", "msg/s");
-static dash::GenericCard<volatile uint32_t> dataRateCard(dashboard, "Data Rate", "bytes/s");
+static dash::GenericCard<float, 2> messageRateCard(dashboard, "Message Rate", "msg/s");
+static dash::GenericCard<uint32_t> dataRateCard(dashboard, "Data Rate", "bytes/s");
 
 // JSY-MK-163
 static dash::GenericCard<float, 1> jsy163Frequency(dashboard, "Frequency", "Hz");
@@ -221,9 +228,105 @@ static Mycila::CircularBuffer<uint32_t, MYCILA_UDP_SEND_RATE_WINDOW> dataRateBuf
 static volatile uint32_t dataRate = 0;
 
 static Mycila::Task jsyTask("JSY", [](void* params) { jsy.read(); });
+
+static Mycila::Task jsySetupTask("JSY-SETUP", Mycila::Task::Type::ONCE, [](void* params) {
+  jsy.begin(MYCILA_JSY_SERIAL, MYCILA_JSY_RX, MYCILA_JSY_TX);
+  if (jsy.isEnabled() && jsy.getBaudRate() != jsy.getMaxAvailableBaudRate())
+    jsy.setBaudRate(jsy.getMaxAvailableBaudRate());
+
+  jsyModel = jsy.getModel();
+
+  if (jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
+    dashboard.remove(jsy163Frequency);
+    dashboard.remove(jsy163Voltage);
+    dashboard.remove(jsy163current);
+    dashboard.remove(jsy163PowerFactor);
+    dashboard.remove(jsy163ActivePower);
+    dashboard.remove(jsy163ApparentPower);
+    dashboard.remove(jsy163ReactivePower);
+    dashboard.remove(jsy163ActiveEnergy);
+    dashboard.remove(jsy163ActiveEnergyImported);
+    dashboard.remove(jsy163ActiveEnergyReturned);
+    dashboard.remove(jsy163ActivePowerHistory);
+  }
+
+  if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
+    dashboard.remove(jsy194Channel1Frequency);
+    dashboard.remove(jsy194Channel1Voltage);
+    dashboard.remove(jsy194Channel1Current);
+    dashboard.remove(jsy194Channel1PowerFactor);
+    dashboard.remove(jsy194Channel1ActivePower);
+    dashboard.remove(jsy194Channel1ApparentPower);
+    dashboard.remove(jsy194Channel1ReactivePower);
+    dashboard.remove(jsy194Channel1ActiveEnergy);
+    dashboard.remove(jsy194Channel1ActiveEnergyImported);
+    dashboard.remove(jsy194Channel1ActiveEnergyReturned);
+    dashboard.remove(jsy194Channel2Frequency);
+    dashboard.remove(jsy194Channel2Voltage);
+    dashboard.remove(jsy194Channel2Current);
+    dashboard.remove(jsy194Channel2PowerFactor);
+    dashboard.remove(jsy194Channel2ActivePower);
+    dashboard.remove(jsy194Channel2ApparentPower);
+    dashboard.remove(jsy194Channel2ReactivePower);
+    dashboard.remove(jsy194Channel2ActiveEnergy);
+    dashboard.remove(jsy194Channel2ActiveEnergyImported);
+    dashboard.remove(jsy194Channel2ActiveEnergyReturned);
+    dashboard.remove(jsy194Channel1ActivePowerHistory);
+    dashboard.remove(jsy194Channel2ActivePowerHistory);
+  }
+
+  if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
+    dashboard.remove(jsy333PhaseAFrequency);
+    dashboard.remove(jsy333PhaseAVoltage);
+    dashboard.remove(jsy333PhaseACurrent);
+    dashboard.remove(jsy333PhaseAPowerFactor);
+    dashboard.remove(jsy333PhaseAActivePower);
+    dashboard.remove(jsy333PhaseAApparentPower);
+    dashboard.remove(jsy333PhaseAReactivePower);
+    dashboard.remove(jsy333PhaseAActiveEnergy);
+    dashboard.remove(jsy333PhaseAActiveEnergyImported);
+    dashboard.remove(jsy333PhaseAActiveEnergyReturned);
+    dashboard.remove(jsy333PhaseAReactiveEnergy);
+    dashboard.remove(jsy333PhaseAReactiveEnergyImported);
+    dashboard.remove(jsy333PhaseAReactiveEnergyReturned);
+    dashboard.remove(jsy333PhaseAApparentEnergy);
+    dashboard.remove(jsy333PhaseBFrequency);
+    dashboard.remove(jsy333PhaseBVoltage);
+    dashboard.remove(jsy333PhaseBCurrent);
+    dashboard.remove(jsy333PhaseBPowerFactor);
+    dashboard.remove(jsy333PhaseBActivePower);
+    dashboard.remove(jsy333PhaseBApparentPower);
+    dashboard.remove(jsy333PhaseBReactivePower);
+    dashboard.remove(jsy333PhaseBActiveEnergy);
+    dashboard.remove(jsy333PhaseBActiveEnergyImported);
+    dashboard.remove(jsy333PhaseBActiveEnergyReturned);
+    dashboard.remove(jsy333PhaseBReactiveEnergy);
+    dashboard.remove(jsy333PhaseBReactiveEnergyImported);
+    dashboard.remove(jsy333PhaseBReactiveEnergyReturned);
+    dashboard.remove(jsy333PhaseBApparentEnergy);
+    dashboard.remove(jsy333PhaseCFrequency);
+    dashboard.remove(jsy333PhaseCVoltage);
+    dashboard.remove(jsy333PhaseCCurrent);
+    dashboard.remove(jsy333PhaseCPowerFactor);
+    dashboard.remove(jsy333PhaseCActivePower);
+    dashboard.remove(jsy333PhaseCApparentPower);
+    dashboard.remove(jsy333PhaseCReactivePower);
+    dashboard.remove(jsy333PhaseCActiveEnergy);
+    dashboard.remove(jsy333PhaseCActiveEnergyImported);
+    dashboard.remove(jsy333PhaseCActiveEnergyReturned);
+    dashboard.remove(jsy333PhaseCReactiveEnergy);
+    dashboard.remove(jsy333PhaseCReactiveEnergyImported);
+    dashboard.remove(jsy333PhaseCReactiveEnergyReturned);
+    dashboard.remove(jsy333PhaseCApparentEnergy);
+    dashboard.remove(jsy333PhaseAActivePowerHistory);
+    dashboard.remove(jsy333PhaseBActivePowerHistory);
+    dashboard.remove(jsy333PhaseCActivePowerHistory);
+  }
+});
+
 static Mycila::Task networkManagerTask("ESPConnect", [](void* params) { espConnect.loop(); });
 
-static Mycila::Task networkUpTask("Network UP", Mycila::TaskType::ONCE, [](void* params) {
+static Mycila::Task networkUpTask("Network UP", Mycila::Task::Type::ONCE, [](void* params) {
   logger.info(TAG, "Enable Network Services...");
 
   // Web server
@@ -240,13 +343,13 @@ static Mycila::Task networkUpTask("Network UP", Mycila::TaskType::ONCE, [](void*
 #endif
 });
 
-static Mycila::Task otaTask("OTA", Mycila::TaskType::ONCE, [](void* params) {
+static Mycila::Task otaTask("OTA", Mycila::Task::Type::ONCE, [](void* params) {
   logger.info(TAG, "Preparing OTA update...");
   udpSendEnabled = false;
   jsy.end();
 });
 
-static Mycila::Task restartTask("Restart", Mycila::TaskType::ONCE, [](void* params) {
+static Mycila::Task restartTask("Restart", Mycila::Task::Type::ONCE, [](void* params) {
   logger.warn(TAG, "Restarting " MYCILA_APP_NAME "...");
   Mycila::System::restart(500);
 });
@@ -263,9 +366,9 @@ static Mycila::Task dashboardTask("Dashboard", [](void* params) {
   networkWiFiSSID.setValue(espConnect.getWiFiSSID());
   uptime.setValue(Mycila::Time::toDHHMMSS(Mycila::System::getUptime()));
 
-  messageRateCard.setValue(messageRate);
-  dataRateCard.setValue(dataRate);
-  udpSendEnabledCard.setValue(udpSendEnabled);
+  messageRateCard.setValue(static_cast<float>(messageRate));
+  dataRateCard.setValue(static_cast<uint32_t>(dataRate));
+  publishDataCard.setValue(udpSendEnabled);
 
   switch (jsyModel) {
     case MYCILA_JSY_MK_163: {
@@ -427,28 +530,27 @@ void setup() {
   logger.forwardTo(&Serial);
   logger.warn(TAG, "Booting " MYCILA_APP_NAME "...");
 
-  logger.warn(TAG, "Initializing " MYCILA_APP_NAME "...");
-
   // system
   Mycila::System::init();
+  Mycila::TaskManager::configureWDT(10, true);
+
+  // config
+  preferences.begin("jsy", false);
+  udpSendEnabled = preferences.getBool("udp_send", udpSendEnabled);
 
   // tasks
   dashboardTask.setEnabledWhen([]() { return espConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
-  dashboardTask.setInterval(1000 * Mycila::TaskDuration::MILLISECONDS);
-  dashboardTask.setManager(coreTaskManager);
+  dashboardTask.setInterval(1000);
   jsyTask.setEnabledWhen([]() { return jsy.isEnabled(); });
-  jsyTask.setManager(jsyTaskManager);
-  Mycila::TaskManager::configureWDT();
-  networkManagerTask.setManager(coreTaskManager);
-  networkUpTask.setManager(coreTaskManager);
-  otaTask.setManager(coreTaskManager);
-  restartTask.setManager(coreTaskManager);
-
-  // profiling
-  jsyTask.enableProfiling(10, Mycila::TaskTimeUnit::MILLISECONDS);
+  jsyTaskManager.addTask(jsySetupTask);
+  jsyTaskManager.addTask(jsyTask);
+  coreTaskManager.addTask(dashboardTask);
+  coreTaskManager.addTask(networkManagerTask);
+  coreTaskManager.addTask(networkUpTask);
+  coreTaskManager.addTask(otaTask);
+  coreTaskManager.addTask(restartTask);
 
   // WebSerial
-  webSerial.setAuthentication(MYCILA_ADMIN_USERNAME, MYCILA_ADMIN_PASSWORD);
   webSerial.begin(&webServer, "/console");
   logger.forwardTo(&webSerial);
 
@@ -463,54 +565,46 @@ void setup() {
     }
     restartTask.resume();
   });
-  ElegantOTA.begin(&webServer, MYCILA_ADMIN_USERNAME, MYCILA_ADMIN_PASSWORD);
+  ElegantOTA.begin(&webServer);
 
-  // Dashboard
+  // Dashboard - Auth
+  authMiddleware.setAuthType(AsyncAuthType::AUTH_DIGEST);
+  authMiddleware.setRealm(hostname.c_str());
+  authMiddleware.setUsername(MYCILA_ADMIN_USERNAME);
+  authMiddleware.setPassword(MYCILA_ADMIN_PASSWORD);
+  authMiddleware.generateHash();
+  webServer.addMiddleware(&authMiddleware);
+
+  // Dashboard - Routes
   webServer.rewrite("/", "/dashboard").setFilter([](AsyncWebServerRequest* request) { return espConnect.getState() != Mycila::ESPConnect::State::PORTAL_STARTED; });
-
   webServer.on("/api/jsy", HTTP_GET, [](AsyncWebServerRequest* request) {
     AsyncJsonResponse* response = new AsyncJsonResponse();
     jsy.toJson(response->getRoot());
     response->setLength();
     request->send(response);
   });
-
   webServer.on("/api/restart", HTTP_GET, [](AsyncWebServerRequest* request) {
     request->send(200);
     ESP.restart();
   });
 
-  version.setValue(MYCILA_JSY_VERSION);
-
+  // Dashboard - Callbacks
   restart.onChange([](bool state) { restartTask.resume(); });
-
   reset.onChange([](bool state) {
     espConnect.clearConfiguration();
     restartTask.resume();
   });
-
-  for (int i = 0; i < MYCILA_GRAPH_POINTS; i++)
-    historyX[i] = i - MYCILA_GRAPH_POINTS;
-
-  jsy163ActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
-  jsy194Channel1ActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
-  jsy194Channel2ActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
-  jsy333PhaseAActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
-  jsy333PhaseBActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
-  jsy333PhaseCActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
-
   energyReset.onChange([](bool state) {
     jsy.resetEnergy();
     energyReset.setValue(0);
     dashboard.refresh(energyReset);
   });
-
-  udpSendEnabledCard.onChange([](bool state) {
+  publishDataCard.onChange([](bool state) {
     udpSendEnabled = state;
-    udpSendEnabledCard.setValue(udpSendEnabled);
-    dashboard.refresh(udpSendEnabledCard);
+    preferences.putBool("udp_send", udpSendEnabled);
+    publishDataCard.setValue(udpSendEnabled);
+    dashboard.refresh(publishDataCard);
   });
-
   dashboard.onBeforeUpdate([](bool changes_only) {
     if (!changes_only) {
       logger.debug(TAG, "Dashboard refresh requested");
@@ -521,175 +615,23 @@ void setup() {
       networkWiFiMAC.setValue(espConnect.getMACAddress(Mycila::ESPConnect::Mode::STA));
     }
   });
-  dashboard.setAuthentication(MYCILA_ADMIN_USERNAME, MYCILA_ADMIN_PASSWORD);
+
+  // Dashboard - Widgets Values
+  version.setValue(MYCILA_JSY_VERSION);
+  for (int i = 0; i < MYCILA_GRAPH_POINTS; i++)
+    historyX[i] = i - MYCILA_GRAPH_POINTS;
+  jsy163ActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
+  jsy194Channel1ActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
+  jsy194Channel2ActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
+  jsy333PhaseAActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
+  jsy333PhaseBActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
+  jsy333PhaseCActivePowerHistory.setX(historyX, MYCILA_GRAPH_POINTS);
   dashboard.refreshLayout();
   dashboardTask.forceRun();
 
-  // jsy
-  jsy.setCallback([](const Mycila::JSY::EventType eventType) {
-    if (!udpSendEnabled) {
-      messageRate = 0;
-      dataRate = 0;
-      return;
-    }
-
-    if (eventType == Mycila::JSY::EventType::EVT_CHANGE) {
-
-      Mycila::ESPConnect::Mode mode = espConnect.getMode();
-
-      if (mode != Mycila::ESPConnect::Mode::NONE) {
-        JsonDocument doc;
-        JsonObject root = doc.to<JsonObject>();
-        jsy.toJson(root);
-
-        // buffer[0] == MYCILA_UDP_MSG_TYPE_JSY_DATA (1)
-        // buffer[1] == size_t (4)
-        // buffer[5] == MsgPack (?)
-        // buffer[5 + size] == CRC32 (4)
-        uint32_t size = measureMsgPack(doc);
-        uint32_t packetSize = size + 9;
-        uint8_t buffer[packetSize];
-        buffer[0] = MYCILA_UDP_MSG_TYPE_JSY_DATA;
-        memcpy(buffer + 1, &size, 4);
-        serializeMsgPack(root, buffer + 5, size);
-
-        // crc32
-        FastCRC32 crc32;
-        crc32.add(buffer, size + 5);
-        uint32_t crc = crc32.calc();
-        memcpy(buffer + size + 5, &crc, 4);
-
-        if (packetSize > CONFIG_TCP_MSS) {
-          ESP_LOGE(TAG, "Packet size too big: %" PRIu32 " / %d bytes", packetSize, CONFIG_TCP_MSS);
-          messageRate = 0;
-          dataRate = 0;
-          return;
-        }
-
-        // send
-        switch (mode) {
-          case Mycila::ESPConnect::Mode::AP:
-            udp.broadcastTo(buffer, packetSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_AP);
-            break;
-          case Mycila::ESPConnect::Mode::STA:
-            udp.broadcastTo(buffer, packetSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_STA);
-            break;
-          case Mycila::ESPConnect::Mode::ETH:
-            udp.broadcastTo(buffer, packetSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_ETH);
-            break;
-          default:
-            break;
-        }
-
-        // update rate
-        messageRateBuffer.add(static_cast<float>(esp_timer_get_time() / 1000000));
-        float diff = messageRateBuffer.diff();
-        float count = messageRateBuffer.count();
-        messageRate = diff == 0 ? 0 : count / diff;
-        dataRateBuffer.add(packetSize);
-        dataRate = diff == 0 ? 0 : dataRateBuffer.sum() / diff;
-      } else {
-        messageRate = 0;
-        dataRate = 0;
-      }
-    }
-  });
-  jsy.begin(MYCILA_JSY_SERIAL, MYCILA_JSY_RX, MYCILA_JSY_TX);
-  if (jsy.isEnabled() && jsy.getBaudRate() != jsy.getMaxAvailableBaudRate())
-    jsy.setBaudRate(jsy.getMaxAvailableBaudRate());
-
-  jsyModel = jsy.getModel();
-
-  if (jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
-    dashboard.remove(jsy163Frequency);
-    dashboard.remove(jsy163Voltage);
-    dashboard.remove(jsy163current);
-    dashboard.remove(jsy163PowerFactor);
-    dashboard.remove(jsy163ActivePower);
-    dashboard.remove(jsy163ApparentPower);
-    dashboard.remove(jsy163ReactivePower);
-    dashboard.remove(jsy163ActiveEnergy);
-    dashboard.remove(jsy163ActiveEnergyImported);
-    dashboard.remove(jsy163ActiveEnergyReturned);
-    dashboard.remove(jsy163ActivePowerHistory);
-  }
-
-  if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
-    dashboard.remove(jsy194Channel1Frequency);
-    dashboard.remove(jsy194Channel1Voltage);
-    dashboard.remove(jsy194Channel1Current);
-    dashboard.remove(jsy194Channel1PowerFactor);
-    dashboard.remove(jsy194Channel1ActivePower);
-    dashboard.remove(jsy194Channel1ApparentPower);
-    dashboard.remove(jsy194Channel1ReactivePower);
-    dashboard.remove(jsy194Channel1ActiveEnergy);
-    dashboard.remove(jsy194Channel1ActiveEnergyImported);
-    dashboard.remove(jsy194Channel1ActiveEnergyReturned);
-    dashboard.remove(jsy194Channel2Frequency);
-    dashboard.remove(jsy194Channel2Voltage);
-    dashboard.remove(jsy194Channel2Current);
-    dashboard.remove(jsy194Channel2PowerFactor);
-    dashboard.remove(jsy194Channel2ActivePower);
-    dashboard.remove(jsy194Channel2ApparentPower);
-    dashboard.remove(jsy194Channel2ReactivePower);
-    dashboard.remove(jsy194Channel2ActiveEnergy);
-    dashboard.remove(jsy194Channel2ActiveEnergyImported);
-    dashboard.remove(jsy194Channel2ActiveEnergyReturned);
-    dashboard.remove(jsy194Channel1ActivePowerHistory);
-    dashboard.remove(jsy194Channel2ActivePowerHistory);
-  }
-
-  if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
-    dashboard.remove(jsy333PhaseAFrequency);
-    dashboard.remove(jsy333PhaseAVoltage);
-    dashboard.remove(jsy333PhaseACurrent);
-    dashboard.remove(jsy333PhaseAPowerFactor);
-    dashboard.remove(jsy333PhaseAActivePower);
-    dashboard.remove(jsy333PhaseAApparentPower);
-    dashboard.remove(jsy333PhaseAReactivePower);
-    dashboard.remove(jsy333PhaseAActiveEnergy);
-    dashboard.remove(jsy333PhaseAActiveEnergyImported);
-    dashboard.remove(jsy333PhaseAActiveEnergyReturned);
-    dashboard.remove(jsy333PhaseAReactiveEnergy);
-    dashboard.remove(jsy333PhaseAReactiveEnergyImported);
-    dashboard.remove(jsy333PhaseAReactiveEnergyReturned);
-    dashboard.remove(jsy333PhaseAApparentEnergy);
-    dashboard.remove(jsy333PhaseBFrequency);
-    dashboard.remove(jsy333PhaseBVoltage);
-    dashboard.remove(jsy333PhaseBCurrent);
-    dashboard.remove(jsy333PhaseBPowerFactor);
-    dashboard.remove(jsy333PhaseBActivePower);
-    dashboard.remove(jsy333PhaseBApparentPower);
-    dashboard.remove(jsy333PhaseBReactivePower);
-    dashboard.remove(jsy333PhaseBActiveEnergy);
-    dashboard.remove(jsy333PhaseBActiveEnergyImported);
-    dashboard.remove(jsy333PhaseBActiveEnergyReturned);
-    dashboard.remove(jsy333PhaseBReactiveEnergy);
-    dashboard.remove(jsy333PhaseBReactiveEnergyImported);
-    dashboard.remove(jsy333PhaseBReactiveEnergyReturned);
-    dashboard.remove(jsy333PhaseBApparentEnergy);
-    dashboard.remove(jsy333PhaseCFrequency);
-    dashboard.remove(jsy333PhaseCVoltage);
-    dashboard.remove(jsy333PhaseCCurrent);
-    dashboard.remove(jsy333PhaseCPowerFactor);
-    dashboard.remove(jsy333PhaseCActivePower);
-    dashboard.remove(jsy333PhaseCApparentPower);
-    dashboard.remove(jsy333PhaseCReactivePower);
-    dashboard.remove(jsy333PhaseCActiveEnergy);
-    dashboard.remove(jsy333PhaseCActiveEnergyImported);
-    dashboard.remove(jsy333PhaseCActiveEnergyReturned);
-    dashboard.remove(jsy333PhaseCReactiveEnergy);
-    dashboard.remove(jsy333PhaseCReactiveEnergyImported);
-    dashboard.remove(jsy333PhaseCReactiveEnergyReturned);
-    dashboard.remove(jsy333PhaseCApparentEnergy);
-    dashboard.remove(jsy333PhaseAActivePowerHistory);
-    dashboard.remove(jsy333PhaseBActivePowerHistory);
-    dashboard.remove(jsy333PhaseCActivePowerHistory);
-  }
-
   // Network Manager
   espConnect.setAutoRestart(true);
-  espConnect.setBlocking(false);
+  espConnect.setBlocking(CRC16_CCITT_FALSE_REV_IN);
   espConnect.listen([](Mycila::ESPConnect::State previous, Mycila::ESPConnect::State state) {
     logger.debug(TAG, "NetworkState: %s => %s", espConnect.getStateName(previous), espConnect.getStateName(state));
     switch (state) {
@@ -701,6 +643,7 @@ void setup() {
         break;
       case Mycila::ESPConnect::State::AP_STARTED:
         logger.info(TAG, "Access Point %s started with IP address %s", espConnect.getWiFiSSID().c_str(), espConnect.getIPAddress().toString().c_str());
+        jsySetupTask.resume();
         networkUpTask.resume();
         break;
       case Mycila::ESPConnect::State::NETWORK_CONNECTING:
@@ -708,6 +651,7 @@ void setup() {
         break;
       case Mycila::ESPConnect::State::NETWORK_CONNECTED:
         logger.info(TAG, "Connected with IP address %s", espConnect.getIPAddress().toString().c_str());
+        jsySetupTask.resume();
         networkUpTask.resume();
         break;
       case Mycila::ESPConnect::State::NETWORK_TIMEOUT:
@@ -742,16 +686,82 @@ void setup() {
   });
   espConnect.begin(hostname.c_str(), ssid.c_str(), MYCILA_ADMIN_PASSWORD);
 
-  // start tasks
-  // assert(coreTaskManager.asyncStart(1024 * 4, 1, 1, 100, true)); // NOLINT
-  // assert(jsyTaskManager.asyncStart(1024 * 3, 1, 1, 100, true));  // NOLINT
+  // jsy
+  jsy.setCallback([](const Mycila::JSY::EventType eventType) {
+    if (!udpSendEnabled) {
+      messageRate = 0;
+      dataRate = 0;
+      return;
+    }
+
+    if (eventType != Mycila::JSY::EventType::EVT_CHANGE)
+      return;
+
+    const Mycila::ESPConnect::Mode mode = espConnect.getMode();
+    if (mode == Mycila::ESPConnect::Mode::NONE) {
+      messageRate = 0;
+      dataRate = 0;
+      return;
+    }
+
+    JsonDocument doc;
+    JsonObject root = doc.to<JsonObject>();
+    jsy.toJson(root);
+
+    // buffer[0] == MYCILA_UDP_MSG_TYPE_JSY_DATA (1)
+    // buffer[1] == size_t (4)
+    // buffer[5] == MsgPack (?)
+    // buffer[5 + size] == CRC32 (4)
+    uint32_t size = measureMsgPack(doc);
+    uint32_t packetSize = size + 9;
+    uint8_t buffer[packetSize];
+    buffer[0] = MYCILA_UDP_MSG_TYPE_JSY_DATA;
+    memcpy(buffer + 1, &size, 4);
+    serializeMsgPack(root, buffer + 5, size);
+
+    // crc32
+    FastCRC32 crc32;
+    crc32.add(buffer, size + 5);
+    uint32_t crc = crc32.calc();
+    memcpy(buffer + size + 5, &crc, 4);
+
+    if (packetSize > CONFIG_TCP_MSS) {
+      ESP_LOGE(TAG, "Packet size too big: %" PRIu32 " / %d bytes", packetSize, CONFIG_TCP_MSS);
+      messageRate = 0;
+      dataRate = 0;
+      return;
+    }
+
+    // send
+    switch (mode) {
+      case Mycila::ESPConnect::Mode::AP:
+        udp.broadcastTo(buffer, packetSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_AP);
+        break;
+      case Mycila::ESPConnect::Mode::STA:
+        udp.broadcastTo(buffer, packetSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_STA);
+        break;
+      case Mycila::ESPConnect::Mode::ETH:
+        udp.broadcastTo(buffer, packetSize, MYCILA_UDP_PORT, tcpip_adapter_if_t::TCPIP_ADAPTER_IF_ETH);
+        break;
+      default:
+        break;
+    }
+
+    // update rate
+    messageRateBuffer.add(static_cast<float>(esp_timer_get_time() / 1000000));
+    float diff = messageRateBuffer.diff();
+    float count = messageRateBuffer.count();
+    messageRate = diff == 0 ? 0 : count / diff;
+    dataRateBuffer.add(packetSize);
+    dataRate = diff == 0 ? 0 : dataRateBuffer.sum() / diff;
+  });
+
+  coreTaskManager.asyncStart(512 * 8, 5, 1, 100, true);
+  jsyTaskManager.asyncStart(512 * 8, 5, 1, 100, false);
 
   logger.info(TAG, "Started " MYCILA_APP_NAME "!");
 }
 
-// Destroy default Arduino async task
 void loop() {
-  // vTaskDelete(NULL);
-  coreTaskManager.loop();
-  jsyTaskManager.loop();
+  vTaskDelete(NULL);
 }
