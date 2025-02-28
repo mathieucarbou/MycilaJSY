@@ -21,6 +21,7 @@
 // #define RELAY_PIN 32
 
 Mycila::JSY jsy;
+Mycila::JSY::Data jsyData;
 JsonDocument doc;
 const Mycila::JSY::BaudRate rates[] = {
   Mycila::JSY::BaudRate::BAUD_4800,
@@ -33,6 +34,12 @@ void setup() {
   Serial.begin(115200);
   while (!Serial)
     continue;
+
+  jsy.setCallback([](Mycila::JSY::EventType eventType, const Mycila::JSY::Data& data) {
+    if (eventType == Mycila::JSY::EventType::EVT_READ) {
+      jsyData = data;
+    }
+  });
 
   jsy.begin(Serial2, RX2, TX2);
 
@@ -62,7 +69,7 @@ void setup() {
       Serial.printf(" - ROUND: %d\n", rounds);
 
       digitalWrite(RELAY_PIN, LOW);
-      while (jsy.data.aggregate.activePower > 0) {
+      while (jsyData.aggregate.activePower > 0) {
         jsy.read();
       }
 
@@ -82,7 +89,7 @@ void setup() {
       int64_t start = esp_timer_get_time();
       while (true) {
         jsy.read();
-        now = jsy.data.aggregate.activePower;
+        now = jsyData.aggregate.activePower;
 
         if (reactivityTime == 0) {
           if (now > 0) {
@@ -108,7 +115,7 @@ void setup() {
       start = esp_timer_get_time();
       while (true) {
         jsy.read();
-        now = jsy.data.aggregate.activePower;
+        now = jsyData.aggregate.activePower;
 
         if (now == 0) {
           break;

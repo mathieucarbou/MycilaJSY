@@ -739,7 +739,7 @@ void Mycila::JSY::end() {
     _baudRate = BaudRate::UNKNOWN;
     _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
     _model = MYCILA_JSY_MK_UNKNOWN;
-    data.clear();
+    _data.clear();
     _serial->end();
   }
 }
@@ -752,10 +752,7 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
   if (!_enabled)
     return false;
 
-  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
-    LOGW(TAG, "Unable to read @ 0x%02X: Serial is busy!", address);
-    return false;
-  }
+  std::lock_guard<std::mutex> lock(_mutex);
 
 #ifdef MYCILA_JSY_DEBUG
   Serial.printf("[JSY] read(0x%02X)\n", address);
@@ -821,53 +818,49 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
 
   if (result == ReadResult::READ_TIMEOUT) {
     // reset live values in case of read timeout
-    data.clear();
-    _mutexOp.unlock();
+    _data.clear();
     if (_callback) {
-      _callback(EventType::EVT_READ_TIMEOUT);
+      _callback(EventType::EVT_READ_TIMEOUT, _data);
     }
     return false;
   }
 
   if (result == ReadResult::READ_ERROR_COUNT || result == ReadResult::READ_ERROR_CRC) {
     // reset live values in case of read failure
-    data.clear();
-    _mutexOp.unlock();
+    _data.clear();
     if (_callback) {
-      _callback(EventType::EVT_READ_ERROR);
+      _callback(EventType::EVT_READ_ERROR, _data);
     }
     return false;
   }
 
   if (result == ReadResult::READ_ERROR_ADDRESS) {
     // we have set a destination address, but we read another device
-    _mutexOp.unlock();
     if (_callback) {
-      _callback(EventType::EVT_READ_ERROR);
+      _callback(EventType::EVT_READ_ERROR, _data);
     }
     return false;
   }
 
   assert(result == ReadResult::READ_SUCCESS);
 
-  Data parsed;
-  parsed.address = _buffer[JSY_RESPONSE_ADDRESS];
-  parsed.model = model;
+  _data.address = _buffer[JSY_RESPONSE_ADDRESS];
+  _data.model = model;
 
   switch (model) {
     case MYCILA_JSY_MK_1031: {
       // single channel
-      parsed._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_FREQUENCY) * 0.01f;
-      parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_VOLTAGE) * 0.01f;
-      parsed._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_CURRENT) * 0.0001f;
-      parsed._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_ACTIVE_POWER) * 0.0001f; // note: spec says /100 but in reality this is /10000
-      parsed._metrics[0].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_ACTIVE_ENERGY) * 10;
-      parsed._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_POWER_FACTOR) * 0.001f;
-      parsed._metrics[0].apparentPower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_APPARENT_POWER) * 0.0001f; // note: spec says /100 but in reality this is /10000
-      parsed._metrics[0].reactivePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_REACTIVE_POWER) * 0.0001f; // note: spec says /100 but in reality this is /10000
+      _data._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_FREQUENCY) * 0.01f;
+      _data._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_VOLTAGE) * 0.01f;
+      _data._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_CURRENT) * 0.0001f;
+      _data._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_ACTIVE_POWER) * 0.0001f; // note: spec says /100 but in reality this is /10000
+      _data._metrics[0].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_ACTIVE_ENERGY) * 10;
+      _data._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_1031_REGISTER_POWER_FACTOR) * 0.001f;
+      _data._metrics[0].apparentPower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_APPARENT_POWER) * 0.0001f; // note: spec says /100 but in reality this is /10000
+      _data._metrics[0].reactivePower = _register32(_buffer, registerStart, registerSize, JSY_1031_REGISTER_REACTIVE_POWER) * 0.0001f; // note: spec says /100 but in reality this is /10000
 
       // aggregate
-      parsed.aggregate = parsed._metrics[0];
+      _data.aggregate = _data._metrics[0];
 
       break;
     }
@@ -879,63 +872,63 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       uint8_t sign = _register8(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_POWER_SIGN, 1);
 
       // single channel
-      parsed._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_FREQUENCY) * 0.01f;
-      parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_VOLTAGE) * 0.01f;
-      parsed._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_CURRENT) * 0.01f;
-      parsed._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_POWER) * (sign ? -1.0f : 1.0f);
-      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_ENERGY_IMPORTED) * 5.0f / 16.0f;
-      parsed._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_POWER_FACTOR) * 0.001f;
-      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_ENERGY_RETURNED) * 5.0f / 16.0f;
+      _data._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_FREQUENCY) * 0.01f;
+      _data._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_VOLTAGE) * 0.01f;
+      _data._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_CURRENT) * 0.01f;
+      _data._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_POWER) * (sign ? -1.0f : 1.0f);
+      _data._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_ENERGY_IMPORTED) * 5.0f / 16.0f;
+      _data._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_163_REGISTER_POWER_FACTOR) * 0.001f;
+      _data._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_163_REGISTER_ACTIVE_ENERGY_RETURNED) * 5.0f / 16.0f;
 
       // calculate remaining metrics
       // S = P / PF
-      parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : std::abs(parsed._metrics[0].activePower / parsed._metrics[0].powerFactor);
+      _data._metrics[0].apparentPower = _data._metrics[0].powerFactor == 0 ? 0 : std::abs(_data._metrics[0].activePower / _data._metrics[0].powerFactor);
       // Q = std::sqrt(S^2 - P^2)
-      parsed._metrics[0].reactivePower = std::sqrt(parsed._metrics[0].apparentPower * parsed._metrics[0].apparentPower - parsed._metrics[0].activePower * parsed._metrics[0].activePower);
+      _data._metrics[0].reactivePower = std::sqrt(_data._metrics[0].apparentPower * _data._metrics[0].apparentPower - _data._metrics[0].activePower * _data._metrics[0].activePower);
       // E = Ei + Er
-      parsed._metrics[0].activeEnergy = parsed._metrics[0].activeEnergyImported + parsed._metrics[0].activeEnergyReturned;
+      _data._metrics[0].activeEnergy = _data._metrics[0].activeEnergyImported + _data._metrics[0].activeEnergyReturned;
 
       // aggregate
-      parsed.aggregate = parsed._metrics[0];
+      _data.aggregate = _data._metrics[0];
 
       break;
     }
 
     case MYCILA_JSY_MK_193: {
       // channel 1
-      parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_VOLTAGE) * 0.01f;
-      parsed._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_CURRENT) * 0.01f;
-      parsed._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_POWER) * (_register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_POWER_SIGN) ? -1.0f : 1.0f);
-      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_ENERGY_POSITIVE) * 10;
-      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_ENERGY_NEGATIVE) * 10;
-      parsed._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_POWER_FACTOR) * 0.001f;
-      parsed._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_FREQUENCY) * 0.01f;
+      _data._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_VOLTAGE) * 0.01f;
+      _data._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_CURRENT) * 0.01f;
+      _data._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_POWER) * (_register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_POWER_SIGN) ? -1.0f : 1.0f);
+      _data._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_ENERGY_POSITIVE) * 10;
+      _data._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_ACTIVE_ENERGY_NEGATIVE) * 10;
+      _data._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_POWER_FACTOR) * 0.001f;
+      _data._metrics[0].frequency = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH1_FREQUENCY) * 0.01f;
 
       // channel 2
-      parsed._metrics[1].voltage = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_VOLTAGE) * 0.01f;
-      parsed._metrics[1].current = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_CURRENT) * 0.01f;
-      parsed._metrics[1].activePower = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_POWER) * (_register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_POWER_SIGN) ? -1.0f : 1.0f);
-      parsed._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_ENERGY_POSITIVE) * 10;
-      parsed._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_ENERGY_NEGATIVE) * 10;
-      parsed._metrics[1].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_POWER_FACTOR) * 0.001f;
-      parsed._metrics[1].frequency = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_FREQUENCY) * 0.01f;
+      _data._metrics[1].voltage = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_VOLTAGE) * 0.01f;
+      _data._metrics[1].current = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_CURRENT) * 0.01f;
+      _data._metrics[1].activePower = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_POWER) * (_register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_POWER_SIGN) ? -1.0f : 1.0f);
+      _data._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_ENERGY_POSITIVE) * 10;
+      _data._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_ACTIVE_ENERGY_NEGATIVE) * 10;
+      _data._metrics[1].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_POWER_FACTOR) * 0.001f;
+      _data._metrics[1].frequency = _register16(_buffer, registerStart, registerSize, JSY_193_REGISTER_CH2_FREQUENCY) * 0.01f;
 
       // calculate remaining metrics
       // S = P / PF
-      parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : std::abs(parsed._metrics[0].activePower / parsed._metrics[0].powerFactor);
-      parsed._metrics[1].apparentPower = parsed._metrics[1].powerFactor == 0 ? 0 : std::abs(parsed._metrics[1].activePower / parsed._metrics[1].powerFactor);
+      _data._metrics[0].apparentPower = _data._metrics[0].powerFactor == 0 ? 0 : std::abs(_data._metrics[0].activePower / _data._metrics[0].powerFactor);
+      _data._metrics[1].apparentPower = _data._metrics[1].powerFactor == 0 ? 0 : std::abs(_data._metrics[1].activePower / _data._metrics[1].powerFactor);
       // Q = std::sqrt(S^2 - P^2)
-      parsed._metrics[0].reactivePower = std::sqrt(parsed._metrics[0].apparentPower * parsed._metrics[0].apparentPower - parsed._metrics[0].activePower * parsed._metrics[0].activePower);
-      parsed._metrics[1].reactivePower = std::sqrt(parsed._metrics[1].apparentPower * parsed._metrics[1].apparentPower - parsed._metrics[1].activePower * parsed._metrics[1].activePower);
+      _data._metrics[0].reactivePower = std::sqrt(_data._metrics[0].apparentPower * _data._metrics[0].apparentPower - _data._metrics[0].activePower * _data._metrics[0].activePower);
+      _data._metrics[1].reactivePower = std::sqrt(_data._metrics[1].apparentPower * _data._metrics[1].apparentPower - _data._metrics[1].activePower * _data._metrics[1].activePower);
       // E = Ei + Er
-      parsed._metrics[0].activeEnergy = parsed._metrics[0].activeEnergyImported + parsed._metrics[0].activeEnergyReturned;
-      parsed._metrics[1].activeEnergy = parsed._metrics[1].activeEnergyImported + parsed._metrics[1].activeEnergyReturned;
+      _data._metrics[0].activeEnergy = _data._metrics[0].activeEnergyImported + _data._metrics[0].activeEnergyReturned;
+      _data._metrics[1].activeEnergy = _data._metrics[1].activeEnergyImported + _data._metrics[1].activeEnergyReturned;
 
       // aggregate
-      parsed.aggregate = parsed._metrics[0];
-      parsed.aggregate += parsed._metrics[1];
-      parsed.aggregate.voltage = std::max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);
-      parsed.aggregate.frequency = std::max(parsed._metrics[0].frequency, parsed._metrics[1].frequency);
+      _data.aggregate = _data._metrics[0];
+      _data.aggregate += _data._metrics[1];
+      _data.aggregate.voltage = std::max(_data._metrics[0].voltage, _data._metrics[1].voltage);
+      _data.aggregate.frequency = std::max(_data._metrics[0].frequency, _data._metrics[1].frequency);
 
       break;
     }
@@ -953,39 +946,39 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       float frequency = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_FREQUENCY) * 0.01f;
 
       // channel 1
-      parsed._metrics[0].frequency = frequency;
-      parsed._metrics[0].voltage = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_VOLTAGE) * 0.0001f;
-      parsed._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_CURRENT) * 0.0001f;
-      parsed._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_POWER) * (sign0 ? -0.0001f : 0.0001f);
-      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_ENERGY_IMPORTED) * 0.1f;
-      parsed._metrics[0].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_POWER_FACTOR) * 0.001f;
-      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_ENERGY_RETURNED) * 0.1f;
+      _data._metrics[0].frequency = frequency;
+      _data._metrics[0].voltage = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_VOLTAGE) * 0.0001f;
+      _data._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_CURRENT) * 0.0001f;
+      _data._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_POWER) * (sign0 ? -0.0001f : 0.0001f);
+      _data._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_ENERGY_IMPORTED) * 0.1f;
+      _data._metrics[0].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_POWER_FACTOR) * 0.001f;
+      _data._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH1_ACTIVE_ENERGY_RETURNED) * 0.1f;
 
       // channel 2
-      parsed._metrics[1].frequency = frequency;
-      parsed._metrics[1].voltage = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_VOLTAGE) * 0.0001f;
-      parsed._metrics[1].current = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_CURRENT) * 0.0001f;
-      parsed._metrics[1].activePower = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_POWER) * (sign1 ? -0.0001f : 0.0001f);
-      parsed._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_ENERGY_IMPORTED) * 0.1f;
-      parsed._metrics[1].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_POWER_FACTOR) * 0.001f;
-      parsed._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_ENERGY_RETURNED) * 0.1f;
+      _data._metrics[1].frequency = frequency;
+      _data._metrics[1].voltage = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_VOLTAGE) * 0.0001f;
+      _data._metrics[1].current = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_CURRENT) * 0.0001f;
+      _data._metrics[1].activePower = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_POWER) * (sign1 ? -0.0001f : 0.0001f);
+      _data._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_ENERGY_IMPORTED) * 0.1f;
+      _data._metrics[1].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_POWER_FACTOR) * 0.001f;
+      _data._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_194_REGISTER_CH2_ACTIVE_ENERGY_RETURNED) * 0.1f;
 
       // calculate remaining metrics
       // S = P / PF
-      parsed._metrics[0].apparentPower = parsed._metrics[0].powerFactor == 0 ? 0 : std::abs(parsed._metrics[0].activePower / parsed._metrics[0].powerFactor);
-      parsed._metrics[1].apparentPower = parsed._metrics[1].powerFactor == 0 ? 0 : std::abs(parsed._metrics[1].activePower / parsed._metrics[1].powerFactor);
+      _data._metrics[0].apparentPower = _data._metrics[0].powerFactor == 0 ? 0 : std::abs(_data._metrics[0].activePower / _data._metrics[0].powerFactor);
+      _data._metrics[1].apparentPower = _data._metrics[1].powerFactor == 0 ? 0 : std::abs(_data._metrics[1].activePower / _data._metrics[1].powerFactor);
       // Q = std::sqrt(S^2 - P^2)
-      parsed._metrics[0].reactivePower = std::sqrt(parsed._metrics[0].apparentPower * parsed._metrics[0].apparentPower - parsed._metrics[0].activePower * parsed._metrics[0].activePower);
-      parsed._metrics[1].reactivePower = std::sqrt(parsed._metrics[1].apparentPower * parsed._metrics[1].apparentPower - parsed._metrics[1].activePower * parsed._metrics[1].activePower);
+      _data._metrics[0].reactivePower = std::sqrt(_data._metrics[0].apparentPower * _data._metrics[0].apparentPower - _data._metrics[0].activePower * _data._metrics[0].activePower);
+      _data._metrics[1].reactivePower = std::sqrt(_data._metrics[1].apparentPower * _data._metrics[1].apparentPower - _data._metrics[1].activePower * _data._metrics[1].activePower);
       // E = Ei + Er
-      parsed._metrics[0].activeEnergy = parsed._metrics[0].activeEnergyImported + parsed._metrics[0].activeEnergyReturned;
-      parsed._metrics[1].activeEnergy = parsed._metrics[1].activeEnergyImported + parsed._metrics[1].activeEnergyReturned;
+      _data._metrics[0].activeEnergy = _data._metrics[0].activeEnergyImported + _data._metrics[0].activeEnergyReturned;
+      _data._metrics[1].activeEnergy = _data._metrics[1].activeEnergyImported + _data._metrics[1].activeEnergyReturned;
 
       // aggregate
-      parsed.aggregate = parsed._metrics[0];
-      parsed.aggregate += parsed._metrics[1];
-      parsed.aggregate.frequency = frequency;
-      parsed.aggregate.voltage = std::max(parsed._metrics[0].voltage, parsed._metrics[1].voltage);
+      _data.aggregate = _data._metrics[0];
+      _data.aggregate += _data._metrics[1];
+      _data.aggregate.frequency = frequency;
+      _data.aggregate.voltage = std::max(_data._metrics[0].voltage, _data._metrics[1].voltage);
 
       break;
     }
@@ -993,22 +986,22 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
     case MYCILA_JSY_MK_227:
     case MYCILA_JSY_MK_229: {
       // single channel
-      parsed._metrics[0].voltage = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_VOLTAGE) * 0.0001f;
-      parsed._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_CURRENT) * 0.0001f;
-      parsed._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_POWER) * (_register16(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_POWER_SIGN) ? -0.0001f : 0.0001f);
-      parsed._metrics[0].reactivePower = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_POWER) * (_register16(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_POWER_SIGN) ? -0.0001f : 0.0001f);
-      parsed._metrics[0].apparentPower = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_APPARENT_POWER) * 0.0001f;
-      parsed._metrics[0].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_POWER_FACTOR) * 0.001f;
-      parsed._metrics[0].frequency = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_FREQUENCY) * 0.01f;
-      parsed._metrics[0].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_ENERGY);
-      parsed._metrics[0].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_ENERGY);
-      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_ENERGY_POSITIVE);
-      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_ENERGY_NEGATIVE);
-      parsed._metrics[0].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_ENERGY_POSITIVE);
-      parsed._metrics[0].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_ENERGY_NEGATIVE);
+      _data._metrics[0].voltage = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_VOLTAGE) * 0.0001f;
+      _data._metrics[0].current = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_CURRENT) * 0.0001f;
+      _data._metrics[0].activePower = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_POWER) * (_register16(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_POWER_SIGN) ? -0.0001f : 0.0001f);
+      _data._metrics[0].reactivePower = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_POWER) * (_register16(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_POWER_SIGN) ? -0.0001f : 0.0001f);
+      _data._metrics[0].apparentPower = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_APPARENT_POWER) * 0.0001f;
+      _data._metrics[0].powerFactor = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_POWER_FACTOR) * 0.001f;
+      _data._metrics[0].frequency = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_FREQUENCY) * 0.01f;
+      _data._metrics[0].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_ENERGY);
+      _data._metrics[0].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_ENERGY);
+      _data._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_ENERGY_POSITIVE);
+      _data._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_ACTIVE_ENERGY_NEGATIVE);
+      _data._metrics[0].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_ENERGY_POSITIVE);
+      _data._metrics[0].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_22x_REGISTER_REACTIVE_ENERGY_NEGATIVE);
 
       // aggregate
-      parsed.aggregate = parsed._metrics[0];
+      _data.aggregate = _data._metrics[0];
 
       break;
     }
@@ -1037,83 +1030,83 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       float frequency = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_FREQUENCY) * 0.01f;
 
       // phase A
-      parsed._metrics[0].frequency = frequency;
-      parsed._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_VOLTAGE) * 0.01f;
-      parsed._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_CURRENT) * 0.01f;
-      parsed._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_POWER) * (sign0 ? -1.0f : 1.0f);
-      parsed._metrics[0].reactivePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_POWER) * (sign4 ? -1.0f : 1.0f);
-      parsed._metrics[0].apparentPower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_APPARENT_POWER);
-      parsed._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_POWER_FACTOR) * 0.001f;
-      parsed._metrics[0].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_ENERGY) * 10;
-      parsed._metrics[0].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_ENERGY) * 10;
-      parsed._metrics[0].apparentEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_APPARENT_ENERGY) * 10;
-      parsed._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_ENERGY_IMPORTED) * 10;
-      parsed._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_ENERGY_RETURNED) * 10;
-      parsed._metrics[0].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_ENERGY_IMPORTED) * 10;
-      parsed._metrics[0].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_ENERGY_RETURNED) * 10;
-      parsed._metrics[0].phaseAngleU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_U) * 0.01f;
-      parsed._metrics[0].phaseAngleI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_I) * 0.01f;
-      parsed._metrics[0].phaseAngleUI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_UI) * 0.01f;
-      parsed._metrics[0].thdU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_THD_U) * 0.01f;
-      parsed._metrics[0].thdI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_THD_I) * 0.01f;
+      _data._metrics[0].frequency = frequency;
+      _data._metrics[0].voltage = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_VOLTAGE) * 0.01f;
+      _data._metrics[0].current = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_CURRENT) * 0.01f;
+      _data._metrics[0].activePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_POWER) * (sign0 ? -1.0f : 1.0f);
+      _data._metrics[0].reactivePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_POWER) * (sign4 ? -1.0f : 1.0f);
+      _data._metrics[0].apparentPower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_APPARENT_POWER);
+      _data._metrics[0].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_POWER_FACTOR) * 0.001f;
+      _data._metrics[0].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_ENERGY) * 10;
+      _data._metrics[0].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_ENERGY) * 10;
+      _data._metrics[0].apparentEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_APPARENT_ENERGY) * 10;
+      _data._metrics[0].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_ENERGY_IMPORTED) * 10;
+      _data._metrics[0].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_ACTIVE_ENERGY_RETURNED) * 10;
+      _data._metrics[0].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_ENERGY_IMPORTED) * 10;
+      _data._metrics[0].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_REACTIVE_ENERGY_RETURNED) * 10;
+      _data._metrics[0].phaseAngleU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_U) * 0.01f;
+      _data._metrics[0].phaseAngleI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_I) * 0.01f;
+      _data._metrics[0].phaseAngleUI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_PHASE_ANGLE_UI) * 0.01f;
+      _data._metrics[0].thdU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_THD_U) * 0.01f;
+      _data._metrics[0].thdI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_A_THD_I) * 0.01f;
 
       // phase B
-      parsed._metrics[1].frequency = frequency;
-      parsed._metrics[1].voltage = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_VOLTAGE) * 0.01f;
-      parsed._metrics[1].current = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_CURRENT) * 0.01f;
-      parsed._metrics[1].activePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_POWER) * (sign1 ? -1.0f : 1.0f);
-      parsed._metrics[1].reactivePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_POWER) * (sign5 ? -1.0f : 1.0f);
-      parsed._metrics[1].apparentPower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_APPARENT_POWER);
-      parsed._metrics[1].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_POWER_FACTOR) * 0.001f;
-      parsed._metrics[1].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY) * 0.01f;
-      parsed._metrics[1].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY) * 10;
-      parsed._metrics[1].apparentEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_APPARENT_ENERGY) * 10;
-      parsed._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY_IMPORTED) * 10;
-      parsed._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY_RETURNED) * 10;
-      parsed._metrics[1].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY_IMPORTED) * 10;
-      parsed._metrics[1].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY_RETURNED) * 10;
-      parsed._metrics[1].phaseAngleU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_U) * 0.01f;
-      parsed._metrics[1].phaseAngleI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_I) * 0.01f;
-      parsed._metrics[1].phaseAngleUI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_UI) * 0.01f;
-      parsed._metrics[1].thdU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_THD_U) * 0.01f;
-      parsed._metrics[1].thdI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_THD_I) * 0.01f;
+      _data._metrics[1].frequency = frequency;
+      _data._metrics[1].voltage = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_VOLTAGE) * 0.01f;
+      _data._metrics[1].current = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_CURRENT) * 0.01f;
+      _data._metrics[1].activePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_POWER) * (sign1 ? -1.0f : 1.0f);
+      _data._metrics[1].reactivePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_POWER) * (sign5 ? -1.0f : 1.0f);
+      _data._metrics[1].apparentPower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_APPARENT_POWER);
+      _data._metrics[1].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_POWER_FACTOR) * 0.001f;
+      _data._metrics[1].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY) * 0.01f;
+      _data._metrics[1].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY) * 10;
+      _data._metrics[1].apparentEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_APPARENT_ENERGY) * 10;
+      _data._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY_IMPORTED) * 10;
+      _data._metrics[1].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY_RETURNED) * 10;
+      _data._metrics[1].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY_IMPORTED) * 10;
+      _data._metrics[1].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY_RETURNED) * 10;
+      _data._metrics[1].phaseAngleU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_U) * 0.01f;
+      _data._metrics[1].phaseAngleI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_I) * 0.01f;
+      _data._metrics[1].phaseAngleUI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_PHASE_ANGLE_UI) * 0.01f;
+      _data._metrics[1].thdU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_THD_U) * 0.01f;
+      _data._metrics[1].thdI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_THD_I) * 0.01f;
 
       // phase C
-      parsed._metrics[2].frequency = frequency;
-      parsed._metrics[2].voltage = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_VOLTAGE) * 0.01f;
-      parsed._metrics[2].current = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_CURRENT) * 0.01f;
-      parsed._metrics[2].activePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_POWER) * (sign2 ? -1.0f : 1.0f);
-      parsed._metrics[2].reactivePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_POWER) * (sign6 ? -1.0f : 1.0f);
-      parsed._metrics[2].apparentPower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_APPARENT_POWER);
-      parsed._metrics[2].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_POWER_FACTOR) * 0.001f;
-      parsed._metrics[2].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_ENERGY) * 10;
-      parsed._metrics[2].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY) * 10;
-      parsed._metrics[2].apparentEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_APPARENT_ENERGY) * 10;
-      parsed._metrics[2].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_ENERGY_IMPORTED) * 10;
-      parsed._metrics[2].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_ENERGY_RETURNED) * 10;
-      parsed._metrics[2].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY_IMPORTED) * 10;
-      parsed._metrics[2].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY_RETURNED) * 10;
-      parsed._metrics[2].phaseAngleU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_U) * 0.01f;
-      parsed._metrics[2].phaseAngleI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_I) * 0.01f;
-      parsed._metrics[2].phaseAngleUI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_UI) * 0.01f;
-      parsed._metrics[2].thdU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_THD_U) * 0.01f;
-      parsed._metrics[2].thdI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_THD_I) * 0.01f;
+      _data._metrics[2].frequency = frequency;
+      _data._metrics[2].voltage = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_VOLTAGE) * 0.01f;
+      _data._metrics[2].current = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_CURRENT) * 0.01f;
+      _data._metrics[2].activePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_POWER) * (sign2 ? -1.0f : 1.0f);
+      _data._metrics[2].reactivePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_POWER) * (sign6 ? -1.0f : 1.0f);
+      _data._metrics[2].apparentPower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_APPARENT_POWER);
+      _data._metrics[2].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_POWER_FACTOR) * 0.001f;
+      _data._metrics[2].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_ENERGY) * 10;
+      _data._metrics[2].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY) * 10;
+      _data._metrics[2].apparentEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_APPARENT_ENERGY) * 10;
+      _data._metrics[2].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_ENERGY_IMPORTED) * 10;
+      _data._metrics[2].activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_ACTIVE_ENERGY_RETURNED) * 10;
+      _data._metrics[2].reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY_IMPORTED) * 10;
+      _data._metrics[2].reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_REACTIVE_ENERGY_RETURNED) * 10;
+      _data._metrics[2].phaseAngleU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_U) * 0.01f;
+      _data._metrics[2].phaseAngleI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_I) * 0.01f;
+      _data._metrics[2].phaseAngleUI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_PHASE_ANGLE_UI) * 0.01f;
+      _data._metrics[2].thdU = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_THD_U) * 0.01f;
+      _data._metrics[2].thdI = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_C_THD_I) * 0.01f;
 
       // aggregate
-      parsed.aggregate.frequency = frequency;
-      parsed.aggregate.activePower = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_POWER) * (sign3 ? -1.0f : 1.0f);
-      parsed.aggregate.reactivePower = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_POWER) * (sign7 ? -1.0f : 1.0f);
-      parsed.aggregate.apparentPower = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_APPARENT_POWER);
-      parsed.aggregate.powerFactor = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_POWER_FACTOR) * 0.001f;
-      parsed.aggregate.activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_ENERGY) * 10;
-      parsed.aggregate.reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY) * 10;
-      parsed.aggregate.apparentEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_APPARENT_ENERGY) * 10;
-      parsed.aggregate.activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_ENERGY_IMPORTED) * 10;
-      parsed.aggregate.activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_ENERGY_RETURNED) * 10;
-      parsed.aggregate.reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY_IMPORTED) * 10;
-      parsed.aggregate.reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY_RETURNED) * 10;
-      parsed.aggregate.current = parsed._metrics[0].current + parsed._metrics[1].current + parsed._metrics[2].current;
-      parsed.aggregate.voltage = parsed.aggregate.current == 0 ? NAN : parsed.aggregate.apparentPower / parsed.aggregate.current;
+      _data.aggregate.frequency = frequency;
+      _data.aggregate.activePower = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_POWER) * (sign3 ? -1.0f : 1.0f);
+      _data.aggregate.reactivePower = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_POWER) * (sign7 ? -1.0f : 1.0f);
+      _data.aggregate.apparentPower = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_APPARENT_POWER);
+      _data.aggregate.powerFactor = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_POWER_FACTOR) * 0.001f;
+      _data.aggregate.activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_ENERGY) * 10;
+      _data.aggregate.reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY) * 10;
+      _data.aggregate.apparentEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_APPARENT_ENERGY) * 10;
+      _data.aggregate.activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_ENERGY_IMPORTED) * 10;
+      _data.aggregate.activeEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_ACTIVE_ENERGY_RETURNED) * 10;
+      _data.aggregate.reactiveEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY_IMPORTED) * 10;
+      _data.aggregate.reactiveEnergyReturned = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_TOTAL_REACTIVE_ENERGY_RETURNED) * 10;
+      _data.aggregate.current = _data._metrics[0].current + _data._metrics[1].current + _data._metrics[2].current;
+      _data.aggregate.voltage = _data.aggregate.current == 0 ? NAN : _data.aggregate.apparentPower / _data.aggregate.current;
 
       break;
     }
@@ -1122,20 +1115,10 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       break;
   }
 
-  bool changed = data != parsed;
-
-  if (changed)
-    data = parsed;
-
   _time = millis();
 
-  _mutexOp.unlock();
-
   if (_callback) {
-    _callback(EventType::EVT_READ);
-    if (changed) {
-      _callback(EventType::EVT_CHANGE);
-    }
+    _callback(EventType::EVT_READ, _data);
   }
 
   return true;
@@ -1151,10 +1134,7 @@ uint16_t Mycila::JSY::readModel(const uint8_t address) {
 
   LOGD(TAG, "readModel(0x%02X)", address);
 
-  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
-    LOGW(TAG, "Unable to read model @ 0x%02X: Serial is busy!", address);
-    return MYCILA_JSY_MK_UNKNOWN;
-  }
+  std::lock_guard<std::mutex> lock(_mutex);
 
 #ifdef MYCILA_JSY_DEBUG
   Serial.printf("[JSY] readModel(0x%02X)\n", address);
@@ -1165,15 +1145,10 @@ uint16_t Mycila::JSY::readModel(const uint8_t address) {
   ReadResult result = _timedRead(address, JSY_RESPONSE_SIZE_READ_MODEL, _baudRate);
 
   if (result != ReadResult::READ_SUCCESS) {
-    _mutexOp.unlock();
     return MYCILA_JSY_MK_UNKNOWN;
   }
 
-  uint16_t model = (_buffer[JSY_RESPONSE_DATA] << 8) + _buffer[JSY_RESPONSE_DATA + 1];
-
-  _mutexOp.unlock();
-
-  return model;
+  return (_buffer[JSY_RESPONSE_DATA] << 8) + _buffer[JSY_RESPONSE_DATA + 1];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1201,10 +1176,7 @@ Mycila::JSY::Mode Mycila::JSY::_readMode(const uint8_t address, const uint16_t m
 
   LOGD(TAG, "readMode(0x%02X)", address);
 
-  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
-    LOGW(TAG, "Unable to read mode @ 0x%02X: Serial is busy!", address);
-    return Mode::UNKNOWN;
-  }
+  std::lock_guard<std::mutex> lock(_mutex);
 
 #ifdef MYCILA_JSY_DEBUG
   Serial.printf("[JSY] readMode(0x%02X)\n", address);
@@ -1215,19 +1187,15 @@ Mycila::JSY::Mode Mycila::JSY::_readMode(const uint8_t address, const uint16_t m
   ReadResult result = _timedRead(address, JSY_RESPONSE_SIZE_READ_MODE, _baudRate);
 
   if (result != ReadResult::READ_SUCCESS) {
-    _mutexOp.unlock();
     return Mode::UNKNOWN;
   }
 
   switch (_buffer[JSY_RESPONSE_DATA]) {
     case JSY_MODE_AC:
-      _mutexOp.unlock();
       return Mode::AC;
     case JSY_MODE_DC:
-      _mutexOp.unlock();
       return Mode::DC;
     default:
-      _mutexOp.unlock();
       return Mode::UNKNOWN;
   }
 }
@@ -1256,10 +1224,7 @@ bool Mycila::JSY::_setMode(const uint8_t address, const uint16_t model, const Mo
 
   LOGD(TAG, "setMode(0x%02X) mode=%s", address, mode == Mode::AC ? "AC" : "DC");
 
-  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
-    LOGW(TAG, "Unable to set mode @ 0x%02X: Serial is busy!", address);
-    return false;
-  }
+  std::lock_guard<std::mutex> lock(_mutex);
 
 #ifdef MYCILA_JSY_DEBUG
   Serial.printf("[JSY] setMode(0x%02X, %s)\n", address, mode == Mode::AC ? "AC" : "DC");
@@ -1271,8 +1236,6 @@ bool Mycila::JSY::_setMode(const uint8_t address, const uint16_t model, const Mo
 
   _send(address, JSY_REQUEST_SWITCH_MODE_LEN);
   ReadResult result = _timedRead(address, JSY_RESPONSE_SIZE_SWITCH_MODE, _baudRate);
-
-  _mutexOp.unlock();
 
   return result == ReadResult::READ_SUCCESS;
 }
@@ -1287,10 +1250,7 @@ bool Mycila::JSY::resetEnergy(const uint8_t address) {
 
   LOGD(TAG, "resetEnergy(0x%02X)", address);
 
-  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
-    LOGW(TAG, "Unable to reset @ 0x%02X: Serial is busy!", address);
-    return false;
-  }
+  std::lock_guard<std::mutex> lock(_mutex);
 
 #ifdef MYCILA_JSY_DEBUG
   Serial.printf("[JSY] resetEnergy(0x%02X)\n", address);
@@ -1299,8 +1259,6 @@ bool Mycila::JSY::resetEnergy(const uint8_t address) {
   memcpy(_buffer, JSY_REQUEST_RESET_ENERGY, JSY_REQUEST_RESET_ENERGY_LEN);
   _send(address, JSY_REQUEST_RESET_ENERGY_LEN);
   ReadResult result = _timedRead(address, JSY_RESPONSE_SIZE_RESET_ENERGY, _baudRate);
-
-  _mutexOp.unlock();
 
   return result == ReadResult::READ_SUCCESS;
 }
@@ -1385,10 +1343,7 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
 
   LOGD(TAG, "set(0x%02X) address=0x%02X, bauds=%" PRIu32, address, newAddress, newBaudRate);
 
-  if (!_mutexOp.try_lock_for(std::chrono::milliseconds(JSY_LOCK_TIMEOUT))) {
-    LOGW(TAG, "Unable to set @ 0x%02X: Serial is busy!", address);
-    return false;
-  }
+  std::lock_guard<std::mutex> lock(_mutex);
 
 #ifdef MYCILA_JSY_DEBUG
   Serial.printf("[JSY] _set(0x%02X)\n", address);
@@ -1429,13 +1384,11 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
 
   // unexpected error ?
   if (result != ReadResult::READ_SUCCESS && result != ReadResult::READ_ERROR_ADDRESS) {
-    _mutexOp.unlock();
     return false;
   }
 
   // response from unexpected address ?
   if (result == ReadResult::READ_ERROR_ADDRESS && _lastAddress != newAddress) {
-    _mutexOp.unlock();
     return false;
   }
 
@@ -1465,8 +1418,6 @@ bool Mycila::JSY::_set(const uint8_t address, const uint8_t newAddress, const Ba
     }
   }
 
-  _mutexOp.unlock();
-
   return success;
 }
 
@@ -1479,7 +1430,7 @@ void Mycila::JSY::toJson(const JsonObject& root) const {
   root["enabled"] = _enabled;
   root["time"] = _time;
   root["speed"] = _baudRate;
-  data.toJson(root);
+  _data.toJson(root);
 }
 #endif
 

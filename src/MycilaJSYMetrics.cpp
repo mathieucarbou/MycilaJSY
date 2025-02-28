@@ -118,7 +118,8 @@ void Mycila::JSY::Metrics::toJson(const JsonObject& root) const {
     root["apparent_power"] = apparentPower;
   if (!std::isnan(powerFactor))
     root["power_factor"] = powerFactor;
-  root["active_energy"] = activeEnergy;
+  if (activeEnergy)
+    root["active_energy"] = activeEnergy;
   if (apparentEnergy)
     root["apparent_energy"] = apparentEnergy;
   if (activeEnergyImported)

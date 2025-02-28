@@ -21,6 +21,7 @@
 // #define RELAY_PIN 32
 
 Mycila::JSY jsy;
+Mycila::JSY::Data prevData;
 JsonDocument doc;
 const Mycila::JSY::BaudRate rates[] = {
   Mycila::JSY::BaudRate::BAUD_4800,
@@ -34,14 +35,15 @@ void setup() {
   while (!Serial)
     continue;
 
-  jsy.setCallback([](const Mycila::JSY::EventType eventType) {
+  jsy.setCallback([](const Mycila::JSY::EventType eventType, const Mycila::JSY::Data& data) {
     int64_t now = esp_timer_get_time();
     switch (eventType) {
       case Mycila::JSY::EventType::EVT_READ:
         Serial.printf(" - %" PRId64 " EVT_READ\n", now);
-        break;
-      case Mycila::JSY::EventType::EVT_CHANGE:
-        Serial.printf(" - %" PRId64 " EVT_CHANGE: %f W\n", now, jsy.data.aggregate.activePower);
+        if (prevData != data) {
+          Serial.printf(" - %" PRId64 " EVT_CHANGE: %f W\n", now, data.aggregate.activePower);
+          prevData = data;
+        }
         break;
       default:
         Serial.printf(" - %" PRId64 " ERR\n", now);

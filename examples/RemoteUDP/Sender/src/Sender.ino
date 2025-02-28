@@ -98,6 +98,8 @@ static WebSerial webSerial;
 static Preferences preferences;
 
 static Mycila::JSY jsy;
+static volatile Mycila::JSY::Data jsyData;
+static Mycila::JSY::Data prevData;
 static Mycila::TaskManager coreTaskManager("core");
 static Mycila::TaskManager jsyTaskManager("jsy");
 
@@ -372,16 +374,16 @@ static Mycila::Task dashboardTask("Dashboard", [](void* params) {
 
   switch (jsyModel) {
     case MYCILA_JSY_MK_163: {
-      jsy163Frequency.setValue(jsy.data.single().frequency);
-      jsy163Voltage.setValue(jsy.data.single().voltage);
-      jsy163current.setValue(jsy.data.single().current);
-      jsy163PowerFactor.setValue(jsy.data.single().powerFactor);
-      jsy163ActivePower.setValue(jsy.data.single().activePower);
-      jsy163ApparentPower.setValue(jsy.data.single().apparentPower);
-      jsy163ReactivePower.setValue(jsy.data.single().reactivePower);
-      jsy163ActiveEnergy.setValue((int)jsy.data.single().activeEnergy);
-      jsy163ActiveEnergyImported.setValue((int)jsy.data.single().activeEnergyImported);
-      jsy163ActiveEnergyReturned.setValue((int)jsy.data.single().activeEnergyReturned);
+      jsy163Frequency.setValue(prevData.single().frequency);
+      jsy163Voltage.setValue(prevData.single().voltage);
+      jsy163current.setValue(prevData.single().current);
+      jsy163PowerFactor.setValue(prevData.single().powerFactor);
+      jsy163ActivePower.setValue(prevData.single().activePower);
+      jsy163ApparentPower.setValue(prevData.single().apparentPower);
+      jsy163ReactivePower.setValue(prevData.single().reactivePower);
+      jsy163ActiveEnergy.setValue((int)prevData.single().activeEnergy);
+      jsy163ActiveEnergyImported.setValue((int)prevData.single().activeEnergyImported);
+      jsy163ActiveEnergyReturned.setValue((int)prevData.single().activeEnergyReturned);
 
       // shift array
       for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -389,7 +391,7 @@ static Mycila::Task dashboardTask("Dashboard", [](void* params) {
       }
 
       // set new value
-      power1HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.data.phaseA().activePower);
+      power1HistoryY[MYCILA_GRAPH_POINTS - 1] = round(prevData.phaseA().activePower);
 
       // update charts
       jsy163ActivePowerHistory.setY(power1HistoryY, MYCILA_GRAPH_POINTS);
@@ -398,27 +400,27 @@ static Mycila::Task dashboardTask("Dashboard", [](void* params) {
     }
     case MYCILA_JSY_MK_193:
     case MYCILA_JSY_MK_194: {
-      jsy194Channel1Frequency.setValue(jsy.data.channel1().frequency);
-      jsy194Channel1Voltage.setValue(jsy.data.channel1().voltage);
-      jsy194Channel1Current.setValue(jsy.data.channel1().current);
-      jsy194Channel1PowerFactor.setValue(jsy.data.channel1().powerFactor);
-      jsy194Channel1ActivePower.setValue(jsy.data.channel1().activePower);
-      jsy194Channel1ApparentPower.setValue(jsy.data.channel1().apparentPower);
-      jsy194Channel1ReactivePower.setValue(jsy.data.channel1().reactivePower);
-      jsy194Channel1ActiveEnergy.setValue(jsy.data.channel1().activeEnergy);
-      jsy194Channel1ActiveEnergyImported.setValue(jsy.data.channel1().activeEnergyImported);
-      jsy194Channel1ActiveEnergyReturned.setValue(jsy.data.channel1().activeEnergyReturned);
+      jsy194Channel1Frequency.setValue(prevData.channel1().frequency);
+      jsy194Channel1Voltage.setValue(prevData.channel1().voltage);
+      jsy194Channel1Current.setValue(prevData.channel1().current);
+      jsy194Channel1PowerFactor.setValue(prevData.channel1().powerFactor);
+      jsy194Channel1ActivePower.setValue(prevData.channel1().activePower);
+      jsy194Channel1ApparentPower.setValue(prevData.channel1().apparentPower);
+      jsy194Channel1ReactivePower.setValue(prevData.channel1().reactivePower);
+      jsy194Channel1ActiveEnergy.setValue(prevData.channel1().activeEnergy);
+      jsy194Channel1ActiveEnergyImported.setValue(prevData.channel1().activeEnergyImported);
+      jsy194Channel1ActiveEnergyReturned.setValue(prevData.channel1().activeEnergyReturned);
 
-      jsy194Channel2Frequency.setValue(jsy.data.channel2().frequency);
-      jsy194Channel2Voltage.setValue(jsy.data.channel2().voltage);
-      jsy194Channel2Current.setValue(jsy.data.channel2().current);
-      jsy194Channel2PowerFactor.setValue(jsy.data.channel2().powerFactor);
-      jsy194Channel2ActivePower.setValue(jsy.data.channel2().activePower);
-      jsy194Channel2ApparentPower.setValue(jsy.data.channel2().apparentPower);
-      jsy194Channel2ReactivePower.setValue(jsy.data.channel2().reactivePower);
-      jsy194Channel2ActiveEnergy.setValue(jsy.data.channel2().activeEnergy);
-      jsy194Channel2ActiveEnergyImported.setValue(jsy.data.channel2().activeEnergyImported);
-      jsy194Channel2ActiveEnergyReturned.setValue(jsy.data.channel2().activeEnergyReturned);
+      jsy194Channel2Frequency.setValue(prevData.channel2().frequency);
+      jsy194Channel2Voltage.setValue(prevData.channel2().voltage);
+      jsy194Channel2Current.setValue(prevData.channel2().current);
+      jsy194Channel2PowerFactor.setValue(prevData.channel2().powerFactor);
+      jsy194Channel2ActivePower.setValue(prevData.channel2().activePower);
+      jsy194Channel2ApparentPower.setValue(prevData.channel2().apparentPower);
+      jsy194Channel2ReactivePower.setValue(prevData.channel2().reactivePower);
+      jsy194Channel2ActiveEnergy.setValue(prevData.channel2().activeEnergy);
+      jsy194Channel2ActiveEnergyImported.setValue(prevData.channel2().activeEnergyImported);
+      jsy194Channel2ActiveEnergyReturned.setValue(prevData.channel2().activeEnergyReturned);
 
       // shift array
       for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -427,8 +429,8 @@ static Mycila::Task dashboardTask("Dashboard", [](void* params) {
       }
 
       // set new value
-      power1HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.data.channel1().activePower);
-      power2HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.data.channel2().activePower);
+      power1HistoryY[MYCILA_GRAPH_POINTS - 1] = round(prevData.channel1().activePower);
+      power2HistoryY[MYCILA_GRAPH_POINTS - 1] = round(prevData.channel2().activePower);
 
       // update charts
       jsy194Channel1ActivePowerHistory.setY(power1HistoryY, MYCILA_GRAPH_POINTS);
@@ -437,50 +439,50 @@ static Mycila::Task dashboardTask("Dashboard", [](void* params) {
       break;
     }
     case MYCILA_JSY_MK_333: {
-      jsy333PhaseAFrequency.setValue(jsy.data.phaseA().frequency);
-      jsy333PhaseAVoltage.setValue(jsy.data.phaseA().voltage);
-      jsy333PhaseACurrent.setValue(jsy.data.phaseA().current);
-      jsy333PhaseAPowerFactor.setValue(jsy.data.phaseA().powerFactor);
-      jsy333PhaseAActivePower.setValue(jsy.data.phaseA().activePower);
-      jsy333PhaseAApparentPower.setValue(jsy.data.phaseA().apparentPower);
-      jsy333PhaseAReactivePower.setValue(jsy.data.phaseA().reactivePower);
-      jsy333PhaseAActiveEnergy.setValue(jsy.data.phaseA().activeEnergy);
-      jsy333PhaseAActiveEnergyImported.setValue(jsy.data.phaseA().activeEnergyImported);
-      jsy333PhaseAActiveEnergyReturned.setValue(jsy.data.phaseA().activeEnergyReturned);
-      jsy333PhaseAReactiveEnergy.setValue(jsy.data.phaseA().reactiveEnergy);
-      jsy333PhaseAReactiveEnergyImported.setValue(jsy.data.phaseA().reactiveEnergyImported);
-      jsy333PhaseAReactiveEnergyReturned.setValue(jsy.data.phaseA().reactiveEnergyReturned);
-      jsy333PhaseAApparentEnergy.setValue(jsy.data.phaseA().apparentEnergy);
+      jsy333PhaseAFrequency.setValue(prevData.phaseA().frequency);
+      jsy333PhaseAVoltage.setValue(prevData.phaseA().voltage);
+      jsy333PhaseACurrent.setValue(prevData.phaseA().current);
+      jsy333PhaseAPowerFactor.setValue(prevData.phaseA().powerFactor);
+      jsy333PhaseAActivePower.setValue(prevData.phaseA().activePower);
+      jsy333PhaseAApparentPower.setValue(prevData.phaseA().apparentPower);
+      jsy333PhaseAReactivePower.setValue(prevData.phaseA().reactivePower);
+      jsy333PhaseAActiveEnergy.setValue(prevData.phaseA().activeEnergy);
+      jsy333PhaseAActiveEnergyImported.setValue(prevData.phaseA().activeEnergyImported);
+      jsy333PhaseAActiveEnergyReturned.setValue(prevData.phaseA().activeEnergyReturned);
+      jsy333PhaseAReactiveEnergy.setValue(prevData.phaseA().reactiveEnergy);
+      jsy333PhaseAReactiveEnergyImported.setValue(prevData.phaseA().reactiveEnergyImported);
+      jsy333PhaseAReactiveEnergyReturned.setValue(prevData.phaseA().reactiveEnergyReturned);
+      jsy333PhaseAApparentEnergy.setValue(prevData.phaseA().apparentEnergy);
 
-      jsy333PhaseBFrequency.setValue(jsy.data.phaseB().frequency);
-      jsy333PhaseBVoltage.setValue(jsy.data.phaseB().voltage);
-      jsy333PhaseBCurrent.setValue(jsy.data.phaseB().current);
-      jsy333PhaseBPowerFactor.setValue(jsy.data.phaseB().powerFactor);
-      jsy333PhaseBActivePower.setValue(jsy.data.phaseB().activePower);
-      jsy333PhaseBApparentPower.setValue(jsy.data.phaseB().apparentPower);
-      jsy333PhaseBReactivePower.setValue(jsy.data.phaseB().reactivePower);
-      jsy333PhaseBActiveEnergy.setValue(jsy.data.phaseB().activeEnergy);
-      jsy333PhaseBActiveEnergyImported.setValue(jsy.data.phaseB().activeEnergyImported);
-      jsy333PhaseBActiveEnergyReturned.setValue(jsy.data.phaseB().activeEnergyReturned);
-      jsy333PhaseBReactiveEnergy.setValue(jsy.data.phaseB().reactiveEnergy);
-      jsy333PhaseBReactiveEnergyImported.setValue(jsy.data.phaseB().reactiveEnergyImported);
-      jsy333PhaseBReactiveEnergyReturned.setValue(jsy.data.phaseB().reactiveEnergyReturned);
-      jsy333PhaseBApparentEnergy.setValue(jsy.data.phaseB().apparentEnergy);
+      jsy333PhaseBFrequency.setValue(prevData.phaseB().frequency);
+      jsy333PhaseBVoltage.setValue(prevData.phaseB().voltage);
+      jsy333PhaseBCurrent.setValue(prevData.phaseB().current);
+      jsy333PhaseBPowerFactor.setValue(prevData.phaseB().powerFactor);
+      jsy333PhaseBActivePower.setValue(prevData.phaseB().activePower);
+      jsy333PhaseBApparentPower.setValue(prevData.phaseB().apparentPower);
+      jsy333PhaseBReactivePower.setValue(prevData.phaseB().reactivePower);
+      jsy333PhaseBActiveEnergy.setValue(prevData.phaseB().activeEnergy);
+      jsy333PhaseBActiveEnergyImported.setValue(prevData.phaseB().activeEnergyImported);
+      jsy333PhaseBActiveEnergyReturned.setValue(prevData.phaseB().activeEnergyReturned);
+      jsy333PhaseBReactiveEnergy.setValue(prevData.phaseB().reactiveEnergy);
+      jsy333PhaseBReactiveEnergyImported.setValue(prevData.phaseB().reactiveEnergyImported);
+      jsy333PhaseBReactiveEnergyReturned.setValue(prevData.phaseB().reactiveEnergyReturned);
+      jsy333PhaseBApparentEnergy.setValue(prevData.phaseB().apparentEnergy);
 
-      jsy333PhaseCFrequency.setValue(jsy.data.phaseC().frequency);
-      jsy333PhaseCVoltage.setValue(jsy.data.phaseC().voltage);
-      jsy333PhaseCCurrent.setValue(jsy.data.phaseC().current);
-      jsy333PhaseCPowerFactor.setValue(jsy.data.phaseC().powerFactor);
-      jsy333PhaseCActivePower.setValue(jsy.data.phaseC().activePower);
-      jsy333PhaseCApparentPower.setValue(jsy.data.phaseC().apparentPower);
-      jsy333PhaseCReactivePower.setValue(jsy.data.phaseC().reactivePower);
-      jsy333PhaseCActiveEnergy.setValue(jsy.data.phaseC().activeEnergy);
-      jsy333PhaseCActiveEnergyImported.setValue(jsy.data.phaseC().activeEnergyImported);
-      jsy333PhaseCActiveEnergyReturned.setValue(jsy.data.phaseC().activeEnergyReturned);
-      jsy333PhaseCReactiveEnergy.setValue(jsy.data.phaseC().reactiveEnergy);
-      jsy333PhaseCReactiveEnergyImported.setValue(jsy.data.phaseC().reactiveEnergyImported);
-      jsy333PhaseCReactiveEnergyReturned.setValue(jsy.data.phaseC().reactiveEnergyReturned);
-      jsy333PhaseCApparentEnergy.setValue(jsy.data.phaseC().apparentEnergy);
+      jsy333PhaseCFrequency.setValue(prevData.phaseC().frequency);
+      jsy333PhaseCVoltage.setValue(prevData.phaseC().voltage);
+      jsy333PhaseCCurrent.setValue(prevData.phaseC().current);
+      jsy333PhaseCPowerFactor.setValue(prevData.phaseC().powerFactor);
+      jsy333PhaseCActivePower.setValue(prevData.phaseC().activePower);
+      jsy333PhaseCApparentPower.setValue(prevData.phaseC().apparentPower);
+      jsy333PhaseCReactivePower.setValue(prevData.phaseC().reactivePower);
+      jsy333PhaseCActiveEnergy.setValue(prevData.phaseC().activeEnergy);
+      jsy333PhaseCActiveEnergyImported.setValue(prevData.phaseC().activeEnergyImported);
+      jsy333PhaseCActiveEnergyReturned.setValue(prevData.phaseC().activeEnergyReturned);
+      jsy333PhaseCReactiveEnergy.setValue(prevData.phaseC().reactiveEnergy);
+      jsy333PhaseCReactiveEnergyImported.setValue(prevData.phaseC().reactiveEnergyImported);
+      jsy333PhaseCReactiveEnergyReturned.setValue(prevData.phaseC().reactiveEnergyReturned);
+      jsy333PhaseCApparentEnergy.setValue(prevData.phaseC().apparentEnergy);
 
       // shift array
       for (size_t i = 0; i < MYCILA_GRAPH_POINTS - 1; i++) {
@@ -490,9 +492,9 @@ static Mycila::Task dashboardTask("Dashboard", [](void* params) {
       }
 
       // set new value
-      power1HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.data.phaseA().activePower);
-      power2HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.data.phaseB().activePower);
-      power3HistoryY[MYCILA_GRAPH_POINTS - 1] = round(jsy.data.phaseC().activePower);
+      power1HistoryY[MYCILA_GRAPH_POINTS - 1] = round(prevData.phaseA().activePower);
+      power2HistoryY[MYCILA_GRAPH_POINTS - 1] = round(prevData.phaseB().activePower);
+      power3HistoryY[MYCILA_GRAPH_POINTS - 1] = round(prevData.phaseC().activePower);
 
       // update charts
       jsy333PhaseAActivePowerHistory.setY(power1HistoryY, MYCILA_GRAPH_POINTS);
@@ -687,15 +689,17 @@ void setup() {
   espConnect.begin(hostname.c_str(), ssid.c_str(), MYCILA_ADMIN_PASSWORD);
 
   // jsy
-  jsy.setCallback([](const Mycila::JSY::EventType eventType) {
+  jsy.setCallback([](const Mycila::JSY::EventType eventType, const Mycila::JSY::Data& data) {
+    if (prevData == data)
+      return;
+
+    prevData = data;
+
     if (!udpSendEnabled) {
       messageRate = 0;
       dataRate = 0;
       return;
     }
-
-    if (eventType != Mycila::JSY::EventType::EVT_CHANGE)
-      return;
 
     const Mycila::ESPConnect::Mode mode = espConnect.getMode();
     if (mode == Mycila::ESPConnect::Mode::NONE) {

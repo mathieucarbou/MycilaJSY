@@ -190,22 +190,30 @@ Arduino IDE also has a place to set compilation flags.
 #include <MycilaJSY.h>
 
 Mycila::JSY jsy;
+Mycila::JSY::Data jsyData;
 
 void setup() {
   jsy.begin(Serial2, RX2, TX2);
+  jsy.setCallback([](Mycila::JSY::EventType eventType, const Mycila::JSY::Data& data) {
+    if (eventType == Mycila::JSY::EventType::EVT_READ && jsyData != data) {
+      jsyData = data;
+
+      float v = data.single().voltage; // for JSY1031, JSY-163, JSY-227, JSY-229
+
+      float v1 = data.channel1().voltage; // for JSY-193 and JSY-194
+      float v2 = data.channel2().voltage; // for JSY-193 and JSY-194
+
+      float vA = data.phaseA().voltage; // for JSY-333
+      float vB = data.phaseB().voltage; // for JSY-333
+      float vC = data.phaseC().voltage; // for JSY-333
+      float p = data.aggregate().activePower; // for JSY-333
+    }
+  });
 }
 
 void loop() {
   if (jsy.read()) {
-    float v = jsy.data.single().voltage; // for JSY1031, JSY-163, JSY-227, JSY-229
-
-    float v1 = jsy.data.channel1().voltage; // for JSY-193 and JSY-194
-    float v2 = jsy.data.channel2().voltage; // for JSY-193 and JSY-194
-
-    float vA = jsy.data.phaseA().voltage; // for JSY-333
-    float vB = jsy.data.phaseB().voltage; // for JSY-333
-    float vC = jsy.data.phaseC().voltage; // for JSY-333
-    float p = jsy.data.aggregate().activePower; // for JSY-333
+    // ...
   }
   delay(4000);
 }
@@ -248,16 +256,22 @@ jsy.begin(Serial2, RX2, TX2, Mycila::JSY::BaudRate::UNKNOWN, MYCILA_JSY_MK_227, 
 
 ```c++
 Mycila::JSY jsy;
+Mycila::JSY::Data jsyData;
 
 void setup() {
   jsy.begin(Serial2, RX2, TX2);
+  jsy.setCallback([](Mycila::JSY::EventType eventType, const Mycila::JSY::Data& data) {
+    if (eventType == Mycila::JSY::EventType::EVT_READ && jsyData != data) {
+      jsyData = data;
+    }
+  });
 }
 
 void loop() {
   jsy.read();
 
   // access values
-  float v = jsy.data.single().voltage;
+  float v = jsyData.single().voltage;
 
   delay(1000);
 }
@@ -267,14 +281,20 @@ void loop() {
 
 ```c++
 Mycila::JSY jsy;
+Mycila::JSY::Data jsyData;
 
 void setup() {
   jsy.begin(Serial2, RX2, TX2, true);
+  jsy.setCallback([](Mycila::JSY::EventType eventType, const Mycila::JSY::Data& data) {
+    if (eventType == Mycila::JSY::EventType::EVT_READ && jsyData != data) {
+      jsyData = data;
+    }
+  });
 }
 
 void loop() {
   // access values
-  float v = jsy.data.single().voltage;
+  float v = jsyData.single().voltage;
 }
 ```
 
@@ -323,14 +343,11 @@ Set the flag: `-D MYCILA_JSY_DEBUG` and you will see all the JSY requests and re
 Reading a load for 2 second after it is turned on:
 
 ```c++
-  jsy.setCallback([](const Mycila::JSY::EventType eventType) {
+  jsy.setCallback([](const Mycila::JSY::EventType eventType, const Mycila::JSY::Data& data) {
     int64_t now = esp_timer_get_time();
     switch (eventType) {
       case Mycila::JSY::EventType::EVT_READ:
         Serial.printf(" - %" PRId64 " EVT_READ\n", now);
-        break;
-      case Mycila::JSY::EventType::EVT_CHANGE:
-        Serial.printf(" - %" PRId64 " EVT_CHANGE: %f W\n", now, jsy.getActivePower2());
         break;
       default:
         Serial.printf(" - %" PRId64 " ERR\n", now);

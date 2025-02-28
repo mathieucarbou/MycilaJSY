@@ -7,7 +7,6 @@
 #include <HardwareSerial.h>
 
 #include <mutex>
-#include <shared_mutex>
 
 #ifdef MYCILA_JSON_SUPPORT
   #include <ArduinoJson.h>
@@ -106,8 +105,6 @@ namespace Mycila {
       enum class EventType {
         // JSY has successfully read the data
         EVT_READ,
-        // JSY has successfully read the data and the values have changed
-        EVT_CHANGE,
         // wrong data received when reading values
         EVT_READ_ERROR,
         // timeout reached when reading values
@@ -331,10 +328,9 @@ namespace Mycila {
         private:
           friend class JSY;
           Metrics _metrics[3];
-          mutable std::shared_mutex _mutexData;
       };
 
-      typedef std::function<void(EventType eventType)> Callback;
+      typedef std::function<void(EventType eventType, const Data& data)> Callback;
 
       ~JSY() { end(); }
 
@@ -563,22 +559,16 @@ namespace Mycila {
       uint32_t getTime() const { return _time; }
 
       // check if the device is connected to the grid, meaning if last read was successful
-      bool isConnected() const { return data.aggregate.frequency > 0; }
+      bool isConnected() const { return _data.aggregate.frequency > 0; }
 
       void setCallback(Callback callback) { _callback = callback; }
-
-    public:
-      /**
-       * @brief Access the runtime JSY data.
-       */
-      Data data;
 
     private:
       Callback _callback = nullptr;
       gpio_num_t _pinRX = GPIO_NUM_NC;
       gpio_num_t _pinTX = GPIO_NUM_NC;
       HardwareSerial* _serial = nullptr;
-      std::timed_mutex _mutexOp;
+      std::mutex _mutex;
       TaskHandle_t _taskHandle;
       uint32_t _time = 0;
       uint32_t _pause = MYCILA_JSY_ASYNC_READ_PAUSE_MS;
@@ -591,6 +581,7 @@ namespace Mycila {
       // biggest need is for JSY-MK-333: 102 registers of 2 bytes each + 5 bytes for the response: 209 bytes
       // we use 14 blocks of 16 bytes: 224 bytes
       uint8_t _buffer[224];
+      Data _data;
 
     private:
       enum class ReadResult {
