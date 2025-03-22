@@ -7,11 +7,11 @@
 #endif
 #if SOC_UART_HP_NUM < 3
   #define Serial2 Serial1
-  #define RX2 RX1
-  #define TX2 TX1
+  #define RX2     RX1
+  #define TX2     TX1
 #endif
 
-Mycila::JSY jsy;
+static Mycila::JSY jsy;
 
 void setup() {
   Serial.begin(115200);
@@ -22,6 +22,15 @@ void setup() {
   while (!Serial)
     yield();
 #endif
+
+  jsy.setCallback([](const Mycila::JSY::EventType& event, const Mycila::JSY::Data& data) {
+    if (event == Mycila::JSY::EventType::EVT_READ) {
+      JsonDocument doc;
+      data.toJson(doc.to<JsonObject>());
+      serializeJson(doc, Serial);
+      Serial.println();
+    }
+  });
 
   // read JSY on pins 17 (JSY RX / Serial TX) and 16 (JSY TX / Serial RX)
   // baud rate will be detected automatically
@@ -38,15 +47,7 @@ void setup() {
 }
 
 void loop() {
-  uint32_t now = millis();
-  if (jsy.read()) {
-    Serial.printf("JSY read in %" PRIu32 " ms\n", (uint32_t)(millis() - now));
-    JsonDocument doc;
-    jsy.toJson(doc.to<JsonObject>());
-    serializeJson(doc, Serial);
-    Serial.println();
-  } else {
-    Serial.printf("Failed to read JSY. Elapsed time: %" PRIu32 " ms\n", (uint32_t)(millis() - now));
-  }
+  if (!jsy.read())
+    Serial.printf("Failed to read JSY\n");
   delay(4000);
 }
