@@ -365,12 +365,13 @@ static constexpr size_t JSY_REQUEST_SWITCH_MODE_LEN = sizeof(JSY_REQUEST_SWITCH_
 ///////////////////////////////////////////////////////////////////////////////
 
 static constexpr Mycila::JSY::BaudRate BAUD_RATES[] = {
-  Mycila::JSY::BaudRate::BAUD_38400,
-  Mycila::JSY::BaudRate::BAUD_19200,
-  Mycila::JSY::BaudRate::BAUD_9600,
-  Mycila::JSY::BaudRate::BAUD_4800,
+  Mycila::JSY::BaudRate::BAUD_1200,
   Mycila::JSY::BaudRate::BAUD_2400,
-  Mycila::JSY::BaudRate::BAUD_1200};
+  Mycila::JSY::BaudRate::BAUD_4800,
+  Mycila::JSY::BaudRate::BAUD_9600,
+  Mycila::JSY::BaudRate::BAUD_19200,
+  Mycila::JSY::BaudRate::BAUD_38400,
+};
 static constexpr size_t BAUD_RATES_COUNT = 6;
 
 ///////////////////////////////////////////////////////////////////////////////
