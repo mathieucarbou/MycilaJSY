@@ -364,15 +364,15 @@ static constexpr size_t JSY_REQUEST_SWITCH_MODE_LEN = sizeof(JSY_REQUEST_SWITCH_
 // Bauds
 ///////////////////////////////////////////////////////////////////////////////
 
-static constexpr Mycila::JSY::BaudRate BAUD_RATES[] = {
-  Mycila::JSY::BaudRate::BAUD_1200,
-  Mycila::JSY::BaudRate::BAUD_2400,
-  Mycila::JSY::BaudRate::BAUD_4800,
-  Mycila::JSY::BaudRate::BAUD_9600,
-  Mycila::JSY::BaudRate::BAUD_19200,
-  Mycila::JSY::BaudRate::BAUD_38400,
+static constexpr Mycila::JSY::BaudRate AUTO_DETECT_BAUD_RATES[] = {
+  Mycila::JSY::BaudRate::BAUD_4800,  // default value for some JSY
+  Mycila::JSY::BaudRate::BAUD_9600,  // default value for some JSY
+  Mycila::JSY::BaudRate::BAUD_19200, // supported speed for some JSY
+  Mycila::JSY::BaudRate::BAUD_38400, // supported speed for some JSY
+  Mycila::JSY::BaudRate::BAUD_1200,  // supported speed for some JSY but slower - will probably never be used
+  Mycila::JSY::BaudRate::BAUD_2400,  // supported speed for some JSY but slower - will probably never be used
 };
-static constexpr size_t BAUD_RATES_COUNT = 6;
+static constexpr size_t AUTO_DETECT_BAUD_RATES_COUNT = 6;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CRC16 Table
@@ -1554,8 +1554,8 @@ void Mycila::JSY::_openSerial(BaudRate baudRate) {
 }
 
 Mycila::JSY::BaudRate Mycila::JSY::_detectBauds(const uint8_t address) {
-  for (int i = 0; i < BAUD_RATES_COUNT * 2; i++) {
-    BaudRate baudRate = BAUD_RATES[i % BAUD_RATES_COUNT];
+  for (int i = 0; i < AUTO_DETECT_BAUD_RATES_COUNT * 2; i++) {
+    BaudRate baudRate = AUTO_DETECT_BAUD_RATES[i % AUTO_DETECT_BAUD_RATES_COUNT];
     LOGD(TAG, "find(0x%02X) %" PRIu32 " bauds", address, baudRate);
     _openSerial(baudRate);
     for (int j = 0; j < MYCILA_JSY_RETRY_COUNT; j++) {
