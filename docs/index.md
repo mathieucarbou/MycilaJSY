@@ -168,7 +168,7 @@ For each phase (A, B and C):
 Make sure to use that in your `platformio.ini`:
 
 ```ini
-platform = https://github.com/pioarduino/platform-espressif32/releases/download/53.03.13/platform-espressif32.zip
+platform = https://github.com/pioarduino/platform-espressif32/releases/download/54.03.20/platform-espressif32.zip
 
 build_flags =
   -std=c++17
