@@ -231,101 +231,6 @@ static volatile uint32_t dataRate = 0;
 
 static Mycila::Task jsyTask("JSY", [](void* params) { jsy.read(); });
 
-static Mycila::Task jsySetupTask("JSY-SETUP", Mycila::Task::Type::ONCE, [](void* params) {
-  jsy.begin(MYCILA_JSY_SERIAL, MYCILA_JSY_RX, MYCILA_JSY_TX);
-  if (jsy.isEnabled() && jsy.getBaudRate() != jsy.getMaxAvailableBaudRate())
-    jsy.setBaudRate(jsy.getMaxAvailableBaudRate());
-
-  jsyModel = jsy.getModel();
-
-  if (jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
-    dashboard.remove(jsy163Frequency);
-    dashboard.remove(jsy163Voltage);
-    dashboard.remove(jsy163current);
-    dashboard.remove(jsy163PowerFactor);
-    dashboard.remove(jsy163ActivePower);
-    dashboard.remove(jsy163ApparentPower);
-    dashboard.remove(jsy163ReactivePower);
-    dashboard.remove(jsy163ActiveEnergy);
-    dashboard.remove(jsy163ActiveEnergyImported);
-    dashboard.remove(jsy163ActiveEnergyReturned);
-    dashboard.remove(jsy163ActivePowerHistory);
-  }
-
-  if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
-    dashboard.remove(jsy194Channel1Frequency);
-    dashboard.remove(jsy194Channel1Voltage);
-    dashboard.remove(jsy194Channel1Current);
-    dashboard.remove(jsy194Channel1PowerFactor);
-    dashboard.remove(jsy194Channel1ActivePower);
-    dashboard.remove(jsy194Channel1ApparentPower);
-    dashboard.remove(jsy194Channel1ReactivePower);
-    dashboard.remove(jsy194Channel1ActiveEnergy);
-    dashboard.remove(jsy194Channel1ActiveEnergyImported);
-    dashboard.remove(jsy194Channel1ActiveEnergyReturned);
-    dashboard.remove(jsy194Channel2Frequency);
-    dashboard.remove(jsy194Channel2Voltage);
-    dashboard.remove(jsy194Channel2Current);
-    dashboard.remove(jsy194Channel2PowerFactor);
-    dashboard.remove(jsy194Channel2ActivePower);
-    dashboard.remove(jsy194Channel2ApparentPower);
-    dashboard.remove(jsy194Channel2ReactivePower);
-    dashboard.remove(jsy194Channel2ActiveEnergy);
-    dashboard.remove(jsy194Channel2ActiveEnergyImported);
-    dashboard.remove(jsy194Channel2ActiveEnergyReturned);
-    dashboard.remove(jsy194Channel1ActivePowerHistory);
-    dashboard.remove(jsy194Channel2ActivePowerHistory);
-  }
-
-  if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
-    dashboard.remove(jsy333PhaseAFrequency);
-    dashboard.remove(jsy333PhaseAVoltage);
-    dashboard.remove(jsy333PhaseACurrent);
-    dashboard.remove(jsy333PhaseAPowerFactor);
-    dashboard.remove(jsy333PhaseAActivePower);
-    dashboard.remove(jsy333PhaseAApparentPower);
-    dashboard.remove(jsy333PhaseAReactivePower);
-    dashboard.remove(jsy333PhaseAActiveEnergy);
-    dashboard.remove(jsy333PhaseAActiveEnergyImported);
-    dashboard.remove(jsy333PhaseAActiveEnergyReturned);
-    dashboard.remove(jsy333PhaseAReactiveEnergy);
-    dashboard.remove(jsy333PhaseAReactiveEnergyImported);
-    dashboard.remove(jsy333PhaseAReactiveEnergyReturned);
-    dashboard.remove(jsy333PhaseAApparentEnergy);
-    dashboard.remove(jsy333PhaseBFrequency);
-    dashboard.remove(jsy333PhaseBVoltage);
-    dashboard.remove(jsy333PhaseBCurrent);
-    dashboard.remove(jsy333PhaseBPowerFactor);
-    dashboard.remove(jsy333PhaseBActivePower);
-    dashboard.remove(jsy333PhaseBApparentPower);
-    dashboard.remove(jsy333PhaseBReactivePower);
-    dashboard.remove(jsy333PhaseBActiveEnergy);
-    dashboard.remove(jsy333PhaseBActiveEnergyImported);
-    dashboard.remove(jsy333PhaseBActiveEnergyReturned);
-    dashboard.remove(jsy333PhaseBReactiveEnergy);
-    dashboard.remove(jsy333PhaseBReactiveEnergyImported);
-    dashboard.remove(jsy333PhaseBReactiveEnergyReturned);
-    dashboard.remove(jsy333PhaseBApparentEnergy);
-    dashboard.remove(jsy333PhaseCFrequency);
-    dashboard.remove(jsy333PhaseCVoltage);
-    dashboard.remove(jsy333PhaseCCurrent);
-    dashboard.remove(jsy333PhaseCPowerFactor);
-    dashboard.remove(jsy333PhaseCActivePower);
-    dashboard.remove(jsy333PhaseCApparentPower);
-    dashboard.remove(jsy333PhaseCReactivePower);
-    dashboard.remove(jsy333PhaseCActiveEnergy);
-    dashboard.remove(jsy333PhaseCActiveEnergyImported);
-    dashboard.remove(jsy333PhaseCActiveEnergyReturned);
-    dashboard.remove(jsy333PhaseCReactiveEnergy);
-    dashboard.remove(jsy333PhaseCReactiveEnergyImported);
-    dashboard.remove(jsy333PhaseCReactiveEnergyReturned);
-    dashboard.remove(jsy333PhaseCApparentEnergy);
-    dashboard.remove(jsy333PhaseAActivePowerHistory);
-    dashboard.remove(jsy333PhaseBActivePowerHistory);
-    dashboard.remove(jsy333PhaseCActivePowerHistory);
-  }
-});
-
 static Mycila::Task networkManagerTask("ESPConnect", [](void* params) { espConnect.loop(); });
 
 static Mycila::Task networkUpTask("Network UP", Mycila::Task::Type::ONCE, [](void* params) {
@@ -544,7 +449,6 @@ void setup() {
   dashboardTask.setEnabledWhen([]() { return espConnect.isConnected() && !dashboard.isAsyncAccessInProgress(); });
   dashboardTask.setInterval(1000);
   jsyTask.setEnabledWhen([]() { return jsy.isEnabled(); });
-  jsyTaskManager.addTask(jsySetupTask);
   jsyTaskManager.addTask(jsyTask);
   coreTaskManager.addTask(dashboardTask);
   coreTaskManager.addTask(networkManagerTask);
@@ -645,7 +549,6 @@ void setup() {
         break;
       case Mycila::ESPConnect::State::AP_STARTED:
         logger.info(TAG, "Access Point %s started with IP address %s", espConnect.getWiFiSSID().c_str(), espConnect.getIPAddress().toString().c_str());
-        jsySetupTask.resume();
         networkUpTask.resume();
         break;
       case Mycila::ESPConnect::State::NETWORK_CONNECTING:
@@ -653,7 +556,6 @@ void setup() {
         break;
       case Mycila::ESPConnect::State::NETWORK_CONNECTED:
         logger.info(TAG, "Connected with IP address %s", espConnect.getIPAddress().toString().c_str());
-        jsySetupTask.resume();
         networkUpTask.resume();
         break;
       case Mycila::ESPConnect::State::NETWORK_TIMEOUT:
@@ -759,6 +661,100 @@ void setup() {
     dataRateBuffer.add(packetSize);
     dataRate = diff == 0 ? 0 : dataRateBuffer.sum() / diff;
   });
+
+  jsy.begin(MYCILA_JSY_SERIAL, MYCILA_JSY_RX, MYCILA_JSY_TX);
+
+  if (jsy.isEnabled() && jsy.getBaudRate() != jsy.getMaxAvailableBaudRate())
+    jsy.setBaudRate(jsy.getMaxAvailableBaudRate());
+
+  jsyModel = jsy.getModel();
+
+  if (jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
+    dashboard.remove(jsy163Frequency);
+    dashboard.remove(jsy163Voltage);
+    dashboard.remove(jsy163current);
+    dashboard.remove(jsy163PowerFactor);
+    dashboard.remove(jsy163ActivePower);
+    dashboard.remove(jsy163ApparentPower);
+    dashboard.remove(jsy163ReactivePower);
+    dashboard.remove(jsy163ActiveEnergy);
+    dashboard.remove(jsy163ActiveEnergyImported);
+    dashboard.remove(jsy163ActiveEnergyReturned);
+    dashboard.remove(jsy163ActivePowerHistory);
+  }
+
+  if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_333 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
+    dashboard.remove(jsy194Channel1Frequency);
+    dashboard.remove(jsy194Channel1Voltage);
+    dashboard.remove(jsy194Channel1Current);
+    dashboard.remove(jsy194Channel1PowerFactor);
+    dashboard.remove(jsy194Channel1ActivePower);
+    dashboard.remove(jsy194Channel1ApparentPower);
+    dashboard.remove(jsy194Channel1ReactivePower);
+    dashboard.remove(jsy194Channel1ActiveEnergy);
+    dashboard.remove(jsy194Channel1ActiveEnergyImported);
+    dashboard.remove(jsy194Channel1ActiveEnergyReturned);
+    dashboard.remove(jsy194Channel2Frequency);
+    dashboard.remove(jsy194Channel2Voltage);
+    dashboard.remove(jsy194Channel2Current);
+    dashboard.remove(jsy194Channel2PowerFactor);
+    dashboard.remove(jsy194Channel2ActivePower);
+    dashboard.remove(jsy194Channel2ApparentPower);
+    dashboard.remove(jsy194Channel2ReactivePower);
+    dashboard.remove(jsy194Channel2ActiveEnergy);
+    dashboard.remove(jsy194Channel2ActiveEnergyImported);
+    dashboard.remove(jsy194Channel2ActiveEnergyReturned);
+    dashboard.remove(jsy194Channel1ActivePowerHistory);
+    dashboard.remove(jsy194Channel2ActivePowerHistory);
+  }
+
+  if (jsyModel == MYCILA_JSY_MK_163 || jsyModel == MYCILA_JSY_MK_194 || jsyModel == MYCILA_JSY_MK_UNKNOWN) {
+    dashboard.remove(jsy333PhaseAFrequency);
+    dashboard.remove(jsy333PhaseAVoltage);
+    dashboard.remove(jsy333PhaseACurrent);
+    dashboard.remove(jsy333PhaseAPowerFactor);
+    dashboard.remove(jsy333PhaseAActivePower);
+    dashboard.remove(jsy333PhaseAApparentPower);
+    dashboard.remove(jsy333PhaseAReactivePower);
+    dashboard.remove(jsy333PhaseAActiveEnergy);
+    dashboard.remove(jsy333PhaseAActiveEnergyImported);
+    dashboard.remove(jsy333PhaseAActiveEnergyReturned);
+    dashboard.remove(jsy333PhaseAReactiveEnergy);
+    dashboard.remove(jsy333PhaseAReactiveEnergyImported);
+    dashboard.remove(jsy333PhaseAReactiveEnergyReturned);
+    dashboard.remove(jsy333PhaseAApparentEnergy);
+    dashboard.remove(jsy333PhaseBFrequency);
+    dashboard.remove(jsy333PhaseBVoltage);
+    dashboard.remove(jsy333PhaseBCurrent);
+    dashboard.remove(jsy333PhaseBPowerFactor);
+    dashboard.remove(jsy333PhaseBActivePower);
+    dashboard.remove(jsy333PhaseBApparentPower);
+    dashboard.remove(jsy333PhaseBReactivePower);
+    dashboard.remove(jsy333PhaseBActiveEnergy);
+    dashboard.remove(jsy333PhaseBActiveEnergyImported);
+    dashboard.remove(jsy333PhaseBActiveEnergyReturned);
+    dashboard.remove(jsy333PhaseBReactiveEnergy);
+    dashboard.remove(jsy333PhaseBReactiveEnergyImported);
+    dashboard.remove(jsy333PhaseBReactiveEnergyReturned);
+    dashboard.remove(jsy333PhaseBApparentEnergy);
+    dashboard.remove(jsy333PhaseCFrequency);
+    dashboard.remove(jsy333PhaseCVoltage);
+    dashboard.remove(jsy333PhaseCCurrent);
+    dashboard.remove(jsy333PhaseCPowerFactor);
+    dashboard.remove(jsy333PhaseCActivePower);
+    dashboard.remove(jsy333PhaseCApparentPower);
+    dashboard.remove(jsy333PhaseCReactivePower);
+    dashboard.remove(jsy333PhaseCActiveEnergy);
+    dashboard.remove(jsy333PhaseCActiveEnergyImported);
+    dashboard.remove(jsy333PhaseCActiveEnergyReturned);
+    dashboard.remove(jsy333PhaseCReactiveEnergy);
+    dashboard.remove(jsy333PhaseCReactiveEnergyImported);
+    dashboard.remove(jsy333PhaseCReactiveEnergyReturned);
+    dashboard.remove(jsy333PhaseCApparentEnergy);
+    dashboard.remove(jsy333PhaseAActivePowerHistory);
+    dashboard.remove(jsy333PhaseBActivePowerHistory);
+    dashboard.remove(jsy333PhaseCActivePowerHistory);
+  }
 
   coreTaskManager.asyncStart(512 * 8, 5, 1, 100, false);
   jsyTaskManager.asyncStart(512 * 8, 5, 1, 100, false);
