@@ -97,20 +97,20 @@ The default GPIO for `Serial2` are:
 
 | Board               | Serial2 RX (JSY TX) | Serial2 TX (JSY RX) |
 | :------------------ | :-----------------: | :-----------------: |
+| denky_d4            |         22          |         21          |
 | esp32-c3-devkitc-02 |         18          |         19          |
 | esp32-c6-devkitc-1  |          4          |          5          |
+| esp32-gateway       |         16          |         17          |
 | esp32-poe           |         35          |         33          |
-| esp32-s2-saola-1    |          4          |          5          |
-| esp32-s3-devkitc-1  |         19          |         20          |
-| esp32dev            |          4          |         25          |
+| esp32-s2-saola-1    |         18          |         17          |
+| esp32-s3-devkitc-1  |         16          |         17          |
+| esp32dev            |         16          |         17          |
 | esp32s3box          |         19          |         20          |
-| nodemcu-32s         |          4          |         25          |
-| wt32-eth01          |          4          |         25          |
-| esp32-poe           |         35          |         33          |
-| esp32-gateway       |          4          |         25          |
-| wipy3               |          4          |         25          |
+| lilygo_eth_lite_s3  |         17          |         18          |
+| nodemcu-32s         |         16          |         17          |
 | tinypico            |          4          |         25          |
-| denky_d4            |          4          |         25          |
+| wipy3               |          4          |         25          |
+| wt32-eth01          |          5          |         17          |
 
 **Electric wiring for JSY boards with 2 channels:**
 

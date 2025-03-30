@@ -138,17 +138,19 @@ jobs:
       matrix:
         board:
           [
-            # "denky_d4",
+            "denky_d4",
             "esp32-c3-devkitc-02",
             "esp32-c6-devkitc-1",
-            "esp32-gateway",
+            "esp32_gateway_rev_e",
+            "esp32_gateway_rev_f",
             "esp32-poe-iso",
             "esp32-poe",
             "esp32-s2-saola-1",
             "esp32-s3-devkitc-1",
-            # "esp32-solo1",
             "esp32dev",
             "esp32s3box",
+            "lilygo_eth_lite_s3",
+            "nodemcu-32s",
             "tinypico",
             "wipy3",
             "wt32-eth01"
@@ -177,9 +179,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install --upgrade platformio
-          PIO_BOARD=${{ matrix.board }} pio run -e ci -d examples/RemoteUDP/Sender
-          cp examples/RemoteUDP/Sender/.pio/build/ci/firmware.bin ./JSYRemoteUDPSender-${{ matrix.board }}.OTA.bin
-          cp examples/RemoteUDP/Sender/.pio/build/ci/firmware.factory.bin ./JSYRemoteUDPSender-${{ matrix.board }}.FACTORY.bin
+          pio run -e ${{ matrix.board }} -d examples/RemoteUDP/Sender
+          cp examples/RemoteUDP/Sender/.pio/build/${{ matrix.board }}/firmware.bin ./JSYRemoteUDPSender-${{ matrix.board }}.OTA.bin
+          cp examples/RemoteUDP/Sender/.pio/build/${{ matrix.board }}/firmware.factory.bin ./JSYRemoteUDPSender-${{ matrix.board }}.FACTORY.bin
 
       - name: Upload
         uses: actions/upload-artifact@v4
