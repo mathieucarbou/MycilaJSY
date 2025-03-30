@@ -1,6 +1,6 @@
 {
   "name": "MycilaJSY",
-  "version": "15.0.2",
+  "version": "15.0.3",
   "description": "Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333 families single-phase and three-phase AC bidirectional meters from Shenzhen Jiansiyan Technologies Co, Ltd.",
   "keywords": "JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY-MK-227, JSY-MK-229, JSY-MK-333",
   "homepage": "https://github.com/mathieucarbou/MycilaJSY",
