@@ -93,7 +93,7 @@ To update the firmware through OTA, please follow these steps:
 
 After the application is flashed, it will restart and you will see a log line in the Serial console telling you the RX and TX pins used for the JSY.
 
-The default GPIO for `Serial2` are:
+The default GPIO are:
 
 | Board               | Serial2 RX (JSY TX) | Serial2 TX (JSY RX) |
 | :------------------ | :-----------------: | :-----------------: |
