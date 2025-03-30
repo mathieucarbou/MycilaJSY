@@ -533,8 +533,8 @@ void setup() {
   logger.warn(TAG, "Booting " MYCILA_APP_NAME "...");
 
   // system
+  disableLoopWDT();
   Mycila::System::init();
-  Mycila::TaskManager::configureWDT(10, true);
 
   // config
   preferences.begin("jsy", false);
@@ -760,7 +760,7 @@ void setup() {
     dataRate = diff == 0 ? 0 : dataRateBuffer.sum() / diff;
   });
 
-  coreTaskManager.asyncStart(512 * 8, 5, 1, 100, true);
+  coreTaskManager.asyncStart(512 * 8, 5, 1, 100, false);
   jsyTaskManager.asyncStart(512 * 8, 5, 1, 100, false);
 
   logger.info(TAG, "Started " MYCILA_APP_NAME "!");
