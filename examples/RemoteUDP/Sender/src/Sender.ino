@@ -574,7 +574,7 @@ void setup() {
         logger.info(TAG, "Captive Portal started at %s with IP address %s", espConnect.getWiFiSSID().c_str(), espConnect.getIPAddress().toString().c_str());
         break;
       case Mycila::ESPConnect::State::PORTAL_COMPLETE: {
-        if (espConnect.hasConfiguredAPMode()) {
+        if (espConnect.getConfig().apMode) {
           logger.info(TAG, "Captive Portal: Access Point configured");
         } else {
           logger.info(TAG, "Captive Portal: WiFi configured");
