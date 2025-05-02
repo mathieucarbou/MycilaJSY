@@ -117,10 +117,10 @@ static dash::StatisticValue networkWiFiSignal(dashboard, "Network WiFi Signal");
 static dash::StatisticValue uptime(dashboard, "Uptime");
 static dash::StatisticValue version(dashboard, "Version");
 
-static dash::SwitchCard publishDataCard(dashboard, "Publish Data");
-static dash::SwitchCard restart(dashboard, "Restart");
-static dash::SwitchCard energyReset(dashboard, "Reset Energy");
-static dash::SwitchCard reset(dashboard, "Factory Reset");
+static dash::ToggleButtonCard publishDataCard(dashboard, "Publish Data");
+static dash::ToggleButtonCard restart(dashboard, "Restart");
+static dash::ToggleButtonCard energyReset(dashboard, "Reset Energy");
+static dash::ToggleButtonCard reset(dashboard, "Factory Reset");
 
 static dash::GenericCard jsyModelCard(dashboard, "Model");
 static dash::GenericCard<float, 2> messageRateCard(dashboard, "Message Rate", "msg/s");
