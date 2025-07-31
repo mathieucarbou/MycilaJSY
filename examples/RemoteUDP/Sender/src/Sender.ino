@@ -72,9 +72,9 @@
 
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
 #include <AsyncTCP.h>             // https://github.com/ESP32Async/AsyncTCP
+#include <ElegantOTA.h>           // https://github.com/ayushsharma82/ElegantOTA
 #include <ESPAsyncWebServer.h>    // https://github.com/ESP32Async/ESPAsyncWebServer
-#include <ESPDash.h>              // https://github.com/mathieucarbou/ayushsharma82-ESP-dASH#dev-v5
-#include <ElegantOTA.h>           // https://github.com/mathieucarbou/ayushsharma82-ElegantOTA#dev
+#include <ESPDash.h>              // https://github.com/ayushsharma82/ESP-DASH
 #include <FastCRC32.h>            // https://github.com/RobTillaart/CRC
 #include <MycilaCircularBuffer.h> // https://github.com/mathieucarbou/MycilaUtilities
 #include <MycilaESPConnect.h>     // https://github.com/mathieucarbou/MycilaESPConnect
