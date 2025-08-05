@@ -100,6 +100,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade platformio
           pip install --upgrade intelhex
+          pip install --upgrade rich_click
 
       - name: Build Read
         run: PLATFORMIO_SRC_DIR="examples/Read" PIO_BOARD=${{ matrix.board }} pio run -e ${{ matrix.env }}
@@ -181,6 +182,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade platformio
           pip install --upgrade intelhex
+          pip install --upgrade rich_click
           pio run -e ${{ matrix.board }} -d examples/RemoteUDP/Sender
           cp examples/RemoteUDP/Sender/.pio/build/${{ matrix.board }}/firmware.bin ./JSYRemoteUDPSender-${{ matrix.board }}.OTA.bin
           cp examples/RemoteUDP/Sender/.pio/build/${{ matrix.board }}/firmware.factory.bin ./JSYRemoteUDPSender-${{ matrix.board }}.FACTORY.bin
