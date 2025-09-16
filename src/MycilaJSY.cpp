@@ -737,11 +737,14 @@ void Mycila::JSY::end() {
       // JSY takes at least 40-160 ms to finish a read
       delay(50);
     }
+    std::lock_guard<std::mutex> lock(_mutex);
+    LOGD(TAG, "Closing Serial for JSY @ 0x%02X", _destinationAddress);
+    _serial->end();
+    _serial = nullptr;
     _baudRate = BaudRate::UNKNOWN;
     _lastAddress = MYCILA_JSY_ADDRESS_UNKNOWN;
     _model = MYCILA_JSY_MK_UNKNOWN;
     _data.clear();
-    _serial->end();
   }
 }
 
