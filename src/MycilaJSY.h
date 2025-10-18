@@ -303,6 +303,8 @@ namespace Mycila {
           const Metrics& channel1() const { return _metrics[0]; }
           // JSY-MK-194 (channel 2)
           const Metrics& channel2() const { return _metrics[1]; }
+          // generic channel access: 0 = channel1, 1 = channel2
+          const Metrics& channel(size_t index) const { return _metrics[index]; }
 
           // JSY-MK-333 (phase A)
           const Metrics& phaseA() const { return _metrics[0]; }
@@ -310,6 +312,8 @@ namespace Mycila {
           const Metrics& phaseB() const { return _metrics[1]; }
           // JSY-MK-333 (phase C)
           const Metrics& phaseC() const { return _metrics[2]; }
+          // generic phase access: 0 = phaseA, 1 = phaseB, 2 = phaseC
+          const Metrics& phase(size_t index) const { return _metrics[index]; }
 
           // clear all values
           void clear();
