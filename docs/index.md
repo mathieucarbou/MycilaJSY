@@ -517,7 +517,7 @@ Screenshot of the ESP32 running the JSY app called the `Sender`:
 
 ![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/3066bf12-31d5-45de-9303-d810f14731d0)
 
-[Click here for the download and installation instructions of the JSY Remote UDP Sender](https://github.com/mathieucarbou/MycilaJSY/tree/main/examples/RemoteUDP)
+[Click here for the download and installation instructions of the JSY Remote UDP Sender](https://github.com/mathieucarbou/MycilaJSYApp)
 
 **Wiring for JSY boards with 2 channels:**
 
