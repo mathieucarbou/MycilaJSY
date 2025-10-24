@@ -34,7 +34,7 @@ Arduino / ESP32 library for the JSY1031, JSY-MK-163, JSY-MK-193, JSY-MK-194, JSY
   - [JSON Support](#json-support)
   - [Debugging](#debugging)
   - [Callbacks](#callbacks)
-- [Remote JSY](#remote-jsy)
+- [Remote JSY with Mycila JSY App](#remote-jsy-with-mycila-jsy-app)
 - [Zero-Cross Detection](#zero-cross-detection)
 - [Boxes and 3D models](#boxes-and-3d-models)
 - [Performance tests](#performance-tests)
@@ -508,16 +508,16 @@ jsy.read() at 38400 bauds:
  - 14969706 EVT_READ
 ```
 
-## Remote JSY
+## Remote JSY with Mycila JSY App
 
 The JSY can be used connected to an ESP32 to send the JSY data several times per second to a remote server through UDP.
 Both devices needs to be connected to the same network and UDP packets must be allowed.
 
 Screenshot of the ESP32 running the JSY app called the `Sender`:
 
-![](https://github.com/mathieucarbou/MycilaJSY/assets/61346/3066bf12-31d5-45de-9303-d810f14731d0)
+[![](https://mathieu.carbou.me/MycilaJSYApp/screenshot.png)](https://mathieu.carbou.me/MycilaJSYApp/screenshot.png)
 
-[Click here for the download and installation instructions of the JSY Remote UDP Sender](https://github.com/mathieucarbou/MycilaJSYApp)
+[Click here for the download and installation instructions of the Mycila JSY App](https://github.com/mathieucarbou/MycilaJSYApp)
 
 **Wiring for JSY boards with 2 channels:**
 
