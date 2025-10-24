@@ -70,6 +70,8 @@ Also read the blog article: **[Everything on le JSY](https://yasolr.carbou.me/bl
 - [JSY-MK-227 (RS485) and JSY-MK-229 (RS485)](#jsy-mk-227-rs485-and-jsy-mk-229-rs485)
 - [JSY-MK-333 (TTL) and JSY-MK-333G (RS485)](#jsy-mk-333-ttl-and-jsy-mk-333g-rs485)
 
+Note: models working on RS485 interface needs a RS485 to TTL converter to be used on the UART interface of the ESP32 (Serial).
+
 ### JSY1031 (AC and DC, TTL interface)
 
 - `activeEnergy`
