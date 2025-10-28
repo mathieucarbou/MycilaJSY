@@ -4,7 +4,7 @@
  */
 #include "MycilaJSY.h"
 
-static constexpr float DEG_TO_RAD_F = static_cast<float>(DEG_TO_RAD);
+static constexpr float DEG_TO_RAD_F = static_cast<float>(3.14159265358979323846 / 180.0);
 
 float Mycila::JSY::Metrics::thdi(float phi) const {
   if (powerFactor == 0)
