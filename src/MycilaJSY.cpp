@@ -774,15 +774,15 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
 
     case MYCILA_JSY_MK_333: {
       // signs
-      // _buffer[203] unused
-      // _buffer[204] bit 7: sign of total reactive power
-      // _buffer[204] bit 6: sign of phase C reactive power
-      // _buffer[204] bit 5: sign of phase B reactive power
-      // _buffer[204] bit 4: sign of phase A reactive power
-      // _buffer[204] bit 3: sign of total active power
-      // _buffer[204] bit 2: sign of phase C active power
-      // _buffer[204] bit 1: sign of phase B active power
-      // _buffer[204] bit 0: sign of phase A active power
+      // _buffer[103] unused
+      // _buffer[104] bit 7: sign of total reactive power
+      // _buffer[104] bit 6: sign of phase C reactive power
+      // _buffer[104] bit 5: sign of phase B reactive power
+      // _buffer[104] bit 4: sign of phase A reactive power
+      // _buffer[104] bit 3: sign of total active power
+      // _buffer[104] bit 2: sign of phase C active power
+      // _buffer[104] bit 1: sign of phase B active power
+      // _buffer[104] bit 0: sign of phase A active power
       uint8_t sign7 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x80;
       uint8_t sign6 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x40;
       uint8_t sign5 = _register8(_buffer, registerStart, registerSize, JSY_333_REGISTER_POWER_SIGNS, 1) & 0x20;
@@ -824,7 +824,7 @@ bool Mycila::JSY::_read(const uint8_t address, uint16_t model) {
       _data._metrics[1].reactivePower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_POWER) * (sign5 ? -1.0f : 1.0f);
       _data._metrics[1].apparentPower = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_APPARENT_POWER);
       _data._metrics[1].powerFactor = _register16(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_POWER_FACTOR) * 0.001f;
-      _data._metrics[1].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY) * 0.01f;
+      _data._metrics[1].activeEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY) * 10;
       _data._metrics[1].reactiveEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_REACTIVE_ENERGY) * 10;
       _data._metrics[1].apparentEnergy = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_APPARENT_ENERGY) * 10;
       _data._metrics[1].activeEnergyImported = _register32(_buffer, registerStart, registerSize, JSY_333_REGISTER_PHASE_B_ACTIVE_ENERGY_IMPORTED) * 10;
