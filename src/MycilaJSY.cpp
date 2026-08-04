@@ -159,7 +159,7 @@ extern Mycila::Logger logger;
 #define JSY_22x_REGISTER_REACTIVE_ENERGY_NEGATIVE 0x011C // RO, + 0x011D
 
 #define JSY_22x_REGISTER_LEN   2  // 2 bytes per register
-#define JSY_22x_REGISTER_COUNT 30 // 20 registers
+#define JSY_22x_REGISTER_COUNT 30 // 30 registers
 #define JSY_22x_REGISTER_START JSY_22x_REGISTER_VOLTAGE
 
 ///////////////////////////////////////////////////////////////////////////////
